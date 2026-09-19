@@ -1,32 +1,32 @@
 [
   {
-    "participant_id": "user_c10f6a84",
+    "participant_id": "user_09d81f38",
     "name": "Alice Smith",
     "college": "Oxford University",
     "reg_no": "OX101",
     "score": 300,
-    "registered_at": "2026-09-19T22:54:12.389465",
+    "registered_at": "2026-09-19T23:01:54.055036",
     "solved_count": 2,
     "easy_solved": 1,
     "medium_solved": 1,
     "hard_solved": 0,
     "total_runtime": 0.08,
-    "last_submission_time": "2026-09-19T22:54:12.427830",
+    "last_submission_time": "2026-09-19T23:01:54.095753",
     "rank": 1
   },
   {
-    "participant_id": "user_ec64b104",
+    "participant_id": "user_825d6c29",
     "name": "Bob Johnson",
     "college": "Cambridge",
     "reg_no": "CB202",
     "score": 100,
-    "registered_at": "2026-09-19T22:54:12.402876",
+    "registered_at": "2026-09-19T23:01:54.068492",
     "solved_count": 1,
     "easy_solved": 1,
     "medium_solved": 0,
     "hard_solved": 0,
     "total_runtime": 0.05,
-    "last_submission_time": "2026-09-19T22:54:12.440740",
+    "last_submission_time": "2026-09-19T23:01:54.110624",
     "rank": 2
   }
 ]

@@ -1,7 +1,87 @@
 # CODE COMBAT — Offline Competitive Programming Platform
 
 > **"Compete. Code. Conquer."**  
-> A high-performance, 100% offline competitive coding challenge website prototype inspired by the workflow of HackerRank and LeetCode, built with an original developer dark UI, zero external web/CDN dependencies, and a real local judge engine.
+> A high-performance, 100% offline competitive coding challenge platform inspired by LeetCode and HackerRank, built with an original developer dark UI, zero external web/CDN dependencies, and a real local judge engine.
+
+---
+
+## 📖 Event Introduction
+
+**Code Combat** is an individual offline coding challenge inspired by platforms such as **LeetCode** and **HackerRank**. Participants will be given programming problems that require them to understand the problem, develop a logical solution, write code, test it, and submit it within the given time.
+
+Each problem will include a problem statement, input format, output format, constraints, sample input, and expected output. Submitted programs will be evaluated using multiple test cases, including hidden test cases, to check the correctness and efficiency of the solutions.
+
+The event will be conducted in the college computer laboratory without Internet access. The competition is designed to test participants' coding skills, logical thinking, problem-solving ability, algorithmic knowledge, and efficiency.
+
+---
+
+## ⏱️ Event Structure — 1 Hour, Single Session
+
+- **Time**: 60 minutes (no separate rounds)
+- **Questions**: A mix of Easy, Medium, and Hard programming problems, presented together for participants to attempt in any order.
+- **Problem Topics**:
+  - **Easy**: Variables, Operators, Conditional statements, Loops, Basic mathematics, Simple logical problems
+  - **Medium**: Arrays, Strings, Functions, Searching, Logical problem-solving
+  - **Hard**: Sorting, Recursion, Data Structures, Algorithms, Optimization
+
+Participants must write and submit solutions for as many problems as they can within the 60-minute window. There is no elimination between difficulty levels — all problems are open to all participants for the full duration. Solutions will be evaluated using multiple test cases, including hidden test cases. Time and space complexity may also be considered, particularly for Hard problems.
+
+---
+
+## 💻 Programming Languages
+
+Participants can solve the problems using any one of the following programming languages:
+- **C** (Clang / GCC)
+- **Java** (OpenJDK)
+- **Python** (Python 3)
+
+Participants may choose the language they are most comfortable with.
+
+---
+
+## 📋 Problem Format
+
+Each coding problem will be presented in a format similar to **LeetCode** and **HackerRank**, containing:
+- **Problem Statement** – Clear description of the problem to be solved.
+- **Input Format** – Details of the input provided to the program.
+- **Output Format** – The expected output from the program.
+- **Constraints** – Conditions and limits that must be considered while solving the problem.
+- **Sample Input** – Example input provided for understanding the problem.
+- **Expected Output** – The correct output corresponding to the sample input.
+- **Hidden Test Cases** – Additional test cases used to verify the correctness of submitted solutions.
+
+Participants must write their own program according to the given requirements and ensure that it produces the correct output for all applicable test cases.
+
+---
+
+## ⚖️ Evaluation Criteria
+
+- **Correctness of Code** – The program must compile and execute successfully.
+- **Accuracy of Output** – The program must produce the required output.
+- **Test Cases Passed** – Solutions will be evaluated against multiple test cases, including hidden test cases.
+- **Number & Difficulty of Problems Solved** – Higher-difficulty problems carry more weight in final scoring.
+- **Submission Time** – In case of a tie, the participant who submits the correct solution earlier will receive priority.
+- **Efficiency** – Time and space complexity may be considered, particularly for Hard problems.
+
+---
+
+## 📜 Rules & Regulations
+
+- Participation is strictly individual.
+- Participants must use the computers provided in the college computer laboratory.
+- Internet access is strictly prohibited throughout the event.
+- Mobile phones, smart devices, and other external electronic devices are not permitted during the competition.
+- Participants must solve all problems using their own coding and problem-solving skills.
+- Copying code or solutions from another participant is strictly prohibited.
+- Sharing code, solutions, answers, or approaches with other participants is prohibited.
+- Pre-written programs or solutions prepared before the event cannot be submitted.
+- Participants cannot access online coding platforms, search engines, websites, or online references during the event.
+- Any attempt to bypass the no-internet restriction will result in immediate disqualification.
+
+### 🚨 STRICT ANTI-CHEATING RULE
+
+> **Any participant found copying, reproducing, sharing, or using another participant's code or solution in any form will be IMMEDIATELY DISQUALIFIED WITHOUT WARNING.**  
+> The participant will be removed from the competition, and **NO APPEAL OR RECONSIDERATION** will be permitted. The decision of the judges and organizing committee will be final and binding.
 
 ---
 

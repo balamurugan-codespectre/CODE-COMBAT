@@ -17,6 +17,7 @@
 
     <ul class="nav-links">
       <li><a class="nav-item active" onclick="App.navigate('home')" id="nav-home">Home</a></li>
+      <li><a class="nav-item" onclick="App.navigate('intro')" id="nav-intro">Rules & Guidelines</a></li>
       <li><a class="nav-item" onclick="App.navigate('problems')" id="nav-problems">Challenges</a></li>
       <li><a class="nav-item" onclick="App.navigate('leaderboard')" id="nav-leaderboard">Leaderboard</a></li>
       <li><a class="nav-item" onclick="App.navigate('admin')" id="nav-admin">Admin</a></li>
@@ -40,6 +41,7 @@
         <p class="hero-subtitle">The zero-dependency, ultra-fast offline competitive programming platform for college hackathons and coding contests.</p>
         <div class="hero-actions">
           <button class="btn btn-primary" onclick="App.navigate('register')">🚀 Start Competition</button>
+          <button class="btn btn-secondary" onclick="App.navigate('intro')">📜 Rules & Guidelines</button>
           <button class="btn btn-secondary" onclick="App.navigate('problems')">📂 Browse Challenges</button>
           <button class="btn btn-secondary" onclick="App.navigate('leaderboard')">🏆 Live Rankings</button>
         </div>
@@ -66,6 +68,241 @@
           <h3 class="feature-title">Live Dynamic Leaderboard</h3>
           <p class="feature-desc">ACID SQLite WAL ranking engine with automatic runtime tie-breaking and CSV export.</p>
         </div>
+      </div>
+    </section>
+
+    <!-- VIEW: INTRODUCTION & RULES -->
+    <section id="view-intro" class="view-section">
+      <div style="max-width: 1000px; margin: 1rem auto; display: flex; flex-direction: column; gap: 1.5rem;">
+        
+        <!-- Header Banner -->
+        <div class="panel" style="padding: 2rem; background: linear-gradient(135deg, rgba(0,242,254,0.1), rgba(121,40,202,0.15)); border: 1px solid var(--border-color); border-radius: var(--radius-md);">
+          <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 1rem;">
+            <div>
+              <span class="badge badge-easy" style="margin-bottom: 0.5rem; display: inline-block;">Official Guidelines</span>
+              <h1 style="color: #fff; font-size: 1.8rem; margin-bottom: 0.5rem;">Code Combat — Event Introduction & Rules</h1>
+              <p style="color: var(--text-secondary); font-size: 0.95rem;">Comprehensive guide for participants: structure, format, criteria, and anti-cheating regulations.</p>
+            </div>
+            <div style="text-align: right;">
+              <span style="font-size: 0.85rem; color: var(--accent-cyan); font-family: var(--font-mono); font-weight: 600;">Prepared by Bala</span>
+              <div style="margin-top: 0.5rem;">
+                <button class="btn btn-primary" onclick="App.navigate('register')" style="font-size: 0.85rem; padding: 0.4rem 0.9rem;">Register Now ➔</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 1. Introduction -->
+        <div class="panel" style="padding: 1.5rem;">
+          <h2 style="color: var(--accent-cyan); font-size: 1.2rem; margin-bottom: 0.75rem; display: flex; align-items: center; gap: 0.5rem;">
+            <span>📖</span> 1. Introduction
+          </h2>
+          <p style="color: var(--text-primary); line-height: 1.7; font-size: 0.95rem;">
+            <strong>Code Combat</strong> is an individual offline coding challenge inspired by platforms such as <strong>LeetCode</strong> and <strong>HackerRank</strong>. Participants will be given programming problems that require them to understand the problem, develop a logical solution, write code, test it, and submit it within the given time.
+          </p>
+          <p style="color: var(--text-secondary); line-height: 1.7; font-size: 0.95rem; margin-top: 0.75rem;">
+            Each problem will include a problem statement, input format, output format, constraints, sample input, and expected output. Submitted programs will be evaluated using multiple test cases, including hidden test cases, to check the correctness and efficiency of the solutions.
+          </p>
+          <p style="color: var(--text-secondary); line-height: 1.7; font-size: 0.95rem; margin-top: 0.75rem;">
+            The event will be conducted in the college computer laboratory without Internet access. The competition is designed to test participants' coding skills, logical thinking, problem-solving ability, algorithmic knowledge, and efficiency.
+          </p>
+        </div>
+
+        <!-- 2. Event Structure -->
+        <div class="panel" style="padding: 1.5rem;">
+          <h2 style="color: var(--accent-cyan); font-size: 1.2rem; margin-bottom: 0.75rem; display: flex; align-items: center; gap: 0.5rem;">
+            <span>⏱️</span> 2. Event Structure — 1 Hour, Single Session
+          </h2>
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1rem; margin-bottom: 1rem;">
+            <div style="background: var(--bg-primary); padding: 1rem; border-radius: var(--radius-sm); border: 1px solid var(--border-color);">
+              <div style="font-weight: 700; color: #fff; margin-bottom: 0.3rem;">⏳ Duration</div>
+              <div style="color: var(--accent-cyan); font-size: 1.1rem; font-weight: 700;">60 Minutes</div>
+              <div style="font-size: 0.85rem; color: var(--text-muted); margin-top: 0.2rem;">Single continuous session (no separate rounds)</div>
+            </div>
+            <div style="background: var(--bg-primary); padding: 1rem; border-radius: var(--radius-sm); border: 1px solid var(--border-color);">
+              <div style="font-weight: 700; color: #fff; margin-bottom: 0.3rem;">🎯 Question Flow</div>
+              <div style="color: var(--accent-green); font-size: 1.1rem; font-weight: 700;">Any Order / Open Access</div>
+              <div style="font-size: 0.85rem; color: var(--text-muted); margin-top: 0.2rem;">Mix of Easy, Medium, and Hard challenges</div>
+            </div>
+          </div>
+
+          <h3 style="font-size: 1rem; color: #fff; margin: 1rem 0 0.5rem 0;">Problem Topics by Difficulty:</h3>
+          <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+            <div style="background: var(--bg-primary); padding: 0.75rem 1rem; border-radius: var(--radius-sm); border-left: 4px solid var(--accent-green);">
+              <span class="badge badge-easy" style="margin-right: 0.5rem;">Easy</span>
+              <span style="color: var(--text-primary); font-size: 0.9rem;">Variables, Operators, Conditional statements, Loops, Basic mathematics, Simple logical problems</span>
+            </div>
+            <div style="background: var(--bg-primary); padding: 0.75rem 1rem; border-radius: var(--radius-sm); border-left: 4px solid var(--accent-amber);">
+              <span class="badge badge-medium" style="margin-right: 0.5rem;">Medium</span>
+              <span style="color: var(--text-primary); font-size: 0.9rem;">Arrays, Strings, Functions, Searching, Logical problem-solving</span>
+            </div>
+            <div style="background: var(--bg-primary); padding: 0.75rem 1rem; border-radius: var(--radius-sm); border-left: 4px solid var(--accent-red);">
+              <span class="badge badge-hard" style="margin-right: 0.5rem;">Hard</span>
+              <span style="color: var(--text-primary); font-size: 0.9rem;">Sorting, Recursion, Data Structures, Algorithms, Optimization</span>
+            </div>
+          </div>
+          <p style="color: var(--text-secondary); font-size: 0.9rem; line-height: 1.6; margin-top: 1rem;">
+            Participants must write and submit solutions for as many problems as they can within the 60-minute window. There is no elimination between difficulty levels — all problems are open to all participants for the full duration. Solutions will be evaluated using multiple test cases, including hidden test cases. Time and space complexity may also be considered, particularly for Hard problems.
+          </p>
+        </div>
+
+        <!-- 3. Programming Languages -->
+        <div class="panel" style="padding: 1.5rem;">
+          <h2 style="color: var(--accent-cyan); font-size: 1.2rem; margin-bottom: 0.75rem; display: flex; align-items: center; gap: 0.5rem;">
+            <span>💻</span> 3. Programming Languages
+          </h2>
+          <p style="color: var(--text-primary); font-size: 0.95rem; margin-bottom: 1rem;">
+            Participants can solve the problems using any one of the following programming languages. Participants may choose the language they are most comfortable with:
+          </p>
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
+            <div style="background: var(--bg-primary); padding: 1rem; border-radius: var(--radius-sm); text-align: center; border: 1px solid var(--border-color);">
+              <div style="font-size: 1.5rem; margin-bottom: 0.3rem;">⚡</div>
+              <div style="font-weight: 700; color: #fff; font-size: 1.1rem;">C</div>
+              <div style="font-size: 0.8rem; color: var(--text-muted); font-family: var(--font-mono);">LLVM Clang / GCC</div>
+            </div>
+            <div style="background: var(--bg-primary); padding: 1rem; border-radius: var(--radius-sm); text-align: center; border: 1px solid var(--border-color);">
+              <div style="font-size: 1.5rem; margin-bottom: 0.3rem;">☕</div>
+              <div style="font-weight: 700; color: #fff; font-size: 1.1rem;">Java</div>
+              <div style="font-size: 0.8rem; color: var(--text-muted); font-family: var(--font-mono);">OpenJDK / javac</div>
+            </div>
+            <div style="background: var(--bg-primary); padding: 1rem; border-radius: var(--radius-sm); text-align: center; border: 1px solid var(--border-color);">
+              <div style="font-size: 1.5rem; margin-bottom: 0.3rem;">🐍</div>
+              <div style="font-weight: 700; color: #fff; font-size: 1.1rem;">Python</div>
+              <div style="font-size: 0.8rem; color: var(--text-muted); font-family: var(--font-mono);">Python 3.x Engine</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 4. Problem Format -->
+        <div class="panel" style="padding: 1.5rem;">
+          <h2 style="color: var(--accent-cyan); font-size: 1.2rem; margin-bottom: 0.75rem; display: flex; align-items: center; gap: 0.5rem;">
+            <span>📋</span> 4. Problem Format
+          </h2>
+          <p style="color: var(--text-secondary); font-size: 0.95rem; margin-bottom: 1rem;">
+            Each coding problem will be presented in a format similar to <strong>LeetCode</strong> and <strong>HackerRank</strong>, containing:
+          </p>
+          <ul style="list-style: none; display: flex; flex-direction: column; gap: 0.6rem;">
+            <li style="background: var(--bg-primary); padding: 0.6rem 0.9rem; border-radius: var(--radius-sm); font-size: 0.9rem;">
+              <strong style="color: var(--accent-cyan);">Problem Statement</strong> – Clear description of the problem to be solved.
+            </li>
+            <li style="background: var(--bg-primary); padding: 0.6rem 0.9rem; border-radius: var(--radius-sm); font-size: 0.9rem;">
+              <strong style="color: var(--accent-cyan);">Input Format</strong> – Details of the input provided to the program.
+            </li>
+            <li style="background: var(--bg-primary); padding: 0.6rem 0.9rem; border-radius: var(--radius-sm); font-size: 0.9rem;">
+              <strong style="color: var(--accent-cyan);">Output Format</strong> – The expected output from the program.
+            </li>
+            <li style="background: var(--bg-primary); padding: 0.6rem 0.9rem; border-radius: var(--radius-sm); font-size: 0.9rem;">
+              <strong style="color: var(--accent-cyan);">Constraints</strong> – Conditions and limits that must be considered while solving the problem.
+            </li>
+            <li style="background: var(--bg-primary); padding: 0.6rem 0.9rem; border-radius: var(--radius-sm); font-size: 0.9rem;">
+              <strong style="color: var(--accent-cyan);">Sample Input</strong> – Example input provided for understanding the problem.
+            </li>
+            <li style="background: var(--bg-primary); padding: 0.6rem 0.9rem; border-radius: var(--radius-sm); font-size: 0.9rem;">
+              <strong style="color: var(--accent-cyan);">Expected Output</strong> – The correct output corresponding to the sample input.
+            </li>
+            <li style="background: var(--bg-primary); padding: 0.6rem 0.9rem; border-radius: var(--radius-sm); font-size: 0.9rem;">
+              <strong style="color: var(--accent-cyan);">Hidden Test Cases</strong> – Additional test cases used to verify the correctness of submitted solutions.
+            </li>
+          </ul>
+          <p style="color: var(--text-primary); font-size: 0.9rem; margin-top: 1rem;">
+            Participants must write their own program according to the given requirements and ensure that it produces the correct output for all applicable test cases.
+          </p>
+        </div>
+
+        <!-- 5. Evaluation Criteria -->
+        <div class="panel" style="padding: 1.5rem;">
+          <h2 style="color: var(--accent-cyan); font-size: 1.2rem; margin-bottom: 0.75rem; display: flex; align-items: center; gap: 0.5rem;">
+            <span>⚖️</span> 5. Evaluation Criteria
+          </h2>
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 0.75rem;">
+            <div style="background: var(--bg-primary); padding: 0.85rem; border-radius: var(--radius-sm); border: 1px solid var(--border-color);">
+              <div style="color: var(--accent-green); font-weight: 700; font-size: 0.95rem; margin-bottom: 0.25rem;">✓ Correctness of Code</div>
+              <div style="color: var(--text-secondary); font-size: 0.85rem;">The program must compile and execute successfully.</div>
+            </div>
+            <div style="background: var(--bg-primary); padding: 0.85rem; border-radius: var(--radius-sm); border: 1px solid var(--border-color);">
+              <div style="color: var(--accent-green); font-weight: 700; font-size: 0.95rem; margin-bottom: 0.25rem;">🎯 Accuracy of Output</div>
+              <div style="color: var(--text-secondary); font-size: 0.85rem;">The program must produce the exact required output.</div>
+            </div>
+            <div style="background: var(--bg-primary); padding: 0.85rem; border-radius: var(--radius-sm); border: 1px solid var(--border-color);">
+              <div style="color: var(--accent-green); font-weight: 700; font-size: 0.95rem; margin-bottom: 0.25rem;">🧪 Test Cases Passed</div>
+              <div style="color: var(--text-secondary); font-size: 0.85rem;">Solutions are evaluated against multiple test cases, including hidden cases.</div>
+            </div>
+            <div style="background: var(--bg-primary); padding: 0.85rem; border-radius: var(--radius-sm); border: 1px solid var(--border-color);">
+              <div style="color: var(--accent-green); font-weight: 700; font-size: 0.95rem; margin-bottom: 0.25rem;">⭐ Number & Difficulty Solved</div>
+              <div style="color: var(--text-secondary); font-size: 0.85rem;">Higher-difficulty problems carry more weight in final scoring.</div>
+            </div>
+            <div style="background: var(--bg-primary); padding: 0.85rem; border-radius: var(--radius-sm); border: 1px solid var(--border-color);">
+              <div style="color: var(--accent-green); font-weight: 700; font-size: 0.95rem; margin-bottom: 0.25rem;">⏱️ Submission Time</div>
+              <div style="color: var(--text-secondary); font-size: 0.85rem;">In case of a tie, earlier correct submission receives priority.</div>
+            </div>
+            <div style="background: var(--bg-primary); padding: 0.85rem; border-radius: var(--radius-sm); border: 1px solid var(--border-color);">
+              <div style="color: var(--accent-green); font-weight: 700; font-size: 0.95rem; margin-bottom: 0.25rem;">⚡ Efficiency</div>
+              <div style="color: var(--text-secondary); font-size: 0.85rem;">Time and space complexity may be considered, particularly for Hard problems.</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 6. Rules & Regulations -->
+        <div class="panel" style="padding: 1.5rem;">
+          <h2 style="color: var(--accent-cyan); font-size: 1.2rem; margin-bottom: 0.75rem; display: flex; align-items: center; gap: 0.5rem;">
+            <span>📜</span> 6. Rules & Regulations
+          </h2>
+          <ul style="list-style: none; display: flex; flex-direction: column; gap: 0.5rem; color: var(--text-primary); font-size: 0.9rem;">
+            <li style="padding: 0.4rem 0.6rem; background: var(--bg-primary); border-radius: var(--radius-sm); display: flex; gap: 0.5rem;">
+              <span style="color: var(--accent-cyan);">•</span> Participation is strictly individual.
+            </li>
+            <li style="padding: 0.4rem 0.6rem; background: var(--bg-primary); border-radius: var(--radius-sm); display: flex; gap: 0.5rem;">
+              <span style="color: var(--accent-cyan);">•</span> Participants must use the computers provided in the college computer laboratory.
+            </li>
+            <li style="padding: 0.4rem 0.6rem; background: var(--bg-primary); border-radius: var(--radius-sm); display: flex; gap: 0.5rem;">
+              <span style="color: var(--accent-cyan);">•</span> Internet access is strictly prohibited throughout the event.
+            </li>
+            <li style="padding: 0.4rem 0.6rem; background: var(--bg-primary); border-radius: var(--radius-sm); display: flex; gap: 0.5rem;">
+              <span style="color: var(--accent-cyan);">•</span> Mobile phones, smart devices, and other external electronic devices are not permitted during the competition.
+            </li>
+            <li style="padding: 0.4rem 0.6rem; background: var(--bg-primary); border-radius: var(--radius-sm); display: flex; gap: 0.5rem;">
+              <span style="color: var(--accent-cyan);">•</span> Participants must solve all problems using their own coding and problem-solving skills.
+            </li>
+            <li style="padding: 0.4rem 0.6rem; background: var(--bg-primary); border-radius: var(--radius-sm); display: flex; gap: 0.5rem;">
+              <span style="color: var(--accent-cyan);">•</span> Copying code or solutions from another participant is strictly prohibited.
+            </li>
+            <li style="padding: 0.4rem 0.6rem; background: var(--bg-primary); border-radius: var(--radius-sm); display: flex; gap: 0.5rem;">
+              <span style="color: var(--accent-cyan);">•</span> Sharing code, solutions, answers, or approaches with other participants is prohibited.
+            </li>
+            <li style="padding: 0.4rem 0.6rem; background: var(--bg-primary); border-radius: var(--radius-sm); display: flex; gap: 0.5rem;">
+              <span style="color: var(--accent-cyan);">•</span> Pre-written programs or solutions prepared before the event cannot be submitted.
+            </li>
+            <li style="padding: 0.4rem 0.6rem; background: var(--bg-primary); border-radius: var(--radius-sm); display: flex; gap: 0.5rem;">
+              <span style="color: var(--accent-cyan);">•</span> Participants cannot access online coding platforms, search engines, websites, or online references during the event.
+            </li>
+            <li style="padding: 0.4rem 0.6rem; background: var(--bg-primary); border-radius: var(--radius-sm); display: flex; gap: 0.5rem;">
+              <span style="color: var(--accent-cyan);">•</span> Any attempt to bypass the no-internet restriction will result in immediate disqualification.
+            </li>
+          </ul>
+        </div>
+
+        <!-- 7. STRICT ANTI-CHEATING RULE -->
+        <div style="background: rgba(239, 68, 68, 0.12); border: 2px solid var(--accent-red); padding: 1.5rem; border-radius: var(--radius-md); box-shadow: 0 0 25px rgba(239, 68, 68, 0.15);">
+          <div style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.75rem;">
+            <span style="font-size: 1.5rem;">🚨</span>
+            <h3 style="color: var(--accent-red); font-size: 1.2rem; font-weight: 800; letter-spacing: 0.05em; text-transform: uppercase;">
+              Strict Anti-Cheating Rule
+            </h3>
+          </div>
+          <p style="color: #fff; font-weight: 600; line-height: 1.7; font-size: 0.95rem;">
+            Any participant found copying, reproducing, sharing, or using another participant's code or solution in any form will be <span style="color: var(--accent-red); text-decoration: underline; font-weight: 800;">IMMEDIATELY DISQUALIFIED WITHOUT WARNING</span>.
+          </p>
+          <p style="color: var(--text-secondary); margin-top: 0.5rem; font-size: 0.9rem; line-height: 1.6;">
+            The participant will be removed from the competition, and <strong>NO APPEAL OR RECONSIDERATION</strong> will be permitted. The decision of the judges and organizing committee will be final and binding.
+          </p>
+        </div>
+
+        <div style="text-align: center; margin: 1rem 0;">
+          <button class="btn btn-primary" onclick="App.navigate('register')" style="padding: 0.75rem 2rem; font-size: 1rem;">
+            ⚔️ I Agree &amp; Wish to Register ➔
+          </button>
+        </div>
+
       </div>
     </section>
 
