@@ -267,6 +267,16 @@ class CodeCombatHandler(BaseHTTPRequestHandler):
             self.send_json({"participants": parts})
             return
 
+        # GET /api/participant/<id>
+        if path.startswith("/api/participant/"):
+            pid = path.replace("/api/participant/", "").strip()
+            p = self.storage.get_participant(pid)
+            if p:
+                self.send_json({"participant": p})
+            else:
+                self.send_error_json("Participant not found", 404)
+            return
+
         # GET /api/admin/export
         if path == "/api/admin/export":
             data = self.storage.export_all_data()

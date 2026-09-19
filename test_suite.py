@@ -225,6 +225,32 @@ def run_tests():
     assert_test("Rate Limiter Blocks Burst Requests Exceeding Limit", not limiter.is_allowed("127.0.0.1"))
 
     # ---------------------------------------------------------
+    # TEST 7: Complete Admin Reset (Wipe Points, Submissions & Leaderboard)
+    # ---------------------------------------------------------
+    print("\n--- [Phase 7: Full Admin Reset & Zero State Validation] ---")
+    storage.reset_competition()
+    
+    empty_lb = storage.get_leaderboard()
+    empty_parts = storage.get_participants()
+    empty_subs = storage.get_submissions()
+    
+    assert_test("Admin Reset: Leaderboard completely emptied (0 entries)", len(empty_lb) == 0)
+    assert_test("Admin Reset: Participants table wiped (0 entries)", len(empty_parts) == 0)
+    assert_test("Admin Reset: Submissions table wiped (0 entries)", len(empty_subs) == 0)
+    
+    # Read JSON mirror directly from disk
+    with open(storage.leaderboard_file, "r", encoding="utf-8") as f:
+        lb_json = json.load(f)
+    assert_test("Admin Reset: JSON mirror for leaderboard is empty list []", lb_json == [])
+    
+    # Fresh registration starts at 0 points
+    p_fresh = storage.register_participant("Charlie Test", "MIT", "MIT001")
+    assert_test("Fresh Participant after Reset starts with Score = 0", p_fresh["score"] == 0 and len(p_fresh["solved_problems"]) == 0)
+
+    # Clean up after test
+    storage.reset_competition()
+
+    # ---------------------------------------------------------
     # FINAL SUMMARY
     # ---------------------------------------------------------
     print("\n======================================================================")

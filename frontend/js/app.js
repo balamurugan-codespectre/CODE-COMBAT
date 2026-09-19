@@ -10,7 +10,7 @@ const App = {
   currentLanguage: 'python',
   editor: null,
 
-  init() {
+  async init() {
     // 1. Initialize custom editor
     this.editor = new CodeEditor('editor-code', 'editor-lines');
 
@@ -20,12 +20,41 @@ const App = {
       try {
         this.participant = JSON.parse(saved);
         this.updateUserBadge();
-      } catch (e) {}
+        // Verify participant still exists on server (in case of Admin reset)
+        this.syncParticipant();
+      } catch (e) {
+        this.participant = null;
+        localStorage.removeItem('cc_participant');
+      }
     }
 
     // 3. Fetch initial configuration & problems
     this.loadProblems();
     this.loadLeaderboard();
+  },
+
+  async syncParticipant() {
+    if (!this.participant || !this.participant.id) return;
+    try {
+      const res = await fetch(`/api/participant/${this.participant.id}`);
+      if (res.ok) {
+        const data = await res.json();
+        if (data.participant) {
+          this.participant = data.participant;
+          localStorage.setItem('cc_participant', JSON.stringify(data.participant));
+          this.updateUserBadge();
+        }
+      } else if (res.status === 404) {
+        // Admin wiped DB or participant deleted
+        this.participant = null;
+        localStorage.removeItem('cc_participant');
+        const badge = document.getElementById('user-badge');
+        if (badge) badge.style.display = 'none';
+        this.loadProblems();
+      }
+    } catch (e) {
+      // Offline fallback: keep cached session
+    }
   },
 
   navigate(viewId) {

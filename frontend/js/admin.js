@@ -21,7 +21,7 @@ const Admin = {
   },
 
   async resetCompetition() {
-    const pass = prompt('Enter Admin Password to wipe all scores and submissions:');
+    const pass = prompt('Enter Admin Password to wipe all scores, points, and submissions:');
     if (!pass) return;
 
     try {
@@ -32,8 +32,17 @@ const Admin = {
       });
       const data = await res.json();
       if (data.success) {
-        App.showToast('Competition reset successfully.', 'success');
+        App.showToast('Competition completely reset. All points and submissions wiped to 0.', 'success');
+        // Clear client participant session and scores
+        App.participant = null;
+        localStorage.removeItem('cc_participant');
+        const badge = document.getElementById('user-badge');
+        if (badge) badge.style.display = 'none';
+
+        // Refresh views
         App.loadLeaderboard();
+        App.loadProblems();
+        if (typeof Admin.checkHealth === 'function') Admin.checkHealth();
       } else {
         App.showToast('Reset failed: ' + (data.error || 'Invalid password'), 'error');
       }
