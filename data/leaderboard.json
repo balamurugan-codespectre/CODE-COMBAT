@@ -1,47 +1,32 @@
 [
   {
-    "participant_id": "user_e92d5b5f",
+    "participant_id": "user_08df54f1",
     "name": "Alice Smith",
     "college": "Oxford University",
     "reg_no": "OX101",
     "score": 300,
-    "registered_at": "2026-09-19T22:41:12.801009",
+    "registered_at": "2026-09-19T22:44:21.074846",
     "solved_count": 2,
     "easy_solved": 1,
     "medium_solved": 1,
     "hard_solved": 0,
     "total_runtime": 0.08,
-    "last_submission_time": "2026-09-19T22:41:12.837045",
+    "last_submission_time": "2026-09-19T22:44:21.114666",
     "rank": 1
   },
   {
-    "participant_id": "user_e605d543",
+    "participant_id": "user_f021f571",
     "name": "Bob Johnson",
     "college": "Cambridge",
     "reg_no": "CB202",
     "score": 100,
-    "registered_at": "2026-09-19T22:41:12.810917",
+    "registered_at": "2026-09-19T22:44:21.087927",
     "solved_count": 1,
     "easy_solved": 1,
     "medium_solved": 0,
     "hard_solved": 0,
     "total_runtime": 0.05,
-    "last_submission_time": "2026-09-19T22:41:12.847890",
+    "last_submission_time": "2026-09-19T22:44:21.129744",
     "rank": 2
-  },
-  {
-    "participant_id": "user_f9ed9155",
-    "name": "C Programmer",
-    "college": "IIT",
-    "reg_no": "IIT555",
-    "score": 100,
-    "registered_at": "2026-09-19T22:42:39.470619",
-    "solved_count": 1,
-    "easy_solved": 1,
-    "medium_solved": 0,
-    "hard_solved": 0,
-    "total_runtime": 0.897,
-    "last_submission_time": "2026-09-19T22:42:40.698091",
-    "rank": 3
   }
 ]

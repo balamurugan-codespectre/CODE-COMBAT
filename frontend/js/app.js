@@ -8,8 +8,6 @@ const App = {
   problems: [],
   activeProblem: null,
   currentLanguage: 'python',
-  timerRemainingSeconds: 3600,
-  timerInterval: null,
   editor: null,
 
   init() {
@@ -25,10 +23,7 @@ const App = {
       } catch (e) {}
     }
 
-    // 3. Initialize Timer
-    this.initTimer();
-
-    // 4. Fetch initial configuration & problems
+    // 3. Fetch initial configuration & problems
     this.loadProblems();
     this.loadLeaderboard();
   },
@@ -60,33 +55,6 @@ const App = {
       toast.style.opacity = '0';
       setTimeout(() => toast.remove(), 300);
     }, 3500);
-  },
-
-  initTimer() {
-    let savedTime = localStorage.getItem('cc_timer');
-    this.timerRemainingSeconds = savedTime ? parseInt(savedTime, 10) : 3600;
-
-    const display = document.getElementById('timer-display');
-    const timerBox = document.getElementById('contest-timer');
-
-    this.timerInterval = setInterval(() => {
-      if (this.timerRemainingSeconds > 0) {
-        this.timerRemainingSeconds--;
-        localStorage.setItem('cc_timer', this.timerRemainingSeconds);
-
-        const mins = Math.floor(this.timerRemainingSeconds / 60);
-        const secs = this.timerRemainingSeconds % 60;
-        display.textContent = `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
-
-        if (this.timerRemainingSeconds <= 600) {
-          timerBox.classList.add('warning');
-        }
-      } else {
-        clearInterval(this.timerInterval);
-        display.textContent = '00:00';
-        this.showToast('Contest Time Expired!', 'warning');
-      }
-    }, 1000);
   },
 
   async handleRegister(e) {
