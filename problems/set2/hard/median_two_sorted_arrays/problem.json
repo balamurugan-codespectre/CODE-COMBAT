@@ -1,0 +1,66 @@
+{
+  "id": "median_two_sorted_arrays",
+  "title": "Median of Two Sorted Arrays",
+  "difficulty": "Hard",
+  "points": 300,
+  "category": "Binary Search",
+  "time_limit": 2.0,
+  "description": "Given two sorted arrays nums1 and nums2 of size m and n respectively, return the median of the two sorted arrays.\nThe overall run time complexity should be O(log (m+n)). Format output with 1 decimal place (e.g. 2.0 or 2.5).",
+  "input_format": "Line 1: Two integers m and n.\nLine 2: m space-separated sorted integers (or blank if m=0).\nLine 3: n space-separated sorted integers (or blank if n=0).",
+  "output_format": "Print the median formatted with 1 decimal place.",
+  "constraints": "0 <= m, n <= 1000\n1 <= m + n <= 2000",
+  "sample_tests": [
+    {
+      "input": "2 1\n1 3\n2",
+      "output": "2.0",
+      "explanation": "Merged array [1, 2, 3], median is 2.0."
+    },
+    {
+      "input": "2 2\n1 2\n3 4",
+      "output": "2.5",
+      "explanation": "Merged array [1, 2, 3, 4], median is (2 + 3) / 2 = 2.5."
+    },
+    {
+      "input": "3 2\n1 3 5\n2 4",
+      "output": "3.0",
+      "explanation": "Merged [1, 2, 3, 4, 5], median is 3.0."
+    },
+    {
+      "input": "0 2\n\n1 2",
+      "output": "1.5",
+      "explanation": "Merged [1, 2], median is 1.5."
+    },
+    {
+      "input": "1 1\n10\n20",
+      "output": "15.0",
+      "explanation": "Merged [10, 20], median is 15.0."
+    }
+  ],
+  "hidden_tests": [
+    {
+      "input": "1 0\n100\n",
+      "output": "100.0"
+    },
+    {
+      "input": "3 3\n1 2 3\n4 5 6",
+      "output": "3.5"
+    },
+    {
+      "input": "2 3\n10 20\n5 15 25",
+      "output": "15.0"
+    },
+    {
+      "input": "4 4\n1 1 1 1\n2 2 2 2",
+      "output": "1.5"
+    },
+    {
+      "input": "1 4\n3\n1 2 4 5",
+      "output": "3.0"
+    }
+  ],
+  "starter_code": {
+    "python": "import sys\n\ndef solve():\n    data = sys.stdin.read().split()\n    if not data:\n        return\n    m = int(data[0])\n    n = int(data[1])\n    idx = 2\n    a = [int(x) for x in data[idx:idx+m]]\n    idx += m\n    b = [int(x) for x in data[idx:idx+n]]\n    \n    merged = sorted(a + b)\n    total = len(merged)\n    if total % 2 == 1:\n        print(f\"{float(merged[total // 2]):.1f}\")\n    else:\n        med = (merged[total // 2 - 1] + merged[total // 2]) / 2.0\n        print(f\"{med:.1f}\")\n\nif __name__ == '__main__':\n    solve()\n",
+    "java": "import java.util.*;\n\npublic class Solution {\n    public static void main(String[] args) {\n        Scanner sc = new Scanner(System.in);\n        if (!sc.hasNextInt()) return;\n        int m = sc.nextInt();\n        int n = sc.nextInt();\n        int[] merged = new int[m + n];\n        for (int i = 0; i < m; i++) merged[i] = sc.nextInt();\n        for (int i = 0; i < n; i++) merged[m + i] = sc.nextInt();\n        Arrays.sort(merged);\n        int total = m + n;\n        if (total % 2 == 1) {\n            System.out.printf(Locale.US, \"%.1f\\n\", (double)merged[total / 2]);\n        } else {\n            double med = (merged[total / 2 - 1] + merged[total / 2]) / 2.0;\n            System.out.printf(Locale.US, \"%.1f\\n\", med);\n        }\n    }\n}\n",
+    "c": "#include <stdio.h>\n#include <stdlib.h>\n\nint cmp(const void *a, const void *b) {\n    return (*(int*)a - *(int*)b);\n}\n\nint merged[2005];\n\nint main() {\n    int m, n;\n    if (scanf(\"%d %d\", &m, &n) != 2) return 0;\n    for (int i = 0; i < m; i++) scanf(\"%d\", &merged[i]);\n    for (int i = 0; i < n; i++) scanf(\"%d\", &merged[m + i]);\n    int total = m + n;\n    qsort(merged, total, sizeof(int), cmp);\n    if (total % 2 == 1) {\n        printf(\"%.1f\\n\", (double)merged[total / 2]);\n    } else {\n        double med = (merged[total / 2 - 1] + merged[total / 2]) / 2.0;\n        printf(\"%.1f\\n\", med);\n    }\n    return 0;\n}\n"
+  }
+}

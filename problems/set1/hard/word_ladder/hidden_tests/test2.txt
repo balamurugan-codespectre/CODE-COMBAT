@@ -1,0 +1,6 @@
+INPUT:
+game over
+4
+game fame fave over
+EXPECTED:
+0

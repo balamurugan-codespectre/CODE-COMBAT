@@ -13,14 +13,42 @@ from typing import Dict, Any, List, Optional, Set
 class ProblemsManager:
     """Manages problem metadata, starter templates, visible samples, and hidden test suites."""
 
-    def __init__(self, problems_dir: str):
+    def __init__(self, problems_dir: str, active_set: str = "set1"):
         self.problems_dir = problems_dir
+        self.active_set = active_set
         self.problems: Dict[str, Dict[str, Any]] = {}
         self.hidden_dirs: Dict[str, str] = {}
         self.reload_problems()
 
+    def get_available_sets(self) -> List[Dict[str, Any]]:
+        """Lists available problem sets."""
+        set_titles = {
+            "set1": "Problem Set 1 (Classic Challenges - 15 Problems)",
+            "set2": "Problem Set 2 (Advanced Challenges - 15 Problems)"
+        }
+        sets = []
+        for s in ["set1", "set2"]:
+            p = os.path.join(self.problems_dir, s)
+            if os.path.isdir(p):
+                sets.append({
+                    "id": s,
+                    "name": set_titles.get(s, f"Problem Set {s.upper()}"),
+                    "active": (s == self.active_set)
+                })
+        return sets
+
+    def switch_set(self, set_id: str) -> bool:
+        """Switches the active problem set and reloads index."""
+        clean_id = (set_id or "").strip().lower()
+        target_path = os.path.join(self.problems_dir, clean_id)
+        if os.path.isdir(target_path):
+            self.active_set = clean_id
+            self.reload_problems()
+            return True
+        return False
+
     def reload_problems(self):
-        """Scans the problems directory and indexes all problems."""
+        """Scans the active problems directory and indexes all problems."""
         self.problems.clear()
         self.hidden_dirs.clear()
 
@@ -28,8 +56,12 @@ class ProblemsManager:
             os.makedirs(self.problems_dir, exist_ok=True)
             return
 
+        # Determine target base directory (set1/set2 subfolder or root fallback)
+        set_path = os.path.join(self.problems_dir, self.active_set)
+        search_root = set_path if os.path.isdir(set_path) else self.problems_dir
+
         for difficulty in ["easy", "medium", "hard"]:
-            diff_dir = os.path.join(self.problems_dir, difficulty)
+            diff_dir = os.path.join(search_root, difficulty)
             if not os.path.isdir(diff_dir):
                 continue
 

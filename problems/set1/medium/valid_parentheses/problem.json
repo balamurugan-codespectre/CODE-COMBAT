@@ -1,0 +1,67 @@
+{
+  "tier": "medium",
+  "id": "valid_parentheses",
+  "title": "Valid Parentheses",
+  "difficulty": "Medium",
+  "points": 200,
+  "time_limit": 2.0,
+  "category": "Stack",
+  "description": "Given a string `s` containing just the characters `'('`, `')'`, `'{'`, `'}'`, `'['` and `']'`, determine if the input string is valid.\n\nAn input string is valid if:\n1. Open brackets must be closed by the same type of brackets.\n2. Open brackets must be closed in the correct order.\n3. Every close bracket has a corresponding open bracket of the same type.",
+  "input_format": "A single line containing the bracket string `s`.",
+  "output_format": "Print `true` if valid, otherwise `false`.",
+  "constraints": "1 <= s.length <= 10^5\n`s` consists of parentheses only `'()[]{}'`.",
+  "sample_tests": [
+    {
+      "input": "()",
+      "output": "true",
+      "explanation": "Properly matched simple parentheses."
+    },
+    {
+      "input": "()[]{}",
+      "output": "true",
+      "explanation": "All types closed in order."
+    },
+    {
+      "input": "(]",
+      "output": "false",
+      "explanation": "Mismatched bracket types."
+    },
+    {
+      "input": "([{}])",
+      "output": "true",
+      "explanation": "Properly nested bracket pairs."
+    },
+    {
+      "input": "((())",
+      "output": "false",
+      "explanation": "Unclosed parenthesis."
+    }
+  ],
+  "starter_code": {
+    "python": "import sys\n\ndef solve():\n    s = sys.stdin.read().strip()\n    stack = []\n    mapping = {')': '(', '}': '{', ']': '['}\n    for char in s:\n        if char in mapping:\n            top_element = stack.pop() if stack else '#'\n            if mapping[char] != top_element:\n                print('false')\n                return\n        else:\n            stack.append(char)\n    print('true' if not stack else 'false')\n\nif __name__ == '__main__':\n    solve()\n",
+    "java": "import java.util.*;\n\npublic class Solution {\n    public static void main(String[] args) {\n        Scanner sc = new Scanner(System.in);\n        if (!sc.hasNext()) { System.out.println(\"true\"); return; }\n        String s = sc.next();\n        Deque<Character> stack = new ArrayDeque<>();\n        for (char c : s.toCharArray()) {\n            if (c == '(') stack.push(')');\n            else if (c == '{') stack.push('}');\n            else if (c == '[') stack.push(']');\n            else if (stack.isEmpty() || stack.pop() != c) {\n                System.out.println(\"false\");\n                return;\n            }\n        }\n        System.out.println(stack.isEmpty() ? \"true\" : \"false\");\n    }\n}\n",
+    "c": "#include <stdio.h>\n#include <string.h>\n#include <stdbool.h>\n\nint main() {\n    char s[100005];\n    if (scanf(\"%s\", s) != 1) {\n        printf(\"true\\n\");\n        return 0;\n    }\n    char stack[100005];\n    int top = -1;\n    for (int i = 0; s[i]; i++) {\n        char c = s[i];\n        if (c == '(') stack[++top] = ')';\n        else if (c == '{') stack[++top] = '}';\n        else if (c == '[') stack[++top] = ']';\n        else {\n            if (top == -1 || stack[top--] != c) {\n                printf(\"false\\n\");\n                return 0;\n            }\n        }\n    }\n    printf(\"%s\\n\", top == -1 ? \"true\" : \"false\");\n    return 0;\n}\n"
+  },
+  "hidden_tests": [
+    {
+      "input": "([)]",
+      "output": "false"
+    },
+    {
+      "input": "{[]}",
+      "output": "true"
+    },
+    {
+      "input": "(((((((((())))))))))",
+      "output": "true"
+    },
+    {
+      "input": "}",
+      "output": "false"
+    },
+    {
+      "input": "{[()]}",
+      "output": "true"
+    }
+  ]
+}

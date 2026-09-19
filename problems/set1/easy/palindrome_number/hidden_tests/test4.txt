@@ -1,0 +1,4 @@
+INPUT:
+123456
+EXPECTED:
+false

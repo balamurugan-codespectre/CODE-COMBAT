@@ -1,0 +1,66 @@
+{
+  "id": "word_break",
+  "title": "Word Break",
+  "difficulty": "Hard",
+  "points": 300,
+  "category": "Dynamic Programming",
+  "time_limit": 2.0,
+  "description": "Given a string s and a dictionary of strings wordDict, return 'true' if s can be segmented into a space-separated sequence of one or more dictionary words, else 'false'.\nNote that the same word in the dictionary may be reused multiple times in the segmentation.",
+  "input_format": "Line 1: Target string s.\nLine 2: Integer n (number of dictionary words).\nLine 3: n space-separated dictionary words.",
+  "output_format": "Print 'true' if possible, else 'false'.",
+  "constraints": "1 <= s.length <= 300\n1 <= wordDict.length <= 1000\n1 <= wordDict[i].length <= 20\ns and wordDict[i] consist of only lowercase English letters.",
+  "sample_tests": [
+    {
+      "input": "leetcode\n2\nleet code",
+      "output": "true",
+      "explanation": "Return true because 'leetcode' can be segmented as 'leet code'."
+    },
+    {
+      "input": "applepenapple\n2\napple pen",
+      "output": "true",
+      "explanation": "Return true because 'applepenapple' can be segmented as 'apple pen apple'."
+    },
+    {
+      "input": "catsandog\n5\ncats dog sand and cat",
+      "output": "false",
+      "explanation": "Cannot segment string into valid words."
+    },
+    {
+      "input": "bb\n1\na",
+      "output": "false",
+      "explanation": "'bb' cannot be made from ['a']."
+    },
+    {
+      "input": "codecombat\n3\ncode com bat",
+      "output": "true",
+      "explanation": "'codecombat' can be segmented as 'code' + 'com' + 'bat' or 'code' + 'combat'."
+    }
+  ],
+  "hidden_tests": [
+    {
+      "input": "cars\n2\ncar ca",
+      "output": "false"
+    },
+    {
+      "input": "goalspecial\n2\ngoal special",
+      "output": "true"
+    },
+    {
+      "input": "aaaaaaa\n2\naaaa aaa",
+      "output": "true"
+    },
+    {
+      "input": "programmers\n2\nprogram mers",
+      "output": "true"
+    },
+    {
+      "input": "abcdef\n3\nab cd ef",
+      "output": "true"
+    }
+  ],
+  "starter_code": {
+    "python": "import sys\n\ndef solve():\n    data = sys.stdin.read().split()\n    if not data:\n        return\n    s = data[0]\n    n = int(data[1])\n    word_dict = set(data[2:2+n])\n    \n    dp = [False] * (len(s) + 1)\n    dp[0] = True\n    for i in range(1, len(s) + 1):\n        for j in range(i):\n            if dp[j] and s[j:i] in word_dict:\n                dp[i] = True\n                break\n    print(\"true\" if dp[len(s)] else \"false\")\n\nif __name__ == '__main__':\n    solve()\n",
+    "java": "import java.util.*;\n\npublic class Solution {\n    public static void main(String[] args) {\n        Scanner sc = new Scanner(System.in);\n        if (!sc.hasNext()) return;\n        String s = sc.next();\n        int n = sc.nextInt();\n        Set<String> dict = new HashSet<>();\n        for (int i = 0; i < n; i++) dict.add(sc.next());\n        boolean[] dp = new boolean[s.length() + 1];\n        dp[0] = true;\n        for (int i = 1; i <= s.length(); i++) {\n            for (int j = 0; j < i; j++) {\n                if (dp[j] && dict.contains(s.substring(j, i))) {\n                    dp[i] = true;\n                    break;\n                }\n            }\n        }\n        System.out.println(dp[s.length()] ? \"true\" : \"false\");\n    }\n}\n",
+    "c": "#include <stdio.h>\n#include <string.h>\n\nchar dict[1005][50];\nint dictCount;\nint dp[305];\n\nint in_dict(const char *sub, int len) {\n    for (int i = 0; i < dictCount; i++) {\n        if ((int)strlen(dict[i]) == len && strncmp(dict[i], sub, len) == 0) {\n            return 1;\n        }\n    }\n    return 0;\n}\n\nint main() {\n    char s[305];\n    if (scanf(\"%s\", s) != 1) return 0;\n    if (scanf(\"%d\", &dictCount) != 1) return 0;\n    for (int i = 0; i < dictCount; i++) scanf(\"%s\", dict[i]);\n    int sLen = strlen(s);\n    dp[0] = 1;\n    for (int i = 1; i <= sLen; i++) {\n        for (int j = 0; j < i; j++) {\n            if (dp[j] && in_dict(s + j, i - j)) {\n                dp[i] = 1;\n                break;\n            }\n        }\n    }\n    printf(\"%s\\n\", dp[sLen] ? \"true\" : \"false\");\n    return 0;\n}\n"
+  }
+}

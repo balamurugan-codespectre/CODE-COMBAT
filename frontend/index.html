@@ -487,22 +487,101 @@
 
     <!-- VIEW 6: ADMIN PANEL -->
     <section id="view-admin" class="view-section">
-      <div style="max-width: 900px; margin: 1.5rem auto;">
-        <div class="panel" style="padding:1.5rem; margin-bottom:1.5rem;">
-          <h2 style="margin-bottom:1rem; color:#fff;">Admin Control Portal</h2>
-          <div style="display:flex; gap:1rem; flex-wrap:wrap;">
-            <button class="btn btn-secondary" onclick="Admin.exportAllJSON()">📦 Full JSON Backup</button>
-            <button class="btn btn-secondary" onclick="App.exportLeaderboardCSV()">📊 Download Leaderboard CSV</button>
-            <button class="btn btn-danger" onclick="Admin.resetCompetition()">⚠️ Reset Competition Data</button>
+      <div style="max-width: 900px; margin: 1.5rem auto; display: flex; flex-direction: column; gap: 1.5rem;">
+        
+        <!-- Header & Quick Actions -->
+        <div class="panel" style="padding:1.5rem;">
+          <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:1rem; margin-bottom:1rem;">
+            <div>
+              <h2 style="color:#fff; margin-bottom:0.25rem;">Admin Control Portal</h2>
+              <p style="color:var(--text-secondary); font-size:0.85rem;">Manage problem sets, admin credentials, data exports, and competition state.</p>
+            </div>
+            <div style="display:flex; gap:0.75rem; flex-wrap:wrap;">
+              <button class="btn btn-secondary" onclick="Admin.exportAllJSON()">📦 Full JSON Backup</button>
+              <button class="btn btn-secondary" onclick="App.exportLeaderboardCSV()">📊 Export CSV</button>
+            </div>
           </div>
         </div>
 
+        <!-- 1. Problem Set Switcher -->
+        <div class="panel" style="padding:1.5rem; border-left:4px solid var(--accent-cyan);">
+          <h3 style="color:var(--accent-cyan); font-size:1.1rem; margin-bottom:0.5rem; display:flex; align-items:center; gap:0.5rem;">
+            <span>🔄</span> Problem Set Switcher
+          </h3>
+          <p style="color:var(--text-secondary); font-size:0.85rem; margin-bottom:1rem;">
+            Switch between Problem Set 1 (Classic Challenges) and Problem Set 2 (Advanced Challenges). Each set contains 15 curated Easy, Medium, and Hard problems.
+          </p>
+
+          <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(280px, 1fr)); gap:1rem; align-items:end;">
+            <div>
+              <label style="display:block; font-size:0.85rem; color:var(--text-secondary); margin-bottom:0.35rem; font-weight:600;">Active Problem Set:</label>
+              <select id="admin-set-select" class="form-control" style="background:var(--bg-primary); width:100%;">
+                <option value="set1">Problem Set 1 (Classic Challenges - 15 Problems)</option>
+                <option value="set2">Problem Set 2 (Advanced Challenges - 15 Problems)</option>
+              </select>
+            </div>
+            <div>
+              <label style="display:block; font-size:0.85rem; color:var(--text-secondary); margin-bottom:0.35rem; font-weight:600;">Admin Password:</label>
+              <input type="password" id="admin-set-pass" class="form-control" placeholder="Enter admin password..." style="width:100%;">
+            </div>
+          </div>
+
+          <div style="margin-top:1rem; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:1rem;">
+            <label style="display:flex; align-items:center; gap:0.5rem; color:var(--text-primary); font-size:0.85rem; cursor:pointer;">
+              <input type="checkbox" id="admin-set-reset-check" checked style="accent-color:var(--accent-cyan);">
+              <span>Reset participant scores and submissions on switch</span>
+            </label>
+            <button class="btn btn-primary" onclick="Admin.switchProblemSet()">⚡ Switch Problem Set</button>
+          </div>
+        </div>
+
+        <!-- 2. Change Admin Password -->
+        <div class="panel" style="padding:1.5rem; border-left:4px solid var(--accent-green);">
+          <h3 style="color:var(--accent-green); font-size:1.1rem; margin-bottom:0.5rem; display:flex; align-items:center; gap:0.5rem;">
+            <span>🔒</span> Change Admin Password
+          </h3>
+          <p style="color:var(--text-secondary); font-size:0.85rem; margin-bottom:1rem;">
+            Update the administrator password used for resets, set switching, and portal access.
+          </p>
+
+          <form onsubmit="Admin.handleChangePassword(event)" style="display:grid; grid-template-columns:repeat(auto-fit, minmax(220px, 1fr)); gap:1rem; align-items:end;">
+            <div>
+              <label style="display:block; font-size:0.85rem; color:var(--text-secondary); margin-bottom:0.35rem; font-weight:600;">Current Password:</label>
+              <input type="password" id="admin-curr-pass" class="form-control" placeholder="Current password" required style="width:100%;">
+            </div>
+            <div>
+              <label style="display:block; font-size:0.85rem; color:var(--text-secondary); margin-bottom:0.35rem; font-weight:600;">New Password:</label>
+              <input type="password" id="admin-new-pass" class="form-control" placeholder="New password (min 4 chars)" required style="width:100%;">
+            </div>
+            <div>
+              <label style="display:block; font-size:0.85rem; color:var(--text-secondary); margin-bottom:0.35rem; font-weight:600;">Confirm New Password:</label>
+              <input type="password" id="admin-confirm-pass" class="form-control" placeholder="Confirm new password" required style="width:100%;">
+            </div>
+            <div>
+              <button type="submit" class="btn btn-secondary" style="width:100%; font-weight:600; color:var(--accent-green); border-color:var(--accent-green);">Save New Password</button>
+            </div>
+          </form>
+        </div>
+
+        <!-- 3. Full Competition Reset -->
+        <div class="panel" style="padding:1.5rem; border-left:4px solid var(--accent-red); background:rgba(239,68,68,0.04);">
+          <h3 style="color:var(--accent-red); font-size:1.1rem; margin-bottom:0.5rem; display:flex; align-items:center; gap:0.5rem;">
+            <span>⚠️</span> Danger Zone: Wipe Competition Data
+          </h3>
+          <p style="color:var(--text-secondary); font-size:0.85rem; margin-bottom:1rem;">
+            Permanently deletes all registered participants, solved problems, total points, submission histories, and leaderboard standings across both SQLite and JSON mirrors.
+          </p>
+          <button class="btn btn-danger" onclick="Admin.resetCompetition()">⚠️ Reset All Competition Data (Wipe Points & Submissions)</button>
+        </div>
+
+        <!-- 4. System Diagnostics -->
         <div class="panel" style="padding:1.5rem;">
-          <h3 style="margin-bottom:1rem;">System Diagnostic Status</h3>
+          <h3 style="margin-bottom:0.75rem; font-size:1rem; color:#fff;">System Diagnostic Status</h3>
           <div id="admin-health-status" style="font-family:var(--font-mono); font-size:0.9rem; color:var(--accent-cyan);">
             Checking health...
           </div>
         </div>
+
       </div>
     </section>
 

@@ -1,0 +1,4 @@
+INPUT:
+The quick brown fox jumps over the lazy dog
+EXPECTED:
+god yzal eht revo spmuj xof nworb kciuq ehT

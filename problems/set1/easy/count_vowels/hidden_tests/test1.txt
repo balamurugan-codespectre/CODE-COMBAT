@@ -1,0 +1,4 @@
+INPUT:
+bcdfg hjklmn pqrst vwxyz
+EXPECTED:
+0

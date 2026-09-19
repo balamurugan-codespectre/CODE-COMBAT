@@ -28,6 +28,11 @@ class Auth:
             self.admin_password.encode("utf-8")
         )
 
+    def update_admin_password(self, new_password: str):
+        """Updates runtime admin password."""
+        self.admin_password = str(new_password).strip()
+        self.config["admin_password"] = self.admin_password
+
     def create_session_token(self, participant_id: str, participant_name: str, expiry_hours: int = 12) -> str:
         """Creates a tamper-proof HMAC-signed session token."""
         payload = {

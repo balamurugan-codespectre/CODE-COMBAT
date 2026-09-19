@@ -1,0 +1,6 @@
+INPUT:
+aaaaaaa
+2
+aaaa aaa
+EXPECTED:
+true

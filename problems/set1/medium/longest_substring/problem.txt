@@ -1,0 +1,40 @@
+# Longest Substring Without Repeating Characters [Medium - 200 pts]
+
+## Category
+Sliding Window
+
+## Description
+Given a string `s`, find the length of the longest substring without repeating characters.
+
+## Input Format
+A single line containing string `s`.
+
+## Output Format
+Print the maximum length.
+
+## Constraints
+0 <= s.length <= 10^5
+
+## Examples (Visible 2 of 5)
+
+### Example 1
+Input:
+```
+abcabcbb
+```
+Output:
+```
+3
+```
+Explanation: The answer is 'abc', with length of 3.
+
+### Example 2
+Input:
+```
+bbbbb
+```
+Output:
+```
+1
+```
+Explanation: The answer is 'b', with length of 1.

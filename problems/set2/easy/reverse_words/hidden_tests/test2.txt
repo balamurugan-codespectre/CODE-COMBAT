@@ -1,0 +1,4 @@
+INPUT:
+competitive offline coding arena
+EXPECTED:
+arena coding offline competitive

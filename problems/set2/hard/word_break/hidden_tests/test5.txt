@@ -1,0 +1,6 @@
+INPUT:
+abcdef
+3
+ab cd ef
+EXPECTED:
+true

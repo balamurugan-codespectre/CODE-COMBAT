@@ -1,0 +1,5 @@
+INPUT:
+8
+art rat tar star rats tsar arts tarts
+EXPECTED:
+3

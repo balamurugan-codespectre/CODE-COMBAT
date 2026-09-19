@@ -1,0 +1,6 @@
+INPUT:
+goalspecial
+2
+goal special
+EXPECTED:
+true

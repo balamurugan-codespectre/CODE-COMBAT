@@ -1,0 +1,6 @@
+INPUT:
+cat dog
+5
+cot cog dog lot log
+EXPECTED:
+4

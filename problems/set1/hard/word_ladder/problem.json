@@ -1,0 +1,67 @@
+{
+  "tier": "hard",
+  "id": "word_ladder",
+  "title": "Word Ladder",
+  "difficulty": "Hard",
+  "points": 300,
+  "time_limit": 3.0,
+  "category": "BFS & Graphs",
+  "description": "Given two words, `beginWord` and `endWord`, and a dictionary of words `wordList`, return the number of words in the shortest transformation sequence from `beginWord` to `endWord`, such that:\n1. Only one letter can be changed at a time.\n2. Each transformed word must exist in the word list.\n\nIf no such transformation sequence exists, return `0`.",
+  "input_format": "The first line contains `beginWord` and `endWord`.\nThe second line contains `N`, the size of `wordList`.\nThe third line contains `N` space-separated words in `wordList`.",
+  "output_format": "Print the length of the shortest transformation sequence.",
+  "constraints": "1 <= beginWord.length <= 10\n1 <= wordList.length <= 5000\nAll words have the same length.",
+  "sample_tests": [
+    {
+      "input": "hit cog\n6\nhot dot dog lot log cog",
+      "output": "5",
+      "explanation": "Shortest sequence: 'hit' -> 'hot' -> 'dot' -> 'dog' -> 'cog' (length 5)."
+    },
+    {
+      "input": "hit cog\n5\nhot dot dog lot log",
+      "output": "0",
+      "explanation": "The endWord 'cog' is not in wordList, therefore no valid sequence."
+    },
+    {
+      "input": "hot dog\n3\nhot dot dog",
+      "output": "3",
+      "explanation": "'hot' -> 'dot' -> 'dog' has length 3."
+    },
+    {
+      "input": "a c\n3\na b c",
+      "output": "2",
+      "explanation": "'a' -> 'c' direct change has length 2."
+    },
+    {
+      "input": "red tax\n3\nted tex tax",
+      "output": "4",
+      "explanation": "'red' -> 'ted' -> 'tex' -> 'tax' has length 4."
+    }
+  ],
+  "starter_code": {
+    "python": "import sys\nfrom collections import deque\n\ndef solve():\n    lines = sys.stdin.read().split()\n    if not lines:\n        return\n    begin_word = lines[0]\n    end_word = lines[1]\n    n = int(lines[2])\n    word_set = set(lines[3:3+n])\n    \n    if end_word not in word_set:\n        print(0)\n        return\n        \n    queue = deque([(begin_word, 1)])\n    visited = {begin_word}\n    \n    while queue:\n        word, length = queue.popleft()\n        if word == end_word:\n            print(length)\n            return\n        for i in range(len(word)):\n            for c in 'abcdefghijklmnopqrstuvwxyz':\n                next_word = word[:i] + c + word[i+1:]\n                if next_word in word_set and next_word not in visited:\n                    visited.add(next_word)\n                    queue.append((next_word, length + 1))\n    print(0)\n\nif __name__ == '__main__':\n    solve()\n",
+    "java": "import java.util.*;\n\npublic class Solution {\n    public static void main(String[] args) {\n        Scanner sc = new Scanner(System.in);\n        if (!sc.hasNext()) return;\n        String beginWord = sc.next();\n        String endWord = sc.next();\n        int n = sc.nextInt();\n        Set<String> wordSet = new HashSet<>();\n        for (int i = 0; i < n; i++) wordSet.add(sc.next());\n        if (!wordSet.contains(endWord)) { System.out.println(0); return; }\n        \n        Queue<String> q = new LinkedList<>();\n        q.add(beginWord);\n        Set<String> visited = new HashSet<>();\n        visited.add(beginWord);\n        int level = 1;\n        \n        while (!q.isEmpty()) {\n            int sz = q.size();\n            for (int k = 0; k < sz; k++) {\n                String word = q.poll();\n                if (word.equals(endWord)) {\n                    System.out.println(level);\n                    return;\n                }\n                char[] chs = word.toCharArray();\n                for (int i = 0; i < chs.length; i++) {\n                    char orig = chs[i];\n                    for (char c = 'a'; c <= 'z'; c++) {\n                        chs[i] = c;\n                        String next = new String(chs);\n                        if (wordSet.contains(next) && !visited.contains(next)) {\n                            visited.add(next);\n                            q.add(next);\n                        }\n                    }\n                    chs[i] = orig;\n                }\n            }\n            level++;\n        }\n        System.out.println(0);\n    }\n}\n",
+    "c": "#include <stdio.h>\n#include <string.h>\n#include <stdbool.h>\n\nchar wordList[5005][12];\nbool visited[5005];\nint queue[5005];\nint dist[5005];\n\nbool can_transform(char *a, char *b, int len) {\n    int diff = 0;\n    for (int i = 0; i < len; i++) {\n        if (a[i] != b[i]) { diff++; if (diff > 1) return false; }\n    }\n    return diff == 1;\n}\n\nint main() {\n    char begin[12], end[12];\n    if (scanf(\"%s %s\", begin, end) != 2) return 0;\n    int n;\n    if (scanf(\"%d\", &n) != 1) return 0;\n    int end_idx = -1;\n    for (int i = 0; i < n; i++) {\n        scanf(\"%s\", wordList[i]);\n        if (strcmp(wordList[i], end) == 0) end_idx = i;\n    }\n    if (end_idx == -1) { printf(\"0\\n\"); return 0; }\n    \n    int len = strlen(begin);\n    int head = 0, tail = 0;\n    for (int i = 0; i < n; i++) {\n        if (can_transform(begin, wordList[i], len)) {\n            visited[i] = true;\n            dist[i] = 2;\n            queue[tail++] = i;\n        }\n    }\n    while (head < tail) {\n        int cur = queue[head++];\n        if (cur == end_idx) {\n            printf(\"%d\\n\", dist[cur]);\n            return 0;\n        }\n        for (int i = 0; i < n; i++) {\n            if (!visited[i] && can_transform(wordList[cur], wordList[i], len)) {\n                visited[i] = true;\n                dist[i] = dist[cur] + 1;\n                queue[tail++] = i;\n            }\n        }\n    }\n    printf(\"0\\n\");\n    return 0;\n}\n"
+  },
+  "hidden_tests": [
+    {
+      "input": "a b\n1\nb",
+      "output": "2"
+    },
+    {
+      "input": "game over\n4\ngame fame fave over",
+      "output": "0"
+    },
+    {
+      "input": "cat dog\n5\ncot cog dog lot log",
+      "output": "4"
+    },
+    {
+      "input": "lead gold\n4\nload goad gold lead",
+      "output": "4"
+    },
+    {
+      "input": "talk tail\n4\ntalk tall toil tail",
+      "output": "3"
+    }
+  ]
+}

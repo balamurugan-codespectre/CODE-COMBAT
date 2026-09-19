@@ -1,0 +1,66 @@
+{
+  "id": "rotate_matrix",
+  "title": "Rotate Matrix 90 Degrees",
+  "difficulty": "Medium",
+  "points": 200,
+  "category": "Matrix",
+  "time_limit": 2.0,
+  "description": "You are given an n x n 2D matrix representing an image. Rotate the matrix by 90 degrees (clockwise).\nPrint the rotated matrix row by row with space-separated values.",
+  "input_format": "Line 1: An integer n.\nNext n lines: n space-separated integers per row.",
+  "output_format": "Print the rotated matrix of size n x n.",
+  "constraints": "1 <= n <= 50\n-1000 <= matrix[i][j] <= 1000",
+  "sample_tests": [
+    {
+      "input": "3\n1 2 3\n4 5 6\n7 8 9",
+      "output": "7 4 1\n8 5 2\n9 6 3",
+      "explanation": "Standard 3x3 clockwise rotation."
+    },
+    {
+      "input": "2\n1 2\n3 4",
+      "output": "3 1\n4 2",
+      "explanation": "2x2 rotation."
+    },
+    {
+      "input": "1\n42",
+      "output": "42",
+      "explanation": "1x1 matrix remains unchanged."
+    },
+    {
+      "input": "3\n5 1 9\n2 4 8\n13 3 6",
+      "output": "13 2 5\n3 4 1\n6 8 9",
+      "explanation": "Clockwise rotation."
+    },
+    {
+      "input": "2\n10 20\n30 40",
+      "output": "30 10\n40 20",
+      "explanation": "Clockwise rotation."
+    }
+  ],
+  "hidden_tests": [
+    {
+      "input": "4\n1 2 3 4\n5 6 7 8\n9 10 11 12\n13 14 15 16",
+      "output": "13 9 5 1\n14 10 6 2\n15 11 7 3\n16 12 8 4"
+    },
+    {
+      "input": "3\n0 0 0\n1 1 1\n2 2 2",
+      "output": "2 1 0\n2 1 0\n2 1 0"
+    },
+    {
+      "input": "2\n-5 5\n-10 10",
+      "output": "-10 -5\n10 5"
+    },
+    {
+      "input": "1\n-99",
+      "output": "-99"
+    },
+    {
+      "input": "3\n1 0 0\n0 1 0\n0 0 1",
+      "output": "0 0 1\n0 1 0\n1 0 0"
+    }
+  ],
+  "starter_code": {
+    "python": "import sys\n\ndef solve():\n    data = sys.stdin.read().split()\n    if not data:\n        return\n    n = int(data[0])\n    idx = 1\n    mat = []\n    for _ in range(n):\n        mat.append([int(x) for x in data[idx:idx+n]])\n        idx += n\n    for col in range(n):\n        row_vals = [str(mat[row][col]) for row in range(n - 1, -1, -1)]\n        print(\" \".join(row_vals))\n\nif __name__ == '__main__':\n    solve()\n",
+    "java": "import java.util.*;\n\npublic class Solution {\n    public static void main(String[] args) {\n        Scanner sc = new Scanner(System.in);\n        if (!sc.hasNextInt()) return;\n        int n = sc.nextInt();\n        int[][] mat = new int[n][n];\n        for (int i = 0; i < n; i++) {\n            for (int j = 0; j < n; j++) {\n                mat[i][j] = sc.nextInt();\n            }\n        }\n        for (int col = 0; col < n; col++) {\n            StringBuilder sb = new StringBuilder();\n            for (int row = n - 1; row >= 0; row--) {\n                sb.append(mat[row][col]).append(row > 0 ? \" \" : \"\");\n            }\n            System.out.println(sb.toString());\n        }\n    }\n}\n",
+    "c": "#include <stdio.h>\n\nint mat[55][55];\n\nint main() {\n    int n;\n    if (scanf(\"%d\", &n) != 1) return 0;\n    for (int i = 0; i < n; i++) {\n        for (int j = 0; j < n; j++) {\n            scanf(\"%d\", &mat[i][j]);\n        }\n    }\n    for (int col = 0; col < n; col++) {\n        for (int row = n - 1; row >= 0; row--) {\n            printf(\"%d%s\", mat[row][col], row > 0 ? \" \" : \"\");\n        }\n        printf(\"\\n\");\n    }\n    return 0;\n}\n"
+  }
+}

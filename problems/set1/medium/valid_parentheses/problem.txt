@@ -1,0 +1,46 @@
+# Valid Parentheses [Medium - 200 pts]
+
+## Category
+Stack
+
+## Description
+Given a string `s` containing just the characters `'('`, `')'`, `'{'`, `'}'`, `'['` and `']'`, determine if the input string is valid.
+
+An input string is valid if:
+1. Open brackets must be closed by the same type of brackets.
+2. Open brackets must be closed in the correct order.
+3. Every close bracket has a corresponding open bracket of the same type.
+
+## Input Format
+A single line containing the bracket string `s`.
+
+## Output Format
+Print `true` if valid, otherwise `false`.
+
+## Constraints
+1 <= s.length <= 10^5
+`s` consists of parentheses only `'()[]{}'`.
+
+## Examples (Visible 2 of 5)
+
+### Example 1
+Input:
+```
+()
+```
+Output:
+```
+true
+```
+Explanation: Properly matched simple parentheses.
+
+### Example 2
+Input:
+```
+()[]{}
+```
+Output:
+```
+true
+```
+Explanation: All types closed in order.

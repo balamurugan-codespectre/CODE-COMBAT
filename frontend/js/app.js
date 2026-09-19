@@ -77,7 +77,10 @@ const App = {
 
     if (viewId === 'problems') this.loadProblems();
     if (viewId === 'leaderboard') this.loadLeaderboard();
-    if (viewId === 'admin') Admin.checkHealth();
+    if (viewId === 'admin') {
+      Admin.loadSets();
+      Admin.checkHealth();
+    }
   },
 
   logout() {

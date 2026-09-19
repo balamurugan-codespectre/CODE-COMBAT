@@ -46,15 +46,24 @@ class Executor:
         env["PYTHONDONTWRITEBYTECODE"] = "1"
 
         try:
-            process = subprocess.Popen(
-                cmd,
-                cwd=work_dir,
-                stdin=subprocess.PIPE,
-                stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE,
-                text=True,
-                env=env
-            )
+            process = None
+            for attempt in range(4):
+                try:
+                    process = subprocess.Popen(
+                        cmd,
+                        cwd=work_dir,
+                        stdin=subprocess.PIPE,
+                        stdout=subprocess.PIPE,
+                        stderr=subprocess.PIPE,
+                        text=True,
+                        env=env
+                    )
+                    break
+                except (PermissionError, OSError) as pe:
+                    if attempt < 3 and sys.platform.startswith("win"):
+                        time.sleep(0.06 * (attempt + 1))
+                    else:
+                        raise pe
 
             try:
                 stdout_data, stderr_data = process.communicate(

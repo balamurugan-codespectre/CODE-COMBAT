@@ -1,0 +1,66 @@
+{
+  "id": "valid_parentheses",
+  "title": "Valid Parentheses",
+  "difficulty": "Easy",
+  "points": 100,
+  "category": "Stack",
+  "time_limit": 2.0,
+  "description": "Given a string containing just the characters '(', ')', '{', '}', '[' and ']', determine if the input string is valid.\n\nAn input string is valid if:\n1. Open brackets must be closed by the same type of brackets.\n2. Open brackets must be closed in the correct order.\n3. Every close bracket has a corresponding open bracket of the same type.",
+  "input_format": "A single line containing the bracket string.",
+  "output_format": "Print 'true' if valid, else 'false'.",
+  "constraints": "1 <= s.length <= 10^4\ns consists of parentheses only '()[]{}'.",
+  "sample_tests": [
+    {
+      "input": "()",
+      "output": "true",
+      "explanation": "Simple matching parentheses pair."
+    },
+    {
+      "input": "()[]{}",
+      "output": "true",
+      "explanation": "Multiple valid matching pairs in sequence."
+    },
+    {
+      "input": "(]",
+      "output": "false",
+      "explanation": "Mismatched bracket types."
+    },
+    {
+      "input": "([{}])",
+      "output": "true",
+      "explanation": "Nested valid matching brackets."
+    },
+    {
+      "input": "[(])",
+      "output": "false",
+      "explanation": "Improperly nested brackets."
+    }
+  ],
+  "hidden_tests": [
+    {
+      "input": "{[]}",
+      "output": "true"
+    },
+    {
+      "input": "((((((",
+      "output": "false"
+    },
+    {
+      "input": "))))))",
+      "output": "false"
+    },
+    {
+      "input": "(){}[([])]",
+      "output": "true"
+    },
+    {
+      "input": "{[()()]()}",
+      "output": "true"
+    }
+  ],
+  "starter_code": {
+    "python": "import sys\n\ndef solve():\n    s = sys.stdin.read().strip()\n    if not s:\n        print(\"true\")\n        return\n    stack = []\n    mapping = {')': '(', '}': '{', ']': '['}\n    for char in s:\n        if char in mapping.values():\n            stack.append(char)\n        elif char in mapping:\n            if not stack or stack[-1] != mapping[char]:\n                print(\"false\")\n                return\n            stack.pop()\n    print(\"true\" if len(stack) == 0 else \"false\")\n\nif __name__ == '__main__':\n    solve()\n",
+    "java": "import java.util.*;\n\npublic class Solution {\n    public static void main(String[] args) {\n        Scanner sc = new Scanner(System.in);\n        if (!sc.hasNext()) {\n            System.out.println(\"true\");\n            return;\n        }\n        String s = sc.next();\n        Stack<Character> stack = new Stack<>();\n        for (char c : s.toCharArray()) {\n            if (c == '(' || c == '{' || c == '[') {\n                stack.push(c);\n            } else {\n                if (stack.isEmpty()) {\n                    System.out.println(\"false\");\n                    return;\n                }\n                char top = stack.pop();\n                if (c == ')' && top != '(') { System.out.println(\"false\"); return; }\n                if (c == '}' && top != '{') { System.out.println(\"false\"); return; }\n                if (c == ']' && top != '[') { System.out.println(\"false\"); return; }\n            }\n        }\n        System.out.println(stack.isEmpty() ? \"true\" : \"false\");\n    }\n}\n",
+    "c": "#include <stdio.h>\n#include <string.h>\n\nint main() {\n    char s[10005];\n    if (scanf(\"%s\", s) != 1) {\n        printf(\"true\\n\");\n        return 0;\n    }\n    char stack[10005];\n    int top = -1;\n    for (int i = 0; s[i] != '\\0'; i++) {\n        char c = s[i];\n        if (c == '(' || c == '{' || c == '[') {\n            stack[++top] = c;\n        } else {\n            if (top < 0) {\n                printf(\"false\\n\");\n                return 0;\n            }\n            char open = stack[top--];\n            if (c == ')' && open != '(') { printf(\"false\\n\"); return 0; }\n            if (c == '}' && open != '{') { printf(\"false\\n\"); return 0; }\n            if (c == ']' && open != '[') { printf(\"false\\n\"); return 0; }\n        }\n    }\n    printf(\"%s\\n\", top == -1 ? \"true\" : \"false\");\n    return 0;\n}\n"
+  }
+}

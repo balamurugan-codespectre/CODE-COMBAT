@@ -1,0 +1,6 @@
+INPUT:
+lead gold
+4
+load goad gold lead
+EXPECTED:
+4

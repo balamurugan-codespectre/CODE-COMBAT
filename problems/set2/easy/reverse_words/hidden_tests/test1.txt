@@ -1,0 +1,4 @@
+INPUT:
+data structures and algorithms
+EXPECTED:
+algorithms and structures data

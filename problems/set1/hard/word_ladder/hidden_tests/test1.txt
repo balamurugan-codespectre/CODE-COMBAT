@@ -1,0 +1,6 @@
+INPUT:
+a b
+1
+b
+EXPECTED:
+2

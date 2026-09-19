@@ -1,0 +1,4 @@
+INPUT:
+one two three four five
+EXPECTED:
+five four three two one

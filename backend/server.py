@@ -208,6 +208,7 @@ class CodeCombatHandler(BaseHTTPRequestHandler):
                     "java": bool(java_comp),
                     "java_compiler": java_comp or "None"
                 },
+                "active_problem_set": self.problems_manager.active_set,
                 "total_problems": len(self.problems_manager.problems),
                 "timestamp": datetime.datetime.now().isoformat()
             })
@@ -275,6 +276,15 @@ class CodeCombatHandler(BaseHTTPRequestHandler):
                 self.send_json({"participant": p})
             else:
                 self.send_error_json("Participant not found", 404)
+            return
+
+        # GET /api/admin/sets
+        if path in ["/api/admin/sets", "/api/sets"]:
+            sets = self.problems_manager.get_available_sets()
+            self.send_json({
+                "sets": sets,
+                "active_set": self.problems_manager.active_set
+            })
             return
 
         # GET /api/admin/export
@@ -461,6 +471,70 @@ class CodeCombatHandler(BaseHTTPRequestHandler):
 
             self.storage.reset_competition()
             self.send_json({"success": True, "message": "Competition data has been completely reset."})
+            return
+
+        # POST /api/admin/switch-set
+        if path == "/api/admin/switch-set":
+            password = body.get("password", "")
+            if not self.auth.verify_admin_password(password):
+                self.send_error_json("Unauthorized. Invalid admin password.", 401)
+                return
+
+            set_id = body.get("set_id", "set1").strip().lower()
+            reset_data = body.get("reset_data", True)
+
+            switched = self.problems_manager.switch_set(set_id)
+            if not switched:
+                self.send_error_json(f"Problem set '{set_id}' not found.", 404)
+                return
+
+            self.config["active_problem_set"] = set_id
+            config_path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "config.json")
+            if os.path.exists(config_path):
+                try:
+                    with open(config_path, "w", encoding="utf-8") as f:
+                        json.dump(self.config, f, indent=2)
+                except Exception:
+                    pass
+
+            if reset_data:
+                self.storage.reset_competition()
+
+            self.send_json({
+                "success": True,
+                "active_set": set_id,
+                "total_problems": len(self.problems_manager.problems),
+                "message": f"Successfully activated {set_id.upper()} ({len(self.problems_manager.problems)} problems)."
+            })
+            return
+
+        # POST /api/admin/change-password
+        if path == "/api/admin/change-password":
+            old_password = body.get("old_password", "")
+            new_password = body.get("new_password", "").strip()
+
+            if not self.auth.verify_admin_password(old_password):
+                self.send_error_json("Current admin password is incorrect.", 401)
+                return
+
+            if not new_password or len(new_password) < 4:
+                self.send_error_json("New password must be at least 4 characters long.", 400)
+                return
+
+            self.auth.update_admin_password(new_password)
+            self.config["admin_password"] = new_password
+            config_path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "config.json")
+            if os.path.exists(config_path):
+                try:
+                    with open(config_path, "w", encoding="utf-8") as f:
+                        json.dump(self.config, f, indent=2)
+                except Exception:
+                    pass
+
+            self.send_json({
+                "success": True,
+                "message": "Admin password updated successfully."
+            })
             return
 
         self.send_error_json("API route not found", 404)

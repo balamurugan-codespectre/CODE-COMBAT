@@ -251,6 +251,34 @@ def run_tests():
     storage.reset_competition()
 
     # ---------------------------------------------------------
+    # TEST 8: Problem Set Switching & Admin Password Management
+    # ---------------------------------------------------------
+    print("\n--- [Phase 8: Problem Set Switching & Password Management] ---")
+    available_sets = problems_mgr.get_available_sets()
+    assert_test("Multiple Problem Sets Available (Set 1 & Set 2)", len(available_sets) >= 2)
+
+    # Switch to Set 2
+    switched_to_set2 = problems_mgr.switch_set("set2")
+    set2_problems = problems_mgr.get_problem_list()
+    assert_test("Switched to Problem Set 2", switched_to_set2 and problems_mgr.active_set == "set2")
+    assert_test("Set 2 contains 15 valid problems", len(set2_problems) == 15)
+
+    # Switch back to Set 1
+    switched_to_set1 = problems_mgr.switch_set("set1")
+    set1_problems = problems_mgr.get_problem_list()
+    assert_test("Switched back to Problem Set 1", switched_to_set1 and problems_mgr.active_set == "set1")
+    assert_test("Set 1 contains 15 valid problems", len(set1_problems) == 15)
+
+    # Password Update
+    original_pass = config.get("admin_password", "admin123")
+    auth.update_admin_password("new_secure_pass_456")
+    assert_test("New Admin Password Accepted", auth.verify_admin_password("new_secure_pass_456"))
+    assert_test("Old Admin Password Rejected", not auth.verify_admin_password(original_pass))
+    # Revert password
+    auth.update_admin_password(original_pass)
+    assert_test("Admin Password Reverted Successfully", auth.verify_admin_password(original_pass))
+
+    # ---------------------------------------------------------
     # FINAL SUMMARY
     # ---------------------------------------------------------
     print("\n======================================================================")

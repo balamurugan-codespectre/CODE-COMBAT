@@ -1,0 +1,6 @@
+INPUT:
+cars
+2
+car ca
+EXPECTED:
+false
