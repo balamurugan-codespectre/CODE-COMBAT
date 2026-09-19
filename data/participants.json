@@ -1,23 +1,23 @@
 [
   {
-    "id": "user_8fc89f47",
+    "id": "user_8806985e",
     "name": "Alice Smith",
     "college": "Oxford University",
     "reg_no": "OX101",
     "score": 300,
-    "registered_at": "2026-09-19T23:14:45.394169",
+    "registered_at": "2026-09-19T23:18:23.991644",
     "solved_problems": [
-      "two_sum",
-      "maximum_subarray"
+      "maximum_subarray",
+      "two_sum"
     ]
   },
   {
-    "id": "user_81c58281",
+    "id": "user_97852bc1",
     "name": "Bob Johnson",
     "college": "Cambridge",
     "reg_no": "CB202",
     "score": 100,
-    "registered_at": "2026-09-19T23:14:45.410025",
+    "registered_at": "2026-09-19T23:18:24.005726",
     "solved_problems": [
       "two_sum"
     ]

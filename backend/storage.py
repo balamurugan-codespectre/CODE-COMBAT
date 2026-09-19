@@ -218,6 +218,12 @@ class Storage:
                 now = datetime.datetime.now().isoformat()
 
                 with conn:
+                    # Guarantee participant existence
+                    conn.execute("""
+                        INSERT OR IGNORE INTO participants (id, name, college, reg_no, score, registered_at)
+                        VALUES (?, ?, 'N/A', 'N/A', 0, ?)
+                    """, (participant_id, participant_name or "Anonymous", now))
+
                     conn.execute("""
                         INSERT INTO submissions (
                             id, participant_id, participant_name, problem_id, problem_title,

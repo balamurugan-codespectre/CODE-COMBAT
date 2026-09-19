@@ -90,10 +90,15 @@ class ProblemsManager:
         Returns sanitized problem details including visible sample tests and starter codes.
         NEVER returns hidden tests.
         """
-        if problem_id not in self.problems:
+        clean_id = (problem_id or "").strip().lower()
+        if clean_id in self.problems:
+            raw = self.problems[clean_id]
+        else:
+            raw = next((p for p in self.problems.values() if p.get("id", "").lower() == clean_id or p.get("slug", "").lower() == clean_id or p.get("title", "").lower().replace(" ", "_") == clean_id), None)
+
+        if not raw:
             return None
 
-        raw = self.problems[problem_id]
         return {
             "id": raw.get("id"),
             "title": raw.get("title"),
@@ -111,7 +116,13 @@ class ProblemsManager:
 
     def get_hidden_tests_dir(self, problem_id: str) -> Optional[str]:
         """Internal judge accessor to locate the server-side hidden test directory."""
-        return self.hidden_dirs.get(problem_id)
+        clean_id = (problem_id or "").strip().lower()
+        if clean_id in self.hidden_dirs:
+            return self.hidden_dirs[clean_id]
+        raw = next((p for p in self.problems.values() if p.get("id", "").lower() == clean_id or p.get("slug", "").lower() == clean_id), None)
+        if raw and raw.get("id") in self.hidden_dirs:
+            return self.hidden_dirs[raw["id"]]
+        return None
 
     def save_problem(self, problem_data: Dict[str, Any], hidden_tests: Optional[List[Dict[str, str]]] = None) -> bool:
         """Admin helper to create or update a problem and its test cases."""

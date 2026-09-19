@@ -233,6 +233,10 @@ const App = {
     btn.disabled = true;
     btn.textContent = 'Running...';
 
+    const customStdin = document.getElementById('custom-stdin')?.value || '';
+    const activeTab = document.querySelector('.tabs-header .tab-btn.active')?.textContent || '';
+    const isCustom = activeTab.includes('Custom');
+
     try {
       const res = await fetch('/api/run', {
         method: 'POST',
@@ -240,21 +244,49 @@ const App = {
         body: JSON.stringify({
           problem_id: this.activeProblem.id,
           language: this.currentLanguage,
-          code: code
+          code: code,
+          custom_input: isCustom ? customStdin : undefined,
+          is_custom: isCustom
         })
       });
-      const data = await res.json();
-      const r = data.result;
+      const data = await res.json().catch(() => ({ error: 'Invalid server response' }));
 
+      if (!res.ok || data.error) {
+        const errorMsg = data.error || `Run failed (HTTP ${res.status})`;
+        document.getElementById('sample-tests-container').innerHTML = `
+          <div style="color:var(--accent-red); font-weight:700;">Run Error:</div>
+          <pre style="color:#ef4444; font-family:var(--font-mono); font-size:0.85rem; margin-top:0.5rem;">${errorMsg}</pre>
+        `;
+        this.switchOutputTab('sample-tests', document.querySelector('.tabs-header .tab-btn'));
+        this.showToast(errorMsg, 'error');
+        return;
+      }
+
+      if (data.is_custom) {
+        const r = data.result || {};
+        const outBox = document.getElementById('custom-stdout');
+        if (outBox) {
+          outBox.innerHTML = `
+            <div style="color:var(--accent-cyan); font-weight:700; margin-bottom:0.25rem;">Verdict: ${r.status || 'DONE'} (${r.runtime ? r.runtime.toFixed(3) : 0}s)</div>
+            ${r.stdout ? `<div style="color:#fff;"><strong>Stdout:</strong><pre style="margin-top:0.25rem; white-space:pre-wrap;">${r.stdout}</pre></div>` : ''}
+            ${r.stderr || r.error ? `<div style="color:var(--accent-red); margin-top:0.5rem;"><strong>Stderr:</strong><pre style="margin-top:0.25rem; white-space:pre-wrap;">${r.stderr || r.error}</pre></div>` : ''}
+          `;
+        }
+        this.switchOutputTab('custom-input', document.querySelectorAll('.tabs-header .tab-btn')[1]);
+        this.showToast(`Custom run completed (${r.status})`, 'info');
+        return;
+      }
+
+      const r = data.result || {};
       let html = '';
       if (r.status === 'COMPILATION_ERROR') {
-        html = `<div style="color:var(--accent-red); font-weight:700;">Compilation Error:</div><pre style="color:#ef4444; font-family:var(--font-mono); font-size:0.85rem; margin-top:0.5rem;">${r.error_message}</pre>`;
+        html = `<div style="color:var(--accent-red); font-weight:700;">Compilation Error:</div><pre style="color:#ef4444; font-family:var(--font-mono); font-size:0.85rem; margin-top:0.5rem; white-space:pre-wrap;">${r.error_message || 'Compilation failed.'}</pre>`;
       } else {
         html = (r.results || []).map(t => `
           <div style="background:var(--bg-primary); padding:0.6rem; border-radius:6px; margin-bottom:0.5rem; border-left:4px solid ${t.passed ? 'var(--accent-green)' : 'var(--accent-red)'};">
             <div style="display:flex; justify-content:space-between; font-weight:700;">
               <span>Sample Test #${t.test_num}</span>
-              <span style="color:${t.passed ? 'var(--accent-green)' : 'var(--accent-red)'};">${t.status} (${t.runtime}s)</span>
+              <span style="color:${t.passed ? 'var(--accent-green)' : 'var(--accent-red)'};">${t.status} (${typeof t.runtime === 'number' ? t.runtime.toFixed(3) : t.runtime}s)</span>
             </div>
             ${!t.passed ? `
               <div class="diff-view">
@@ -278,17 +310,28 @@ const App = {
   },
 
   async submitCode() {
-    if (!this.participant) {
+    if (!this.participant || !this.participant.id) {
       this.showToast('Please register first before submitting!', 'warning');
       this.navigate('register');
       return;
     }
-    if (!this.activeProblem) return;
+    if (!this.activeProblem) {
+      this.showToast('No active problem selected.', 'warning');
+      return;
+    }
 
     const code = this.editor.getValue();
+    if (!code || !code.trim()) {
+      this.showToast('Please write some code before submitting!', 'warning');
+      return;
+    }
+
     const btn = document.getElementById('btn-submit');
     btn.disabled = true;
     btn.textContent = 'Grading...';
+
+    const verdictEl = document.getElementById('submission-verdict-container');
+    const subTabBtn = document.querySelectorAll('.tabs-header .tab-btn')[2];
 
     try {
       const res = await fetch('/api/submit', {
@@ -296,43 +339,75 @@ const App = {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           participant_id: this.participant.id,
-          participant_name: this.participant.name,
+          participant_name: this.participant.name || 'Anonymous',
           problem_id: this.activeProblem.id,
           language: this.currentLanguage,
           code: code
         })
       });
-      const data = await res.json();
 
-      const verdictEl = document.getElementById('submission-verdict-container');
-      const isAccepted = data.status === 'ACCEPTED';
+      const data = await res.json().catch(() => ({ error: 'Failed to parse server response' }));
+
+      if (!res.ok || data.error || !data.status) {
+        const errorMsg = data.error || `Evaluation failed (HTTP ${res.status})`;
+        verdictEl.innerHTML = `
+          <div style="background:var(--bg-primary); padding:1rem; border-radius:8px; border-left:6px solid var(--accent-red);">
+            <div style="font-size:1.25rem; font-weight:800; color:var(--accent-red);">Submission Error</div>
+            <div style="margin-top:0.5rem; color:#ef4444; font-size:0.9rem;">${errorMsg}</div>
+            ${data.error_message ? `<pre style="color:#ef4444; font-family:var(--font-mono); font-size:0.85rem; margin-top:0.5rem; white-space:pre-wrap;">${data.error_message}</pre>` : ''}
+          </div>
+        `;
+        this.switchOutputTab('submission-res', subTabBtn);
+        this.showToast(errorMsg, 'error');
+        return;
+      }
+
+      const status = data.status || 'ERROR';
+      const isAccepted = status === 'ACCEPTED';
+      const passedCount = Number(data.passed_count ?? 0);
+      const totalCount = Number(data.total_count ?? (this.activeProblem.hidden_tests ? this.activeProblem.hidden_tests.length : 5));
+      const scoreEarned = Number(data.score_earned ?? 0);
+      const runtime = typeof data.runtime === 'number' ? data.runtime.toFixed(3) : (data.runtime || '0.000');
+      
+      let statusColor = 'var(--accent-cyan)';
+      if (isAccepted) statusColor = 'var(--accent-green)';
+      else if (status === 'TIME_LIMIT_EXCEEDED') statusColor = 'var(--accent-amber)';
+      else if (['WRONG_ANSWER', 'COMPILATION_ERROR', 'RUNTIME_ERROR'].includes(status)) statusColor = 'var(--accent-red)';
 
       verdictEl.innerHTML = `
-        <div style="background:var(--bg-primary); padding:1rem; border-radius:8px; border-left:6px solid ${isAccepted ? 'var(--accent-green)' : 'var(--accent-red)'};">
-          <div style="font-size:1.25rem; font-weight:800; color:${isAccepted ? 'var(--accent-green)' : 'var(--accent-red)'};">${data.status}</div>
-          <div style="margin-top:0.5rem; color:var(--text-primary);">Test Cases Passed: <strong>${data.passed_count} / ${data.total_count}</strong></div>
-          <div style="color:var(--accent-cyan); font-weight:700;">Score Earned: +${data.score_earned} pts</div>
-          <div style="font-size:0.85rem; color:var(--text-muted); margin-top:0.25rem;">Total Runtime: ${data.runtime}s</div>
-          ${data.error_message ? `<div style="color:var(--accent-red); margin-top:0.5rem; font-size:0.85rem;">${data.error_message}</div>` : ''}
+        <div style="background:var(--bg-primary); padding:1rem; border-radius:8px; border-left:6px solid ${statusColor};">
+          <div style="font-size:1.25rem; font-weight:800; color:${statusColor};">${status}</div>
+          <div style="margin-top:0.5rem; color:var(--text-primary);">Test Cases Passed: <strong>${passedCount} / ${totalCount}</strong></div>
+          <div style="color:var(--accent-cyan); font-weight:700;">Score Earned: +${scoreEarned} pts</div>
+          <div style="font-size:0.85rem; color:var(--text-muted); margin-top:0.25rem;">Total Runtime: ${runtime}s</div>
+          ${data.already_solved ? `<div style="color:var(--accent-green); font-size:0.85rem; margin-top:0.35rem;">✓ Problem already solved previously. Points are recorded.</div>` : ''}
+          ${data.error_message ? `<div style="color:var(--accent-red); margin-top:0.5rem; font-size:0.85rem; white-space:pre-wrap; font-family:var(--font-mono);">${data.error_message}</div>` : ''}
         </div>
       `;
 
-      // Switch to submission tab
-      const subTabBtn = document.querySelectorAll('.tabs-header .tab-btn')[2];
       this.switchOutputTab('submission-res', subTabBtn);
 
       if (isAccepted) {
-        this.showToast(`Accepted! Earned ${data.score_earned} points.`, 'success');
-        this.participant.score = (this.participant.score || 0) + data.score_earned;
-        localStorage.setItem('cc_participant', JSON.stringify(this.participant));
-        this.updateUserBadge();
+        this.showToast(`Accepted! Earned ${scoreEarned} points.`, 'success');
+        if (scoreEarned > 0) {
+          this.participant.score = (this.participant.score || 0) + scoreEarned;
+          localStorage.setItem('cc_participant', JSON.stringify(this.participant));
+          this.updateUserBadge();
+        }
         this.loadProblems();
       } else {
-        this.showToast(`Submission Verdict: ${data.status}`, 'error');
+        this.showToast(`Submission Verdict: ${status}`, 'error');
       }
 
       this.loadLeaderboard();
     } catch (e) {
+      verdictEl.innerHTML = `
+        <div style="background:var(--bg-primary); padding:1rem; border-radius:8px; border-left:6px solid var(--accent-red);">
+          <div style="font-size:1.25rem; font-weight:800; color:var(--accent-red);">Network Error</div>
+          <div style="margin-top:0.5rem; color:#ef4444; font-size:0.9rem;">${e.message}</div>
+        </div>
+      `;
+      this.switchOutputTab('submission-res', subTabBtn);
       this.showToast('Submission error: ' + e.message, 'error');
     } finally {
       btn.disabled = false;
