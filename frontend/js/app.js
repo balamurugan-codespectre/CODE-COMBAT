@@ -167,7 +167,6 @@ const App = {
           </td>
           <td><span class="badge badge-${p.difficulty.toLowerCase()}">${p.difficulty}</span></td>
           <td style="font-family:var(--font-mono); font-weight:700; color:var(--accent-cyan);">${p.points} pts</td>
-          <td style="color:var(--text-secondary);">${p.time_limit}s</td>
           <td>
             ${isSolved
               ? `<button class="btn btn-solved" style="padding:0.35rem 0.85rem; font-size:0.8rem; cursor:pointer;" onclick="event.stopPropagation(); App.openProblem('${p.id}')">Solved ✓</button>`
