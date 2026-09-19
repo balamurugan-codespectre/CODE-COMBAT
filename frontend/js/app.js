@@ -74,8 +74,8 @@ const App = {
         this.participant = data.participant;
         localStorage.setItem('cc_participant', JSON.stringify(data.participant));
         this.updateUserBadge();
-        this.showToast(`Welcome, ${name}!`, 'success');
-        this.navigate('problems');
+        this.showToast(`Welcome, ${name}! Please review competition rules.`, 'success');
+        this.navigate('intro');
       } else {
         this.showToast(data.error || 'Registration failed', 'error');
       }
