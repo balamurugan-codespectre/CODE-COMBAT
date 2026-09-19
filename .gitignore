@@ -1,0 +1,34 @@
+# Byte-compiled / optimized files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# C / C++ binaries and build artifacts
+*.exe
+*.o
+*.obj
+*.out
+*.dll
+*.so
+*.dylib
+temp_*
+cc1_test*
+
+# Java class files
+*.class
+
+# SQLite Database WAL/SHM locks
+data/*.db-wal
+data/*.db-shm
+data/*.db-journal
+
+# Environment Secrets
+.env
+
+# Temporary IDE / OS files
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+*.swp
+*.swo

@@ -1,0 +1,29 @@
+{
+  "id": "n_queens",
+  "title": "N-Queens Solutions Count",
+  "difficulty": "Hard",
+  "points": 300,
+  "time_limit": 2.0,
+  "category": "Backtracking",
+  "description": "The `N`-queens puzzle is the problem of placing `N` chess queens on an `N\u00d7N` chessboard so that no two queens attack each other.\n\nGiven an integer `N`, print the total number of distinct solutions.",
+  "input_format": "A single line containing the integer `N`.",
+  "output_format": "Print the number of distinct valid solutions.",
+  "constraints": "1 <= N <= 12",
+  "sample_tests": [
+    {
+      "input": "4",
+      "output": "2",
+      "explanation": "There are two distinct solutions to the 4-queens puzzle."
+    },
+    {
+      "input": "1",
+      "output": "1",
+      "explanation": "Only one solution for 1x1 board."
+    }
+  ],
+  "starter_code": {
+    "python": "import sys\n\ndef solve():\n    line = sys.stdin.read().strip()\n    if not line:\n        return\n    n = int(line)\n    \n    count = 0\n    cols = set()\n    diag1 = set()  # r - c\n    diag2 = set()  # r + c\n    \n    def backtrack(r):\n        nonlocal count\n        if r == n:\n            count += 1\n            return\n        for c in range(n):\n            if c in cols or (r - c) in diag1 or (r + c) in diag2:\n                continue\n            cols.add(c)\n            diag1.add(r - c)\n            diag2.add(r + c)\n            backtrack(r + 1)\n            cols.remove(c)\n            diag1.remove(r - c)\n            diag2.remove(r + c)\n            \n    backtrack(0)\n    print(count)\n\nif __name__ == '__main__':\n    solve()\n",
+    "java": "import java.util.*;\n\npublic class Solution {\n    static int count = 0;\n    public static void main(String[] args) {\n        Scanner sc = new Scanner(System.in);\n        if (!sc.hasNextInt()) return;\n        int n = sc.nextInt();\n        boolean[] cols = new boolean[n];\n        boolean[] diag1 = new boolean[2 * n];\n        boolean[] diag2 = new boolean[2 * n];\n        backtrack(0, n, cols, diag1, diag2);\n        System.out.println(count);\n    }\n    static void backtrack(int r, int n, boolean[] cols, boolean[] d1, boolean[] d2) {\n        if (r == n) { count++; return; }\n        for (int c = 0; c < n; c++) {\n            if (cols[c] || d1[r - c + n] || d2[r + c]) continue;\n            cols[c] = d1[r - c + n] = d2[r + c] = true;\n            backtrack(r + 1, n, cols, d1, d2);\n            cols[c] = d1[r - c + n] = d2[r + c] = false;\n        }\n    }\n}\n",
+    "c": "#include <stdio.h>\n#include <stdbool.h>\n\nint count = 0;\nvoid backtrack(int r, int n, int cols, int d1, int d2) {\n    if (r == n) { count++; return; }\n    int available = ((1 << n) - 1) & ~(cols | d1 | d2);\n    while (available) {\n        int bit = available & -available;\n        available &= available - 1;\n        backtrack(r + 1, n, cols | bit, (d1 | bit) << 1, (d2 | bit) >> 1);\n    }\n}\n\nint main() {\n    int n;\n    if (scanf(\"%d\", &n) != 1) return 0;\n    count = 0;\n    backtrack(0, n, 0, 0, 0);\n    printf(\"%d\\n\", count);\n    return 0;\n}\n"
+  }
+}

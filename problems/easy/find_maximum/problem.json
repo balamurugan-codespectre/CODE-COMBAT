@@ -1,0 +1,29 @@
+{
+  "id": "find_maximum",
+  "title": "Find Maximum",
+  "difficulty": "Easy",
+  "points": 100,
+  "time_limit": 2.0,
+  "category": "Arrays",
+  "description": "Given an array of `N` integers, find and print the maximum value contained in the array.",
+  "input_format": "First line contains `N`.\nSecond line contains `N` integers.",
+  "output_format": "Print the maximum integer in the array.",
+  "constraints": "1 <= N <= 10^5\n-10^9 <= array elements <= 10^9",
+  "sample_tests": [
+    {
+      "input": "5\n1 9 3 7 4",
+      "output": "9",
+      "explanation": "The maximum element is 9."
+    },
+    {
+      "input": "3\n-10 -50 -5",
+      "output": "-5",
+      "explanation": "The maximum element among negatives is -5."
+    }
+  ],
+  "starter_code": {
+    "python": "import sys\n\ndef solve():\n    data = sys.stdin.read().split()\n    if not data:\n        return\n    n = int(data[0])\n    nums = [int(x) for x in data[1:n+1]]\n    print(max(nums))\n\nif __name__ == '__main__':\n    solve()\n",
+    "java": "import java.util.*;\n\npublic class Solution {\n    public static void main(String[] args) {\n        Scanner sc = new Scanner(System.in);\n        if (!sc.hasNextInt()) return;\n        int n = sc.nextInt();\n        long maxVal = Long.MIN_VALUE;\n        for (int i = 0; i < n; i++) {\n            long v = sc.nextLong();\n            if (v > maxVal) maxVal = v;\n        }\n        System.out.println(maxVal);\n    }\n}\n",
+    "c": "#include <stdio.h>\n\nint main() {\n    int n;\n    if (scanf(\"%d\", &n) != 1) return 0;\n    long long max_val, val;\n    scanf(\"%lld\", &max_val);\n    for (int i = 1; i < n; i++) {\n        scanf(\"%lld\", &val);\n        if (val > max_val) max_val = val;\n    }\n    printf(\"%lld\\n\", max_val);\n    return 0;\n}\n"
+  }
+}

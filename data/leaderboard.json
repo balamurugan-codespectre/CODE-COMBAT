@@ -1,0 +1,30 @@
+[
+  {
+    "participant_id": "106ce9ea",
+    "name": "Alice",
+    "college": "Computer Science",
+    "reg_no": "CS2026-001",
+    "score": 300,
+    "solved_count": 2,
+    "easy_solved": 1,
+    "medium_solved": 1,
+    "hard_solved": 0,
+    "total_runtime": 0.09,
+    "last_submission_time": "2026-09-19T13:32:31.168795",
+    "rank": 1
+  },
+  {
+    "participant_id": "5ad1bcf9",
+    "name": "Bob",
+    "college": "Information Technology",
+    "reg_no": "IT2026-042",
+    "score": 100,
+    "solved_count": 1,
+    "easy_solved": 1,
+    "medium_solved": 0,
+    "hard_solved": 0,
+    "total_runtime": 0.03,
+    "last_submission_time": "2026-09-19T13:32:31.171063",
+    "rank": 2
+  }
+]

@@ -1,0 +1,6 @@
+INPUT:
+red tax
+5
+ted tex red tax tad
+EXPECTED:
+4

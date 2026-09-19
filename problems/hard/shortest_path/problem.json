@@ -1,0 +1,24 @@
+{
+  "id": "shortest_path",
+  "title": "Shortest Path in Unweighted Graph",
+  "difficulty": "Hard",
+  "points": 300,
+  "time_limit": 2.0,
+  "category": "Graphs & BFS",
+  "description": "Given an unweighted undirected graph with `V` vertices (numbered `0` to `V-1`) and `E` edges, find the length of the shortest path (in terms of number of edges) between a given source vertex `S` and destination vertex `D`. If `D` is unreachable from `S`, print `-1`.",
+  "input_format": "The first line contains `V` and `E`.\nThe next `E` lines each contain two integers `u` and `v` representing an undirected edge.\nThe last line contains `S` and `D`.",
+  "output_format": "Print the minimum edge distance, or `-1`.",
+  "constraints": "1 <= V <= 10^5\n0 <= E <= 2*10^5\n0 <= u, v, S, D < V",
+  "sample_tests": [
+    {
+      "input": "5 5\n0 1\n0 2\n1 3\n2 3\n3 4\n0 4",
+      "output": "3",
+      "explanation": "Path 0 -> 1 -> 3 -> 4 has 3 edges."
+    }
+  ],
+  "starter_code": {
+    "python": "import sys\nfrom collections import deque\n\ndef solve():\n    data = sys.stdin.read().split()\n    if not data:\n        return\n    v = int(data[0])\n    e = int(data[1])\n    adj = [[] for _ in range(v)]\n    idx = 2\n    for _ in range(e):\n        u = int(data[idx])\n        w = int(data[idx+1])\n        adj[u].append(w)\n        adj[w].append(u)\n        idx += 2\n    s = int(data[idx])\n    d = int(data[idx+1])\n    \n    if s == d:\n        print(0)\n        return\n        \n    dist = [-1] * v\n    dist[s] = 0\n    queue = deque([s])\n    while queue:\n        curr = queue.popleft()\n        if curr == d:\n            break\n        for neighbor in adj[curr]:\n            if dist[neighbor] == -1:\n                dist[neighbor] = dist[curr] + 1\n                queue.append(neighbor)\n    print(dist[d])\n\nif __name__ == '__main__':\n    solve()\n",
+    "java": "import java.util.*;\n\npublic class Solution {\n    public static void main(String[] args) {\n        Scanner sc = new Scanner(System.in);\n        if (!sc.hasNextInt()) return;\n        int v = sc.nextInt();\n        int e = sc.nextInt();\n        List<List<Integer>> adj = new ArrayList<>();\n        for (int i = 0; i < v; i++) adj.add(new ArrayList<>());\n        for (int i = 0; i < e; i++) {\n            int u = sc.nextInt();\n            int w = sc.nextInt();\n            adj.get(u).add(w);\n            adj.get(w).add(u);\n        }\n        int s = sc.nextInt();\n        int d = sc.nextInt();\n        if (s == d) { System.out.println(0); return; }\n        int[] dist = new int[v];\n        Arrays.fill(dist, -1);\n        dist[s] = 0;\n        Queue<Integer> q = new LinkedList<>();\n        q.add(s);\n        while (!q.isEmpty()) {\n            int curr = q.poll();\n            if (curr == d) break;\n            for (int nxt : adj.get(curr)) {\n                if (dist[nxt] == -1) {\n                    dist[nxt] = dist[curr] + 1;\n                    q.add(nxt);\n                }\n            }\n        }\n        System.out.println(dist[d]);\n    }\n}\n",
+    "c": "#include <stdio.h>\n#include <stdlib.h>\n#include <string.h>\n\ntypedef struct Edge { int to; struct Edge *next; } Edge;\n\nint main() {\n    int v, e;\n    if (scanf(\"%d %d\", &v, &e) != 2) return 0;\n    Edge **head = (Edge**)calloc(v, sizeof(Edge*));\n    for (int i = 0; i < e; i++) {\n        int u, w;\n        scanf(\"%d %d\", &u, &w);\n        Edge *e1 = (Edge*)malloc(sizeof(Edge));\n        e1->to = w; e1->next = head[u]; head[u] = e1;\n        Edge *e2 = (Edge*)malloc(sizeof(Edge));\n        e2->to = u; e2->next = head[w]; head[w] = e2;\n    }\n    int s, d;\n    scanf(\"%d %d\", &s, &d);\n    if (s == d) { printf(\"0\\n\"); return 0; }\n    int *dist = (int*)malloc(v * sizeof(int));\n    memset(dist, -1, v * sizeof(int));\n    int *q = (int*)malloc(v * sizeof(int));\n    int qh = 0, qt = 0;\n    dist[s] = 0;\n    q[qt++] = s;\n    while (qh < qt) {\n        int curr = q[qh++];\n        if (curr == d) break;\n        for (Edge *p = head[curr]; p != NULL; p = p->next) {\n            if (dist[p->to] == -1) {\n                dist[p->to] = dist[curr] + 1;\n                q[qt++] = p->to;\n            }\n        }\n    }\n    printf(\"%d\\n\", dist[d]);\n    return 0;\n}\n"
+  }
+}

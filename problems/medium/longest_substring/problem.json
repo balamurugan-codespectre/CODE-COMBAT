@@ -1,0 +1,29 @@
+{
+  "id": "longest_substring",
+  "title": "Longest Substring Without Repeating Characters",
+  "difficulty": "Medium",
+  "points": 200,
+  "time_limit": 2.0,
+  "category": "Sliding Window",
+  "description": "Given a string `S`, find the length of the longest substring without duplicate characters.",
+  "input_format": "A single line containing string `S`.",
+  "output_format": "Print an integer representing the maximum length.",
+  "constraints": "0 <= length(S) <= 10^5",
+  "sample_tests": [
+    {
+      "input": "abcabcbb",
+      "output": "3",
+      "explanation": "The answer is 'abc', with the length of 3."
+    },
+    {
+      "input": "bbbbb",
+      "output": "1",
+      "explanation": "The answer is 'b', with the length of 1."
+    }
+  ],
+  "starter_code": {
+    "python": "import sys\n\ndef solve():\n    s = sys.stdin.readline().rstrip('\\r\\n')\n    char_index = {}\n    max_len = 0\n    start = 0\n    for i, ch in enumerate(s):\n        if ch in char_index and char_index[ch] >= start:\n            start = char_index[ch] + 1\n        char_index[ch] = i\n        max_len = max(max_len, i - start + 1)\n    print(max_len)\n\nif __name__ == '__main__':\n    solve()\n",
+    "java": "import java.util.*;\nimport java.io.*;\n\npublic class Solution {\n    public static void main(String[] args) throws IOException {\n        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));\n        String s = br.readLine();\n        if (s == null || s.length() == 0) { System.out.println(0); return; }\n        Map<Character, Integer> map = new HashMap<>();\n        int maxLen = 0, start = 0;\n        for (int i = 0; i < s.length(); i++) {\n            char c = s.charAt(i);\n            if (map.containsKey(c) && map.get(c) >= start) {\n                start = map.get(c) + 1;\n            }\n            map.put(c, i);\n            maxLen = Math.max(maxLen, i - start + 1);\n        }\n        System.out.println(maxLen);\n    }\n}\n",
+    "c": "#include <stdio.h>\n#include <string.h>\n\nint main() {\n    char s[100005];\n    if (fgets(s, sizeof(s), stdin) == NULL) { printf(\"0\\n\"); return 0; }\n    int len = strlen(s);\n    while (len > 0 && (s[len-1] == '\\n' || s[len-1] == '\\r')) len--;\n    int last_pos[256];\n    memset(last_pos, -1, sizeof(last_pos));\n    int max_len = 0, start = 0;\n    for (int i = 0; i < len; i++) {\n        unsigned char c = (unsigned char)s[i];\n        if (last_pos[c] >= start) {\n            start = last_pos[c] + 1;\n        }\n        last_pos[c] = i;\n        int curr = i - start + 1;\n        if (curr > max_len) max_len = curr;\n    }\n    printf(\"%d\\n\", max_len);\n    return 0;\n}\n"
+  }
+}

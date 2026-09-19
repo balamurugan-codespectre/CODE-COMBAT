@@ -1,0 +1,4 @@
+INPUT:
+AEIOUaeiou
+EXPECTED:
+10

@@ -1,0 +1,4 @@
+INPUT:
+Rhythm and Fly
+EXPECTED:
+1

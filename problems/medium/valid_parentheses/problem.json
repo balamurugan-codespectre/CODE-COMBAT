@@ -1,0 +1,29 @@
+{
+  "id": "valid_parentheses",
+  "title": "Valid Parentheses",
+  "difficulty": "Medium",
+  "points": 200,
+  "time_limit": 2.0,
+  "category": "Stack & Strings",
+  "description": "Given a string `S` containing just the characters `'('`, `')'`, `'{'`, `'}'`, `'['` and `']'`, determine if the input string is valid.\n\nAn input string is valid if:\n1. Open brackets must be closed by the same type of brackets.\n2. Open brackets must be closed in the correct order.\n3. Every close bracket has a corresponding open bracket of the same type.",
+  "input_format": "A single line containing the bracket string `S`.",
+  "output_format": "Print `true` if valid, otherwise print `false`.",
+  "constraints": "1 <= length(S) <= 10^5\n`S` consists of parentheses only `'()[]{}'`.",
+  "sample_tests": [
+    {
+      "input": "()[]{}",
+      "output": "true",
+      "explanation": "All bracket pairs match properly."
+    },
+    {
+      "input": "(]",
+      "output": "false",
+      "explanation": "Mismatched bracket pair '(' and ']'."
+    }
+  ],
+  "starter_code": {
+    "python": "import sys\n\ndef solve():\n    s = sys.stdin.read().strip()\n    if not s:\n        print(\"true\")\n        return\n    stack = []\n    mapping = {')': '(', '}': '{', ']': '['}\n    for ch in s:\n        if ch in mapping.values():\n            stack.append(ch)\n        elif ch in mapping:\n            if not stack or stack[-1] != mapping[ch]:\n                print(\"false\")\n                return\n            stack.pop()\n    print(\"true\" if len(stack) == 0 else \"false\")\n\nif __name__ == '__main__':\n    solve()\n",
+    "java": "import java.util.*;\n\npublic class Solution {\n    public static void main(String[] args) {\n        Scanner sc = new Scanner(System.in);\n        if (!sc.hasNext()) { System.out.println(\"true\"); return; }\n        String s = sc.next();\n        Deque<Character> stack = new ArrayDeque<>();\n        for (char c : s.toCharArray()) {\n            if (c == '(') stack.push(')');\n            else if (c == '{') stack.push('}');\n            else if (c == '[') stack.push(']');\n            else if (stack.isEmpty() || stack.pop() != c) {\n                System.out.println(\"false\");\n                return;\n            }\n        }\n        System.out.println(stack.isEmpty() ? \"true\" : \"false\");\n    }\n}\n",
+    "c": "#include <stdio.h>\n#include <string.h>\n#include <stdbool.h>\n\nint main() {\n    char s[100005];\n    if (scanf(\"%s\", s) != 1) {\n        printf(\"true\\n\");\n        return 0;\n    }\n    int len = strlen(s);\n    char stack[100005];\n    int top = -1;\n    for (int i = 0; i < len; i++) {\n        char c = s[i];\n        if (c == '(' || c == '{' || c == '[') {\n            stack[++top] = c;\n        } else {\n            if (top == -1) { printf(\"false\\n\"); return 0; }\n            char open = stack[top--];\n            if ((c == ')' && open != '(') ||\n                (c == '}' && open != '{') ||\n                (c == ']' && open != '[')) {\n                printf(\"false\\n\");\n                return 0;\n            }\n        }\n    }\n    printf(top == -1 ? \"true\\n\" : \"false\\n\");\n    return 0;\n}\n"
+  }
+}

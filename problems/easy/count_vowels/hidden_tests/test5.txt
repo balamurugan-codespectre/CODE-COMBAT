@@ -1,0 +1,4 @@
+INPUT:
+Competitive Programming in Code Combat Platform
+EXPECTED:
+14

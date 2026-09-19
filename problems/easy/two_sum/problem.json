@@ -1,0 +1,29 @@
+{
+  "id": "two_sum",
+  "title": "Two Sum",
+  "difficulty": "Easy",
+  "points": 100,
+  "time_limit": 2.0,
+  "category": "Arrays & Hash Table",
+  "description": "Given an array of integers `nums` and an integer `target`, return the indices of the two numbers such that they add up to `target`.\n\nYou may assume that each input will have exactly one solution, and you may not use the same element twice.\n\nPrint the two 0-based indices separated by a space in ascending order.",
+  "input_format": "The first line contains an integer `N`, the size of the array.\nThe second line contains `N` space-separated integers.\nThe third line contains an integer `target`.",
+  "output_format": "Print the two 0-based indices separated by a single space.",
+  "constraints": "2 <= N <= 10^5\n-10^9 <= nums[i] <= 10^9\n-2 * 10^9 <= target <= 2 * 10^9\nExactly one valid answer exists.",
+  "sample_tests": [
+    {
+      "input": "4\n2 7 11 15\n9",
+      "output": "0 1",
+      "explanation": "nums[0] + nums[1] = 2 + 7 = 9, so output is '0 1'."
+    },
+    {
+      "input": "3\n3 2 4\n6",
+      "output": "1 2",
+      "explanation": "nums[1] + nums[2] = 2 + 4 = 6, so output is '1 2'."
+    }
+  ],
+  "starter_code": {
+    "python": "import sys\n\ndef solve():\n    input_data = sys.stdin.read().split()\n    if not input_data:\n        return\n    n = int(input_data[0])\n    nums = [int(x) for x in input_data[1:n+1]]\n    target = int(input_data[n+1])\n    \n    # Write your solution here\n    seen = {}\n    for i, num in enumerate(nums):\n        complement = target - num\n        if complement in seen:\n            print(f\"{seen[complement]} {i}\")\n            return\n        seen[num] = i\n\nif __name__ == '__main__':\n    solve()\n",
+    "java": "import java.util.*;\nimport java.io.*;\n\npublic class Solution {\n    public static void main(String[] args) {\n        Scanner sc = new Scanner(System.in);\n        if (!sc.hasNextInt()) return;\n        int n = sc.nextInt();\n        int[] nums = new int[n];\n        for (int i = 0; i < n; i++) {\n            nums[i] = sc.nextInt();\n        }\n        int target = sc.nextInt();\n        \n        Map<Integer, Integer> map = new HashMap<>();\n        for (int i = 0; i < n; i++) {\n            int complement = target - nums[i];\n            if (map.containsKey(complement)) {\n                System.out.println(map.get(complement) + \" \" + i);\n                return;\n            }\n            map.put(nums[i], i);\n        }\n    }\n}\n",
+    "c": "#include <stdio.h>\n#include <stdlib.h>\n\nint main() {\n    int n;\n    if (scanf(\"%d\", &n) != 1) return 0;\n    int *nums = (int*)malloc(n * sizeof(int));\n    for (int i = 0; i < n; i++) {\n        scanf(\"%d\", &nums[i]);\n    }\n    int target;\n    scanf(\"%d\", &target);\n    \n    for (int i = 0; i < n; i++) {\n        for (int j = i + 1; j < n; j++) {\n            if (nums[i] + nums[j] == target) {\n                printf(\"%d %d\\n\", i, j);\n                free(nums);\n                return 0;\n            }\n        }\n    }\n    free(nums);\n    return 0;\n}\n"
+  }
+}

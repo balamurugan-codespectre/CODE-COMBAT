@@ -1,0 +1,6 @@
+INPUT:
+lost miss
+4
+most mist miss lost
+EXPECTED:
+4

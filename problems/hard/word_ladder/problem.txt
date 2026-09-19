@@ -1,0 +1,34 @@
+# Word Ladder (Hard - 300 Points)
+
+## Description
+Given two words `beginWord` and `endWord`, and a dictionary of `N` words `wordList`, return the number of words in the shortest transformation sequence from `beginWord` to `endWord`, or `0` if no such sequence exists.
+
+Only one letter can be changed at a time, and each transformed word must exist in `wordList`.
+
+## Input Format
+The first line contains `beginWord` and `endWord` separated by a space.
+The second line contains an integer `N`.
+The third line contains `N` space-separated words in `wordList`.
+
+## Output Format
+Print the length of the shortest word ladder, or `0`.
+
+## Constraints
+1 <= length(word) <= 10
+1 <= N <= 5000
+All words have the same length and consist of lowercase letters.
+
+## Examples
+
+### Example 1
+Input:
+```
+hit cog
+6
+hot dot dog lot log cog
+```
+Output:
+```
+5
+```
+Explanation: Shortest transformation: 'hit' -> 'hot' -> 'dot' -> 'dog' -> 'cog' (5 words).

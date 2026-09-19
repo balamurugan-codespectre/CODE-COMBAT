@@ -1,0 +1,29 @@
+{
+  "id": "merge_intervals",
+  "title": "Merge Intervals",
+  "difficulty": "Medium",
+  "points": 200,
+  "time_limit": 2.0,
+  "category": "Intervals & Sorting",
+  "description": "Given an array of `N` intervals where `intervals[i] = [start_i, end_i]`, merge all overlapping intervals, and print the resulting non-overlapping intervals in ascending order by start time.",
+  "input_format": "The first line contains `N`.\nThe next `N` lines each contain two integers `start` and `end`.",
+  "output_format": "Print each merged interval on a new line with start and end separated by a space.",
+  "constraints": "1 <= N <= 10^5\n0 <= start <= end <= 10^9",
+  "sample_tests": [
+    {
+      "input": "4\n1 3\n2 6\n8 10\n15 18",
+      "output": "1 6\n8 10\n15 18",
+      "explanation": "Intervals [1,3] and [2,6] overlap, merging into [1,6]."
+    },
+    {
+      "input": "2\n1 4\n4 5",
+      "output": "1 5",
+      "explanation": "Intervals [1,4] and [4,5] are considered overlapping."
+    }
+  ],
+  "starter_code": {
+    "python": "import sys\n\ndef solve():\n    data = sys.stdin.read().split()\n    if not data:\n        return\n    n = int(data[0])\n    intervals = []\n    idx = 1\n    for _ in range(n):\n        s = int(data[idx])\n        e = int(data[idx+1])\n        intervals.append([s, e])\n        idx += 2\n    \n    intervals.sort(key=lambda x: x[0])\n    merged = []\n    for iv in intervals:\n        if not merged or merged[-1][1] < iv[0]:\n            merged.append(iv)\n        else:\n            merged[-1][1] = max(merged[-1][1], iv[1])\n            \n    for iv in merged:\n        print(f\"{iv[0]} {iv[1]}\")\n\nif __name__ == '__main__':\n    solve()\n",
+    "java": "import java.util.*;\n\npublic class Solution {\n    public static void main(String[] args) {\n        Scanner sc = new Scanner(System.in);\n        if (!sc.hasNextInt()) return;\n        int n = sc.nextInt();\n        int[][] intervals = new int[n][2];\n        for (int i = 0; i < n; i++) {\n            intervals[i][0] = sc.nextInt();\n            intervals[i][1] = sc.nextInt();\n        }\n        Arrays.sort(intervals, (a, b) -> Integer.compare(a[0], b[0]));\n        List<int[]> merged = new ArrayList<>();\n        for (int[] iv : intervals) {\n            if (merged.isEmpty() || merged.get(merged.size() - 1)[1] < iv[0]) {\n                merged.add(iv);\n            } else {\n                merged.get(merged.size() - 1)[1] = Math.max(merged.get(merged.size() - 1)[1], iv[1]);\n            }\n        }\n        for (int[] iv : merged) {\n            System.out.println(iv[0] + \" \" + iv[1]);\n        }\n    }\n}\n",
+    "c": "#include <stdio.h>\n#include <stdlib.h>\n\ntypedef struct { int s, e; } Interval;\n\nint cmp(const void *a, const void *b) {\n    return ((Interval*)a)->s - ((Interval*)b)->s;\n}\n\nint main() {\n    int n;\n    if (scanf(\"%d\", &n) != 1) return 0;\n    Interval *arr = (Interval*)malloc(n * sizeof(Interval));\n    for (int i = 0; i < n; i++) {\n        scanf(\"%d %d\", &arr[i].s, &arr[i].e);\n    }\n    qsort(arr, n, sizeof(Interval), cmp);\n    int cur_s = arr[0].s, cur_e = arr[0].e;\n    for (int i = 1; i < n; i++) {\n        if (arr[i].s <= cur_e) {\n            if (arr[i].e > cur_e) cur_e = arr[i].e;\n        } else {\n            printf(\"%d %d\\n\", cur_s, cur_e);\n            cur_s = arr[i].s;\n            cur_e = arr[i].e;\n        }\n    }\n    printf(\"%d %d\\n\", cur_s, cur_e);\n    free(arr);\n    return 0;\n}\n"
+  }
+}

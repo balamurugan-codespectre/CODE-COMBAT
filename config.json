@@ -1,0 +1,28 @@
+{
+  "competition_name": "CODE COMBAT",
+  "tagline": "Compete. Code. Conquer.",
+  "description": "An offline competitive programming platform inspired by modern coding challenge websites.",
+  "competition_duration_minutes": 90,
+  "admin_password": "admin123",
+  "server_port": 8000,
+  "server_host": "127.0.0.1",
+  "execution_timeout_seconds": 3.0,
+  "max_output_length": 50000,
+  "supported_languages": [
+    {
+      "id": "python",
+      "name": "Python 3",
+      "extension": "py"
+    },
+    {
+      "id": "java",
+      "name": "Java (OpenJDK)",
+      "extension": "java"
+    },
+    {
+      "id": "c",
+      "name": "C (GCC/Clang)",
+      "extension": "c"
+    }
+  ]
+}
