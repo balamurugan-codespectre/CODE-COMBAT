@@ -24,5 +24,6 @@
       "name": "C (GCC/Clang)",
       "extension": "c"
     }
-  ]
+  ],
+  "active_problem_set": "set1"
 }
