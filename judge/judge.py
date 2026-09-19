@@ -21,6 +21,8 @@ class Judge:
         self.config = config or {}
         self.compiler = Compiler(self.config)
         self.executor = Executor(self.config)
+        self.temp_root = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "data", ".tmp_builds"))
+        os.makedirs(self.temp_root, exist_ok=True)
 
     @staticmethod
     def normalize_output(text: str) -> str:
@@ -63,7 +65,7 @@ class Judge:
         timeout: Optional[float] = None
     ) -> Dict[str, Any]:
         """Runs user code against a custom stdin string in an isolated directory."""
-        work_dir = tempfile.mkdtemp(prefix="cc_run_")
+        work_dir = tempfile.mkdtemp(dir=self.temp_root, prefix="cc_run_")
         try:
             # 1. Compile / Prepare
             ok, err_msg, meta = self.compiler.compile(language, code, work_dir)
@@ -109,7 +111,7 @@ class Judge:
         timeout: Optional[float] = None
     ) -> Dict[str, Any]:
         """Evaluates code against visible problem sample test cases."""
-        work_dir = tempfile.mkdtemp(prefix="cc_sample_")
+        work_dir = tempfile.mkdtemp(dir=self.temp_root, prefix="cc_sample_")
         results = []
         all_passed = True
         total_runtime = 0.0
@@ -204,7 +206,7 @@ class Judge:
         Evaluates submission against server-side hidden test cases.
         Guarantees that test inputs/outputs are never returned in public payload.
         """
-        work_dir = tempfile.mkdtemp(prefix="cc_judge_")
+        work_dir = tempfile.mkdtemp(dir=self.temp_root, prefix="cc_judge_")
         total_runtime = 0.0
         passed_count = 0
         total_count = 0

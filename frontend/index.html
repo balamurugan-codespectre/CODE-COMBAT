@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>CODE COMBAT Pro - Offline Competitive Programming Platform</title>
+  <link rel="icon" type="image/jpeg" href="assets/logo.jpg">
   <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
@@ -11,7 +12,7 @@
   <!-- Navigation Bar -->
   <header class="navbar">
     <div class="nav-brand" onclick="App.navigate('home')">
-      <div class="brand-icon">⚔️</div>
+      <img src="assets/logo.jpg" alt="CODE COMBAT" style="height:34px; width:34px; border-radius:6px; object-fit:cover; border:1px solid var(--border-color); box-shadow:0 0 10px rgba(0,242,254,0.25);">
       <span>CODE COMBAT <small style="color:var(--accent-cyan);font-size:0.7rem;font-weight:700;">PRO</small></span>
     </div>
 
@@ -38,6 +39,9 @@
     <!-- VIEW 1: HOME -->
     <section id="view-home" class="view-section active">
       <div class="hero-section">
+        <div style="margin-bottom: 1.5rem;">
+          <img src="assets/logo.jpg" alt="CODE COMBAT" style="max-width: 220px; width: 100%; border-radius: 16px; border: 2px solid var(--border-color); box-shadow: 0 0 35px rgba(0,242,254,0.25), 0 12px 30px rgba(0,0,0,0.8); transition: transform 0.3s ease;">
+        </div>
         <h1 class="hero-title">Compete. Code. Conquer.</h1>
         <p class="hero-subtitle">The zero-dependency, ultra-fast offline competitive programming platform for college hackathons and coding contests.</p>
         <div class="hero-actions">
@@ -78,11 +82,14 @@
         
         <!-- Header Banner -->
         <div class="panel" style="padding: 2rem; background: linear-gradient(135deg, rgba(0,242,254,0.1), rgba(121,40,202,0.15)); border: 1px solid var(--border-color); border-radius: var(--radius-md);">
-          <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 1rem;">
-            <div>
-              <span class="badge badge-easy" style="margin-bottom: 0.5rem; display: inline-block;">Official Guidelines</span>
-              <h1 style="color: #fff; font-size: 1.8rem; margin-bottom: 0.5rem;">Code Combat — Event Introduction & Rules</h1>
-              <p style="color: var(--text-secondary); font-size: 0.95rem;">Comprehensive guide for participants: structure, format, criteria, and anti-cheating regulations.</p>
+          <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1.5rem;">
+            <div style="display: flex; gap: 1.25rem; align-items: center;">
+              <img src="assets/logo.jpg" alt="CODE COMBAT" style="width: 75px; height: 75px; border-radius: 12px; object-fit: cover; border: 2px solid var(--border-color); box-shadow: 0 0 20px rgba(0,242,254,0.3);">
+              <div>
+                <span class="badge badge-easy" style="margin-bottom: 0.5rem; display: inline-block;">Official Guidelines</span>
+                <h1 style="color: #fff; font-size: 1.8rem; margin-bottom: 0.25rem;">Code Combat — Event Introduction & Rules</h1>
+                <p style="color: var(--text-secondary); font-size: 0.95rem;">Comprehensive guide for participants: structure, format, criteria, and anti-cheating regulations.</p>
+              </div>
             </div>
             <div style="text-align: right;">
               <span style="font-size: 0.85rem; color: var(--accent-cyan); font-family: var(--font-mono); font-weight: 600;">Prepared by Bala</span>

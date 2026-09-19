@@ -1,7 +1,9 @@
-# CODE COMBAT — Offline Competitive Programming Platform
-
-> **"Compete. Code. Conquer."**  
-> A high-performance, 100% offline competitive coding challenge platform inspired by LeetCode and HackerRank, built with an original developer dark UI, zero external web/CDN dependencies, and a real local judge engine.
+<div align="center">
+  <img src="frontend/assets/logo.jpg" alt="CODE COMBAT" width="300" style="border-radius: 16px; box-shadow: 0 0 30px rgba(0,242,254,0.3);"/>
+  <h1>CODE COMBAT — Offline Competitive Programming Platform</h1>
+  <p><strong>"Compete. Code. Conquer."</strong></p>
+  <p><em>Where Logic Fights Back • 100% Offline Multi-Language Competitive Coding Arena</em></p>
+</div>
 
 ---
 
