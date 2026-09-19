@@ -1,6 +1,7 @@
 """
-CODE COMBAT - Test Case Judge Engine
+CODE COMBAT Pro - Test Case Judge Engine
 Evaluates submissions against visible sample tests and server-side hidden test cases.
+Produces detailed diff output and verdict breakdown.
 """
 
 import os
@@ -27,9 +28,7 @@ class Judge:
         if not text:
             return ""
         lines = text.replace("\r\n", "\n").replace("\r", "\n").split("\n")
-        # Strip right whitespace on each line
         stripped_lines = [line.rstrip() for line in lines]
-        # Remove trailing empty lines
         while stripped_lines and stripped_lines[-1] == "":
             stripped_lines.pop()
         return "\n".join(stripped_lines)
@@ -54,52 +53,53 @@ class Judge:
             expected_part = parts[1].strip("\r\n")
             return input_part, expected_part
         else:
-            # Fallback
-            return content.strip(), ""
+            return "", content.strip("\r\n")
 
     def run_custom_input(
         self,
         language: str,
         code: str,
-        custom_input: str = "",
+        custom_input: str,
         timeout: Optional[float] = None
     ) -> Dict[str, Any]:
-        """Executes participant code against arbitrary custom input."""
-        temp_dir = tempfile.mkdtemp(prefix="codecombat_custom_")
+        """Runs user code against a custom stdin string in an isolated directory."""
+        work_dir = tempfile.mkdtemp(prefix="cc_run_")
         try:
-            # 1. Compile
-            compile_ok, compile_err, meta = self.compiler.compile(language, code, temp_dir)
-            if not compile_ok:
+            # 1. Compile / Prepare
+            ok, err_msg, meta = self.compiler.compile(language, code, work_dir)
+            if not ok:
                 return {
                     "status": "COMPILATION_ERROR",
                     "stdout": "",
-                    "stderr": compile_err or "Compilation Error",
+                    "stderr": err_msg or "Compilation failed.",
                     "runtime": 0.0,
-                    "error": compile_err
+                    "passed": False,
+                    "error": err_msg
                 }
 
             # 2. Execute
             exec_res = self.executor.execute(
                 cmd=meta["cmd"],
-                work_dir=temp_dir,
+                work_dir=work_dir,
                 stdin_data=custom_input,
                 timeout=timeout
             )
 
-            status_map = {
-                "OK": "SUCCESS",
-                "TIMEOUT": "TIME_LIMIT_EXCEEDED",
-                "ERROR": "RUNTIME_ERROR"
-            }
+            status = "ACCEPTED" if exec_res["status"] == "OK" else (
+                "TIME_LIMIT_EXCEEDED" if exec_res["status"] == "TIMEOUT" else "RUNTIME_ERROR"
+            )
+
             return {
-                "status": status_map.get(exec_res["status"], "RUNTIME_ERROR"),
+                "status": status,
                 "stdout": exec_res["stdout"],
                 "stderr": exec_res["stderr"],
                 "runtime": exec_res["runtime"],
-                "error": exec_res.get("error")
+                "passed": exec_res["status"] == "OK",
+                "error": exec_res["error"]
             }
+
         finally:
-            shutil.rmtree(temp_dir, ignore_errors=True)
+            shutil.rmtree(work_dir, ignore_errors=True)
 
     def run_sample_tests(
         self,
@@ -108,94 +108,89 @@ class Judge:
         sample_tests: List[Dict[str, str]],
         timeout: Optional[float] = None
     ) -> Dict[str, Any]:
-        """
-        Executes participant code against visible sample test cases.
-        Returns full actual vs expected details for user feedback.
-        """
-        temp_dir = tempfile.mkdtemp(prefix="codecombat_sample_")
+        """Evaluates code against visible problem sample test cases."""
+        work_dir = tempfile.mkdtemp(prefix="cc_sample_")
+        results = []
+        all_passed = True
+        total_runtime = 0.0
+
         try:
-            # 1. Compile
-            compile_ok, compile_err, meta = self.compiler.compile(language, code, temp_dir)
-            if not compile_ok:
+            # 1. Compile / Prepare
+            ok, err_msg, meta = self.compiler.compile(language, code, work_dir)
+            if not ok:
                 return {
                     "status": "COMPILATION_ERROR",
-                    "compilation_error": compile_err,
+                    "all_passed": False,
                     "results": [],
-                    "all_passed": False
+                    "error_message": err_msg or "Compilation failed.",
+                    "total_runtime": 0.0
                 }
 
-            results = []
-            all_passed = True
-
+            # 2. Execute each sample test
             for idx, test in enumerate(sample_tests, start=1):
-                input_data = test.get("input", "")
-                expected_output = test.get("output", "")
-                explanation = test.get("explanation", "")
+                test_in = test.get("input", "")
+                test_expected = test.get("output", "")
 
                 exec_res = self.executor.execute(
                     cmd=meta["cmd"],
-                    work_dir=temp_dir,
-                    stdin_data=input_data,
+                    work_dir=work_dir,
+                    stdin_data=test_in,
                     timeout=timeout
                 )
 
+                total_runtime += exec_res["runtime"]
+
                 if exec_res["status"] == "TIMEOUT":
+                    all_passed = False
                     results.append({
-                        "test_case": idx,
-                        "passed": False,
+                        "test_num": idx,
                         "status": "TIME_LIMIT_EXCEEDED",
-                        "input": input_data,
-                        "expected": expected_output,
+                        "input": test_in,
+                        "expected": test_expected,
                         "actual": "",
-                        "stdout": "",
-                        "stderr": exec_res["stderr"],
                         "runtime": exec_res["runtime"],
-                        "explanation": explanation
+                        "error": exec_res["error"]
                     })
-                    all_passed = False
                 elif exec_res["status"] == "ERROR":
+                    all_passed = False
                     results.append({
-                        "test_case": idx,
-                        "passed": False,
+                        "test_num": idx,
                         "status": "RUNTIME_ERROR",
-                        "input": input_data,
-                        "expected": expected_output,
+                        "input": test_in,
+                        "expected": test_expected,
                         "actual": exec_res["stdout"],
-                        "stdout": exec_res["stdout"],
                         "stderr": exec_res["stderr"],
                         "runtime": exec_res["runtime"],
-                        "explanation": explanation
+                        "error": exec_res["error"]
                     })
-                    all_passed = False
                 else:
                     norm_actual = self.normalize_output(exec_res["stdout"])
-                    norm_expected = self.normalize_output(expected_output)
+                    norm_expected = self.normalize_output(test_expected)
                     passed = (norm_actual == norm_expected)
 
                     if not passed:
                         all_passed = False
 
                     results.append({
-                        "test_case": idx,
-                        "passed": passed,
-                        "status": "PASSED" if passed else "WRONG_ANSWER",
-                        "input": input_data,
-                        "expected": expected_output,
-                        "actual": norm_actual,
-                        "stdout": exec_res["stdout"],
-                        "stderr": exec_res["stderr"],
+                        "test_num": idx,
+                        "status": "ACCEPTED" if passed else "WRONG_ANSWER",
+                        "input": test_in,
+                        "expected": test_expected,
+                        "actual": exec_res["stdout"],
                         "runtime": exec_res["runtime"],
-                        "explanation": explanation
+                        "passed": passed
                     })
 
             return {
-                "status": "ACCEPTED" if all_passed else "FAILED",
-                "compilation_error": None,
+                "status": "ACCEPTED" if all_passed else "WRONG_ANSWER",
+                "all_passed": all_passed,
                 "results": results,
-                "all_passed": all_passed
+                "total_runtime": round(total_runtime, 4),
+                "error_message": None
             }
+
         finally:
-            shutil.rmtree(temp_dir, ignore_errors=True)
+            shutil.rmtree(work_dir, ignore_errors=True)
 
     def run_hidden_tests(
         self,
@@ -206,102 +201,99 @@ class Judge:
         timeout: Optional[float] = None
     ) -> Dict[str, Any]:
         """
-        Judges a submission against server-side hidden test cases.
-        IMPORTANT: Never exposes hidden test case inputs or expected outputs in the return value.
+        Evaluates submission against server-side hidden test cases.
+        Guarantees that test inputs/outputs are never returned in public payload.
         """
-        temp_dir = tempfile.mkdtemp(prefix="codecombat_submit_")
+        work_dir = tempfile.mkdtemp(prefix="cc_judge_")
+        total_runtime = 0.0
+        passed_count = 0
+        total_count = 0
+        test_details = []
+
         try:
-            # 1. Compile
-            compile_ok, compile_err, meta = self.compiler.compile(language, code, temp_dir)
-            if not compile_ok:
+            # 1. Compile / Prepare
+            ok, err_msg, meta = self.compiler.compile(language, code, work_dir)
+            if not ok:
                 return {
                     "status": "COMPILATION_ERROR",
                     "passed_count": 0,
                     "total_count": 0,
                     "score": 0,
                     "runtime": 0.0,
-                    "error_message": compile_err or "Compilation Error"
+                    "error_message": err_msg or "Compilation failed.",
+                    "details": []
                 }
 
-            # 2. Discover hidden test files
-            if not os.path.isdir(hidden_tests_dir):
-                return {
-                    "status": "JUDGE_ERROR",
-                    "passed_count": 0,
-                    "total_count": 0,
-                    "score": 0,
-                    "runtime": 0.0,
-                    "error_message": "Hidden tests directory not found on server."
-                }
-
+            # 2. Discover test files
             test_files = sorted(
                 glob.glob(os.path.join(hidden_tests_dir, "test*.txt")),
-                key=lambda p: int(''.join(filter(str.isdigit, os.path.basename(p))) or '0')
+                key=lambda x: [int(c) if c.isdigit() else c for c in os.path.basename(x).split(".")[0]]
             )
 
-            if not test_files:
+            total_count = len(test_files)
+            if total_count == 0:
                 return {
-                    "status": "JUDGE_ERROR",
+                    "status": "ERROR",
                     "passed_count": 0,
                     "total_count": 0,
                     "score": 0,
                     "runtime": 0.0,
-                    "error_message": "No hidden test cases found for this problem."
+                    "error_message": "No test cases found in problem directory.",
+                    "details": []
                 }
 
-            total_count = len(test_files)
-            passed_count = 0
-            max_runtime = 0.0
             overall_verdict = "ACCEPTED"
-            first_error_msg = None
+            first_fail_msg = None
 
-            for file_path in test_files:
-                input_data, expected_output = self.parse_test_file(file_path)
+            for idx, tf in enumerate(test_files, start=1):
+                stdin_data, expected_out = self.parse_test_file(tf)
 
                 exec_res = self.executor.execute(
                     cmd=meta["cmd"],
-                    work_dir=temp_dir,
-                    stdin_data=input_data,
+                    work_dir=work_dir,
+                    stdin_data=stdin_data,
                     timeout=timeout
                 )
 
-                max_runtime = max(max_runtime, exec_res["runtime"])
+                total_runtime += exec_res["runtime"]
 
                 if exec_res["status"] == "TIMEOUT":
                     if overall_verdict == "ACCEPTED":
                         overall_verdict = "TIME_LIMIT_EXCEEDED"
-                        first_error_msg = f"Time Limit Exceeded on test case {passed_count + 1}"
-                    # Don't break immediately or break to save time
-                    break
+                        first_fail_msg = f"Time Limit Exceeded on test case {idx}"
+                    test_details.append({"test_num": idx, "status": "TIME_LIMIT_EXCEEDED", "runtime": exec_res["runtime"]})
+
                 elif exec_res["status"] == "ERROR":
                     if overall_verdict == "ACCEPTED":
                         overall_verdict = "RUNTIME_ERROR"
-                        first_error_msg = exec_res.get("stderr") or f"Runtime error on test case {passed_count + 1}"
-                    break
+                        first_fail_msg = f"Runtime Error on test case {idx}: {exec_res.get('error', '')}"
+                    test_details.append({"test_num": idx, "status": "RUNTIME_ERROR", "runtime": exec_res["runtime"]})
+
                 else:
                     norm_actual = self.normalize_output(exec_res["stdout"])
-                    norm_expected = self.normalize_output(expected_output)
+                    norm_expected = self.normalize_output(expected_out)
 
                     if norm_actual == norm_expected:
                         passed_count += 1
+                        test_details.append({"test_num": idx, "status": "ACCEPTED", "runtime": exec_res["runtime"]})
                     else:
                         if overall_verdict == "ACCEPTED":
                             overall_verdict = "WRONG_ANSWER"
-                            first_error_msg = f"Wrong Answer on test case {passed_count + 1}"
-                        # In competitive programming, we can stop at first wrong answer or evaluate all
-                        # We stop at first failure for efficiency
-                        break
+                            first_fail_msg = f"Wrong Answer on test case {idx}"
+                        test_details.append({"test_num": idx, "status": "WRONG_ANSWER", "runtime": exec_res["runtime"]})
 
-            is_accepted = (passed_count == total_count and overall_verdict == "ACCEPTED")
-            score_earned = problem_points if is_accepted else 0
+            # Calculate score proportional or all-or-nothing
+            earned_score = problem_points if passed_count == total_count else int((passed_count / total_count) * problem_points)
 
             return {
-                "status": "ACCEPTED" if is_accepted else overall_verdict,
+                "status": overall_verdict,
                 "passed_count": passed_count,
                 "total_count": total_count,
-                "score": score_earned,
-                "runtime": round(max_runtime, 4),
-                "error_message": None if is_accepted else first_error_msg
+                "score": earned_score,
+                "runtime": round(total_runtime, 4),
+                "error_message": first_fail_msg,
+                "details": test_details
             }
+
         finally:
-            shutil.rmtree(temp_dir, ignore_errors=True)
+            shutil.rmtree(work_dir, ignore_errors=True)

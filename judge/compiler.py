@@ -21,10 +21,29 @@ class Compiler:
 
     @staticmethod
     def detect_c_compiler() -> Optional[str]:
-        """Detects available C compiler on the host system."""
-        for compiler in ["gcc", "clang", "cl"]:
-            if shutil.which(compiler):
-                return compiler
+        """Detects and validates an available working C compiler on the host system."""
+        import tempfile
+        for compiler in ["clang", "gcc", "cl", "clang.exe", "gcc.exe"]:
+            resolved = shutil.which(compiler)
+            if resolved:
+                td = tempfile.mkdtemp(prefix="test_c_")
+                try:
+                    src = os.path.join(td, "test.c")
+                    with open(src, "w", encoding="utf-8") as f:
+                        f.write("int main(){return 0;}\n")
+                    res = subprocess.run(
+                        [resolved, "test.c", "-o", "test.exe"],
+                        cwd=td,
+                        stdout=subprocess.DEVNULL,
+                        stderr=subprocess.DEVNULL,
+                        timeout=3.0
+                    )
+                    if res.returncode == 0 and os.path.exists(os.path.join(td, "test.exe")):
+                        return resolved
+                except Exception:
+                    pass
+                finally:
+                    shutil.rmtree(td, ignore_errors=True)
         return None
 
     @staticmethod

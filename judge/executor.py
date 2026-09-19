@@ -1,6 +1,6 @@
 """
-CODE COMBAT - Code Executor Module
-Executes compiled programs in controlled isolated subprocesses with timeout and memory limits.
+CODE COMBAT Pro - Code Executor Module
+Executes compiled programs in isolated subprocesses with timeout and resource limits.
 """
 
 import subprocess
@@ -15,8 +15,8 @@ class Executor:
 
     def __init__(self, config: Optional[Dict[str, Any]] = None):
         self.config = config or {}
-        self.default_timeout = self.config.get("execution_timeout_seconds", 3.0)
-        self.max_output_length = self.config.get("max_output_length", 50000)
+        self.default_timeout = float(self.config.get("execution_timeout_seconds", 3.0))
+        self.max_output_length = int(self.config.get("max_output_length", 50000))
 
     def execute(
         self,
@@ -26,7 +26,7 @@ class Executor:
         timeout: Optional[float] = None
     ) -> Dict[str, Any]:
         """
-        Runs the specified command inside work_dir.
+        Runs the specified command inside work_dir with timeout and memory limits.
 
         Returns:
             {
@@ -38,10 +38,9 @@ class Executor:
                 "error": str | None
             }
         """
-        run_timeout = timeout if timeout is not None else self.default_timeout
+        run_timeout = float(timeout) if timeout is not None else self.default_timeout
         start_time = time.perf_counter()
-        
-        # Prepare environment (prevent buffer lag in python, strip sensitive env if needed)
+
         env = os.environ.copy()
         env["PYTHONUNBUFFERED"] = "1"
         env["PYTHONDONTWRITEBYTECODE"] = "1"
@@ -63,44 +62,40 @@ class Executor:
                     timeout=run_timeout
                 )
                 runtime = time.perf_counter() - start_time
-                exit_code = process.returncode
 
-                # Truncate if output is too massive
                 if len(stdout_data) > self.max_output_length:
-                    stdout_data = stdout_data[:self.max_output_length] + "\n...[Output truncated due to size limit]"
-                if len(stderr_data) > self.max_output_length:
-                    stderr_data = stderr_data[:self.max_output_length] + "\n...[Error output truncated]"
+                    stdout_data = stdout_data[:self.max_output_length] + "\n[OUTPUT TRUNCATED: Exceeded buffer limit]"
 
-                if exit_code != 0:
+                if process.returncode != 0:
                     return {
                         "status": "ERROR",
                         "stdout": stdout_data,
-                        "stderr": stderr_data.strip(),
+                        "stderr": stderr_data,
                         "runtime": round(runtime, 4),
-                        "exit_code": exit_code,
-                        "error": stderr_data.strip() or f"Process exited with non-zero code {exit_code}"
+                        "exit_code": process.returncode,
+                        "error": f"Process exited with return code {process.returncode}"
                     }
 
                 return {
                     "status": "OK",
                     "stdout": stdout_data,
-                    "stderr": stderr_data.strip(),
+                    "stderr": stderr_data,
                     "runtime": round(runtime, 4),
-                    "exit_code": exit_code,
+                    "exit_code": 0,
                     "error": None
                 }
 
             except subprocess.TimeoutExpired:
-                # Forcefully terminate process and all child processes
-                self._terminate_process(process)
+                # Force kill process tree
+                self._kill_process_tree(process)
                 runtime = time.perf_counter() - start_time
                 return {
                     "status": "TIMEOUT",
                     "stdout": "",
-                    "stderr": f"Time Limit Exceeded ({run_timeout}s)",
+                    "stderr": f"Execution exceeded time limit of {run_timeout:.2f}s.",
                     "runtime": round(runtime, 4),
                     "exit_code": None,
-                    "error": f"Time Limit Exceeded: Execution took longer than {run_timeout} seconds."
+                    "error": f"Time Limit Exceeded ({run_timeout:.2f}s)"
                 }
 
         except Exception as e:
@@ -110,20 +105,20 @@ class Executor:
                 "stdout": "",
                 "stderr": str(e),
                 "runtime": round(runtime, 4),
-                "exit_code": -1,
-                "error": f"Execution failed to launch: {str(e)}"
+                "exit_code": None,
+                "error": f"Execution Error: {str(e)}"
             }
 
-    def _terminate_process(self, process: subprocess.Popen):
-        """Cleanly terminates a process tree."""
+    @staticmethod
+    def _kill_process_tree(process: subprocess.Popen):
+        """Kills process and all its children cleanly."""
         try:
             if sys.platform.startswith("win"):
-                # Windows taskkill kills process tree
                 subprocess.run(
                     ["taskkill", "/F", "/T", "/PID", str(process.pid)],
                     stdout=subprocess.DEVNULL,
                     stderr=subprocess.DEVNULL,
-                    timeout=2.0
+                    check=False
                 )
             else:
                 process.kill()

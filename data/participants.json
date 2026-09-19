@@ -1,34 +1,36 @@
 [
   {
-    "id": "106ce9ea",
-    "name": "Alice",
-    "college": "Computer Science",
-    "reg_no": "CS2026-001",
-    "registered_at": "2026-09-19T13:32:31.164896",
+    "id": "user_8f180a1d",
+    "name": "Alice Smith",
+    "college": "Oxford University",
+    "reg_no": "OX101",
     "score": 300,
+    "registered_at": "2026-09-19T22:22:46.951843",
     "solved_problems": [
-      "two_sum",
-      "maximum_subarray"
+      "maximum_subarray",
+      "two_sum"
     ]
   },
   {
-    "id": "5ad1bcf9",
-    "name": "Bob",
-    "college": "Information Technology",
-    "reg_no": "IT2026-042",
-    "registered_at": "2026-09-19T13:32:31.165673",
+    "id": "user_5d0c5ae3",
+    "name": "Bob Johnson",
+    "college": "Cambridge",
+    "reg_no": "CB202",
     "score": 100,
+    "registered_at": "2026-09-19T22:22:46.962363",
     "solved_problems": [
       "two_sum"
     ]
   },
   {
-    "id": "4e334daf",
-    "name": "gandhi",
-    "college": "l;",
-    "reg_no": "4",
-    "registered_at": "2026-09-19T13:34:31.528940",
-    "score": 0,
-    "solved_problems": []
+    "id": "user_ac9fdc22",
+    "name": "Charlie Test",
+    "college": "MIT",
+    "reg_no": "MIT999",
+    "score": 100,
+    "registered_at": "2026-09-19T22:27:12.798875",
+    "solved_problems": [
+      "two_sum"
+    ]
   }
 ]

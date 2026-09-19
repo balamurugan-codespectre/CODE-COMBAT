@@ -1,734 +1,375 @@
 /**
- * CODE COMBAT - Main Frontend Controller & SPA Router
- * Controls views, registration, problem studio, real-time judge integration, leaderboard, and countdown timer.
+ * CODE COMBAT Pro - Main Single Page Application Controller
  */
 
 const App = {
-  config: {},
+  currentView: 'home',
   participant: null,
   problems: [],
-  currentProblem: null,
-  currentDifficultyFilter: "ALL",
-  searchQuery: "",
-  editor: null,
+  activeProblem: null,
+  currentLanguage: 'python',
+  timerRemainingSeconds: 3600,
   timerInterval: null,
-  timeRemainingSeconds: 0,
-  timerExpired: false,
+  editor: null,
 
-  async init() {
-    console.log("[CodeCombat] Initializing frontend application...");
+  init() {
+    // 1. Initialize custom editor
+    this.editor = new CodeEditor('editor-code', 'editor-lines');
 
-    // 1. Fetch Configuration
-    await this.loadConfig();
+    // 2. Restore participant session
+    const saved = localStorage.getItem('cc_participant');
+    if (saved) {
+      try {
+        this.participant = JSON.parse(saved);
+        this.updateUserBadge();
+      } catch (e) {}
+    }
 
-    // 2. Restore Participant Session
-    this.restoreSession();
+    // 3. Initialize Timer
+    this.initTimer();
 
-    // 3. Initialize Code Editor
-    this.editor = new CodeEditor("code-editor-textarea", "editor-line-numbers", "editor-language-select");
-
-    // 4. Initialize Admin Subsystem
-    Admin.init();
-
-    // 5. Bind Navigation and UI Events
-    this.bindEvents();
-
-    // 6. Initialize Timer
-    this.initCompetitionTimer();
-
-    // 7. Initial View Routing
-    const hash = window.location.hash.replace("#", "") || "home";
-    this.showView(hash);
-
-    // 8. Load Initial Data
+    // 4. Fetch initial configuration & problems
     this.loadProblems();
     this.loadLeaderboard();
   },
 
-  // ------------------- API Helpers -------------------
+  navigate(viewId) {
+    document.querySelectorAll('.view-section').forEach(sec => sec.classList.remove('active'));
+    document.querySelectorAll('.nav-item').forEach(link => link.classList.remove('active'));
 
-  async apiGet(endpoint) {
-    const res = await fetch(endpoint);
-    if (!res.ok) {
-      const err = await res.json().catch(() => ({}));
-      throw new Error(err.error || `HTTP ${res.status}`);
-    }
-    return res.json();
+    const targetSec = document.getElementById(`view-${viewId}`);
+    const targetLink = document.getElementById(`nav-${viewId}`);
+
+    if (targetSec) targetSec.classList.add('active');
+    if (targetLink) targetLink.classList.add('active');
+
+    this.currentView = viewId;
+
+    if (viewId === 'problems') this.loadProblems();
+    if (viewId === 'leaderboard') this.loadLeaderboard();
+    if (viewId === 'admin') Admin.checkHealth();
   },
 
-  async apiPost(endpoint, body) {
-    const res = await fetch(endpoint, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(body)
-    });
-    if (!res.ok) {
-      const err = await res.json().catch(() => ({}));
-      throw new Error(err.error || `HTTP ${res.status}`);
-    }
-    return res.json();
+  showToast(message, type = 'info') {
+    const container = document.getElementById('toast-container');
+    const toast = document.createElement('div');
+    toast.className = `toast ${type}`;
+    toast.innerHTML = `<span>${type === 'success' ? '✓' : (type === 'error' ? '✖' : 'ℹ')}</span> <span>${message}</span>`;
+    container.appendChild(toast);
+    setTimeout(() => {
+      toast.style.opacity = '0';
+      setTimeout(() => toast.remove(), 300);
+    }, 3500);
   },
 
-  // ------------------- Configuration & Session -------------------
+  initTimer() {
+    let savedTime = localStorage.getItem('cc_timer');
+    this.timerRemainingSeconds = savedTime ? parseInt(savedTime, 10) : 3600;
 
-  async loadConfig() {
-    try {
-      this.config = await this.apiGet("/api/config");
-    } catch (e) {
-      console.warn("Could not load backend config, using defaults", e);
-      this.config = {
-        competition_name: "CODE COMBAT",
-        competition_duration_minutes: 90
-      };
-    }
-  },
+    const display = document.getElementById('timer-display');
+    const timerBox = document.getElementById('contest-timer');
 
-  restoreSession() {
-    try {
-      const saved = localStorage.getItem("codecombat_participant");
-      if (saved) {
-        this.participant = JSON.parse(saved);
-        this.updateParticipantUI();
-      }
-    } catch (e) {}
-  },
+    this.timerInterval = setInterval(() => {
+      if (this.timerRemainingSeconds > 0) {
+        this.timerRemainingSeconds--;
+        localStorage.setItem('cc_timer', this.timerRemainingSeconds);
 
-  updateParticipantUI() {
-    const pill = document.getElementById("header-participant-pill");
-    const nameSpan = document.getElementById("header-participant-name");
-    const avatar = document.getElementById("header-participant-avatar");
+        const mins = Math.floor(this.timerRemainingSeconds / 60);
+        const secs = this.timerRemainingSeconds % 60;
+        display.textContent = `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
 
-    if (this.participant && this.participant.name) {
-      pill.style.display = "flex";
-      nameSpan.innerText = this.participant.name;
-      avatar.innerText = this.participant.name.charAt(0).toUpperCase();
-    } else {
-      pill.style.display = "flex";
-      nameSpan.innerText = "Guest (Register)";
-      avatar.innerText = "?";
-    }
-  },
-
-  // ------------------- Competition Timer -------------------
-
-  initCompetitionTimer() {
-    const durationMinutes = this.config.competition_duration_minutes || 90;
-    const storageKey = "codecombat_end_timestamp";
-
-    let endTime = localStorage.getItem(storageKey);
-    if (!endTime) {
-      endTime = Date.now() + durationMinutes * 60 * 1000;
-      localStorage.setItem(storageKey, endTime);
-    } else {
-      endTime = parseInt(endTime, 10);
-    }
-
-    const timerDisplay = document.getElementById("competition-timer-display");
-
-    const updateTimer = () => {
-      const now = Date.now();
-      const diff = Math.max(0, Math.floor((endTime - now) / 1000));
-      this.timeRemainingSeconds = diff;
-
-      const hrs = String(Math.floor(diff / 3600)).padStart(2, "0");
-      const mins = String(Math.floor((diff % 3600) / 60)).padStart(2, "0");
-      const secs = String(diff % 60).padStart(2, "0");
-
-      if (timerDisplay) {
-        timerDisplay.innerText = `${hrs}:${mins}:${secs}`;
-      }
-
-      // Visual warning classes
-      const container = document.getElementById("competition-timer-container");
-      if (container) {
-        if (diff <= 180) { // < 3 mins
-          container.className = "competition-timer timer-danger";
-        } else if (diff <= 600) { // < 10 mins
-          container.className = "competition-timer timer-warning";
-        } else {
-          container.className = "competition-timer";
+        if (this.timerRemainingSeconds <= 600) {
+          timerBox.classList.add('warning');
         }
+      } else {
+        clearInterval(this.timerInterval);
+        display.textContent = '00:00';
+        this.showToast('Contest Time Expired!', 'warning');
       }
-
-      if (diff === 0 && !this.timerExpired) {
-        this.timerExpired = true;
-        this.showToast("Competition time has expired! Submissions are now closed.", "error");
-        const submitBtn = document.getElementById("btn-submit-code");
-        if (submitBtn) submitBtn.disabled = true;
-      }
-    };
-
-    updateTimer();
-    this.timerInterval = setInterval(updateTimer, 1000);
+    }, 1000);
   },
 
-  // ------------------- Navigation & View Routing -------------------
-
-  showView(viewName) {
-    this.currentView = viewName;
-    window.location.hash = viewName;
-
-    document.querySelectorAll(".view-section").forEach(sec => sec.classList.remove("active"));
-    document.querySelectorAll(".nav-btn").forEach(btn => btn.classList.remove("active"));
-
-    const targetSection = document.getElementById(`view-${viewName}`);
-    if (targetSection) {
-      targetSection.classList.add("active");
-    }
-
-    const targetNav = document.getElementById(`nav-${viewName}`);
-    if (targetNav) {
-      targetNav.classList.add("active");
-    }
-
-    if (viewName === "problems") {
-      this.loadProblems();
-    } else if (viewName === "leaderboard") {
-      this.loadLeaderboard();
-    } else if (viewName === "admin") {
-      Admin.loadAdminData();
-    }
-  },
-
-  bindEvents() {
-    // Nav Buttons
-    document.querySelectorAll("[data-nav]").forEach(el => {
-      el.addEventListener("click", (e) => {
-        const target = e.currentTarget.getAttribute("data-nav");
-        this.showView(target);
-      });
-    });
-
-    // Start Coding Button (Directs to Registration or Problems)
-    const startCodingBtn = document.getElementById("btn-start-coding");
-    if (startCodingBtn) {
-      startCodingBtn.addEventListener("click", () => {
-        if (!this.participant) {
-          this.openModal("register-modal");
-        } else {
-          this.showView("problems");
-        }
-      });
-    }
-
-    // Participant Header Pill
-    const participantPill = document.getElementById("header-participant-pill");
-    if (participantPill) {
-      participantPill.addEventListener("click", () => {
-        this.openModal("register-modal");
-      });
-    }
-
-    // Registration Form
-    const regForm = document.getElementById("registration-form");
-    if (regForm) {
-      regForm.addEventListener("submit", (e) => {
-        e.preventDefault();
-        this.handleRegistration();
-      });
-    }
-
-    // Difficulty Filter Buttons
-    document.querySelectorAll(".filter-btn").forEach(btn => {
-      btn.addEventListener("click", (e) => {
-        document.querySelectorAll(".filter-btn").forEach(b => b.classList.remove("active"));
-        e.currentTarget.classList.add("active");
-        this.currentDifficultyFilter = e.currentTarget.getAttribute("data-diff");
-        this.renderProblemsTable();
-      });
-    });
-
-    // Problem Search Box
-    const searchBox = document.getElementById("problem-search-input");
-    if (searchBox) {
-      searchBox.addEventListener("input", (e) => {
-        this.searchQuery = e.target.value.toLowerCase().trim();
-        this.renderProblemsTable();
-      });
-    }
-
-    // Studio Action Buttons
-    const runBtn = document.getElementById("btn-run-code");
-    if (runBtn) runBtn.addEventListener("click", () => this.runCode());
-
-    const submitBtn = document.getElementById("btn-submit-code");
-    if (submitBtn) submitBtn.addEventListener("click", () => this.submitCode());
-
-    const resetBtn = document.getElementById("btn-reset-code");
-    if (resetBtn) {
-      resetBtn.addEventListener("click", () => {
-        if (confirm("Reset code editor to starter template? Your current changes will be discarded.")) {
-          this.editor.resetCurrentCode();
-          this.showToast("Code editor reset to starter template.", "info");
-        }
-      });
-    }
-
-    // Studio Test Tabs
-    document.querySelectorAll(".test-tab-btn").forEach(btn => {
-      btn.addEventListener("click", (e) => {
-        document.querySelectorAll(".test-tab-btn").forEach(b => b.classList.remove("active"));
-        document.querySelectorAll(".test-tab-pane").forEach(p => p.style.display = "none");
-
-        e.currentTarget.classList.add("active");
-        const tabTarget = e.currentTarget.getAttribute("data-tab");
-        const pane = document.getElementById(`tab-pane-${tabTarget}`);
-        if (pane) pane.style.display = "block";
-      });
-    });
-
-    // Custom Input Run Button
-    const customRunBtn = document.getElementById("btn-run-custom-input");
-    if (customRunBtn) {
-      customRunBtn.addEventListener("click", () => this.runCustomInput());
-    }
-
-    // Modal Closers
-    document.querySelectorAll(".modal-close-btn").forEach(btn => {
-      btn.addEventListener("click", (e) => {
-        const modal = e.currentTarget.closest(".modal-overlay");
-        if (modal) modal.classList.remove("active");
-      });
-    });
-  },
-
-  // ------------------- Participant Registration -------------------
-
-  async handleRegistration() {
-    const name = document.getElementById("reg-name-input").value.trim();
-    const college = document.getElementById("reg-college-input").value.trim();
-    const regNo = document.getElementById("reg-no-input").value.trim();
-
-    if (!name) {
-      this.showToast("Please enter your name.", "error");
-      return;
-    }
+  async handleRegister(e) {
+    e.preventDefault();
+    const name = document.getElementById('reg-name').value.trim();
+    const college = document.getElementById('reg-college').value.trim();
+    const reg_no = document.getElementById('reg-no').value.trim();
 
     try {
-      const res = await this.apiPost("/api/register", {
-        name,
-        college,
-        reg_no: regNo
+      const res = await fetch('/api/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name, college, reg_no })
       });
-
-      if (res.success && res.participant) {
-        this.participant = res.participant;
-        localStorage.setItem("codecombat_participant", JSON.stringify(this.participant));
-        this.updateParticipantUI();
-        this.closeModal("register-modal");
-        this.showToast(`Welcome, ${name}! Start coding!`, "success");
-        this.showView("problems");
+      const data = await res.json();
+      if (data.success) {
+        this.participant = data.participant;
+        localStorage.setItem('cc_participant', JSON.stringify(data.participant));
+        this.updateUserBadge();
+        this.showToast(`Welcome, ${name}!`, 'success');
+        this.navigate('problems');
+      } else {
+        this.showToast(data.error || 'Registration failed', 'error');
       }
-    } catch (e) {
-      this.showToast("Registration failed: " + e.message, "error");
+    } catch (err) {
+      this.showToast('Network error: ' + err.message, 'error');
     }
   },
 
-  // ------------------- Problems Dashboard -------------------
+  updateUserBadge() {
+    if (!this.participant) return;
+    document.getElementById('user-badge').style.display = 'flex';
+    document.getElementById('user-name-display').textContent = this.participant.name;
+    document.getElementById('user-score-display').textContent = `${this.participant.score || 0} pts`;
+  },
 
   async loadProblems() {
     try {
-      const pid = this.participant ? this.participant.id : "";
-      const res = await this.apiGet(`/api/problems?participant_id=${pid}`);
-      this.problems = res.problems || [];
-      this.renderProblemsTable();
+      const pid = this.participant ? `?participant_id=${this.participant.id}` : '';
+      const res = await fetch(`/api/problems${pid}`);
+      const data = await res.json();
+      this.problems = data.problems || [];
+      this.renderProblemsTable(this.problems);
     } catch (e) {
-      console.error("Failed to load problems", e);
+      this.showToast('Failed to load problems: ' + e.message, 'error');
     }
   },
 
-  renderProblemsTable() {
-    const tableBody = document.getElementById("problems-table-body");
-    if (!tableBody) return;
+  renderProblemsTable(probs) {
+    const tbody = document.getElementById('problems-table-body');
+    if (!tbody) return;
 
-    let filtered = this.problems.filter(p => {
-      // Difficulty filter
-      if (this.currentDifficultyFilter !== "ALL" && p.difficulty.toUpperCase() !== this.currentDifficultyFilter) {
-        return false;
-      }
-      // Search filter
-      if (this.searchQuery && !p.title.toLowerCase().includes(this.searchQuery) && !p.category.toLowerCase().includes(this.searchQuery)) {
-        return false;
-      }
-      return true;
-    });
-
-    if (filtered.length === 0) {
-      tableBody.innerHTML = `<tr><td colspan="6" style="text-align:center; padding: 32px; color: var(--text-dim);">No problems found matching criteria.</td></tr>`;
-      return;
-    }
-
-    tableBody.innerHTML = filtered.map((p, idx) => {
-      const diffBadge = `badge-${p.difficulty.toLowerCase()}`;
-      const statusBadge = p.status === "Solved" ? "badge-solved" : "badge-unsolved";
-      return `
-        <tr class="problem-row" onclick="App.openProblem('${p.id}')">
-          <td style="color: var(--text-dim); font-family: var(--font-mono); font-size: 12px;">#${idx + 1}</td>
-          <td class="problem-title-cell">
-            <strong>${this.escapeHtml(p.title)}</strong>
-          </td>
-          <td style="color: var(--text-muted); font-size: 12px;">${p.category}</td>
-          <td><span class="badge ${diffBadge}">${p.difficulty}</span></td>
-          <td style="font-family: var(--font-mono); font-weight: 600; color: #fff;">${p.points} pts</td>
-          <td><span class="badge ${statusBadge}">${p.status}</span></td>
-        </tr>
-      `;
-    }).join("");
+    tbody.innerHTML = probs.map(p => `
+      <tr onclick="App.openProblem('${p.id}')">
+        <td>${p.solved ? '<span class="badge badge-solved">✓ Solved</span>' : '<span style="color:var(--text-muted)">-</span>'}</td>
+        <td style="font-weight:600; color:#fff;">${p.title}</td>
+        <td><span class="badge badge-${p.difficulty.toLowerCase()}">${p.difficulty}</span></td>
+        <td style="font-family:var(--font-mono); font-weight:700; color:var(--accent-cyan);">${p.points} pts</td>
+        <td style="color:var(--text-secondary);">${p.time_limit}s</td>
+        <td><button class="btn btn-secondary" style="padding:0.3rem 0.75rem; font-size:0.8rem;">Solve ➔</button></td>
+      </tr>
+    `).join('');
   },
 
-  // ------------------- Coding Studio -------------------
+  filterProblems(difficulty, btn) {
+    document.querySelectorAll('.filter-chips .chip').forEach(c => c.classList.remove('active'));
+    if (btn) btn.classList.add('active');
+
+    if (difficulty === 'all') {
+      this.renderProblemsTable(this.problems);
+    } else {
+      this.renderProblemsTable(this.problems.filter(p => p.difficulty.toLowerCase() === difficulty.toLowerCase()));
+    }
+  },
 
   async openProblem(problemId) {
     try {
-      const problem = await this.apiGet(`/api/problems/${problemId}`);
-      if (!problem) return;
+      const res = await fetch(`/api/problems/${problemId}`);
+      const prob = await res.json();
+      this.activeProblem = prob;
 
-      this.currentProblem = problem;
-      this.renderProblemStudio(problem);
-      this.showView("studio");
-    } catch (e) {
-      this.showToast("Failed to open problem: " + e.message, "error");
-    }
-  },
+      document.getElementById('ide-prob-title').textContent = prob.title;
+      const badge = document.getElementById('ide-prob-badge');
+      badge.textContent = prob.difficulty;
+      badge.className = `badge badge-${prob.difficulty.toLowerCase()}`;
 
-  renderProblemStudio(problem) {
-    // Problem Details Left Panel
-    document.getElementById("studio-problem-title").innerText = problem.title;
-    const diffBadge = document.getElementById("studio-difficulty-badge");
-    diffBadge.className = `badge badge-${problem.difficulty.toLowerCase()}`;
-    diffBadge.innerText = problem.difficulty;
-
-    document.getElementById("studio-points-badge").innerText = `${problem.points} Points`;
-    document.getElementById("studio-category-badge").innerText = problem.category || "General";
-    document.getElementById("studio-time-limit").innerText = `Time Limit: ${problem.time_limit}s`;
-
-    document.getElementById("studio-description").innerText = problem.description;
-    document.getElementById("studio-input-format").innerText = problem.input_format;
-    document.getElementById("studio-output-format").innerText = problem.output_format;
-    document.getElementById("studio-constraints").innerText = problem.constraints;
-
-    // Render Sample Tests inside Left Panel
-    const samplesContainer = document.getElementById("studio-sample-examples");
-    if (samplesContainer && problem.sample_tests) {
-      samplesContainer.innerHTML = problem.sample_tests.map((st, idx) => `
-        <div class="sample-test-card">
-          <div class="sample-test-header">
-            <span>Example ${idx + 1}</span>
-          </div>
-          <div class="sample-io-grid">
-            <div class="sample-io-block">
-              <h5>Input</h5>
-              <pre>${this.escapeHtml(st.input)}</pre>
-            </div>
-            <div class="sample-io-block">
-              <h5>Output</h5>
-              <pre>${this.escapeHtml(st.output)}</pre>
-            </div>
-          </div>
-          ${st.explanation ? `<div style="font-size: 12px; color: var(--text-dim); margin-top: 6px;"><em>Explanation:</em> ${this.escapeHtml(st.explanation)}</div>` : ""}
+      let samplesHtml = (prob.sample_tests || []).map((st, i) => `
+        <div style="background:var(--bg-primary); padding:0.75rem; border-radius:6px; margin-top:0.75rem;">
+          <div style="font-weight:700; color:var(--accent-cyan); font-size:0.85rem;">Example ${i + 1}</div>
+          <div style="margin-top:0.25rem;"><strong>Input:</strong><pre style="font-family:var(--font-mono); font-size:0.85rem; color:#fff;">${st.input}</pre></div>
+          <div style="margin-top:0.25rem;"><strong>Output:</strong><pre style="font-family:var(--font-mono); font-size:0.85rem; color:var(--accent-green);">${st.output}</pre></div>
         </div>
-      `).join("");
-    }
+      `).join('');
 
-    // Load into Code Editor
-    this.editor.loadProblem(problem);
-
-    // Switch right panel to sample tab
-    this.switchTestTab("sample");
-    document.getElementById("sample-results-container").innerHTML = `<div style="color: var(--text-dim); text-align: center; padding: 24px;">Click <strong>Run Code</strong> to test your solution against visible test cases.</div>`;
-  },
-
-  switchTestTab(tabName) {
-    document.querySelectorAll(".test-tab-btn").forEach(b => b.classList.remove("active"));
-    document.querySelectorAll(".test-tab-pane").forEach(p => p.style.display = "none");
-
-    const tabBtn = document.querySelector(`[data-tab="${tabName}"]`);
-    if (tabBtn) tabBtn.classList.add("active");
-
-    const pane = document.getElementById(`tab-pane-${tabName}`);
-    if (pane) pane.style.display = "block";
-  },
-
-  // ------------------- Code Execution & Testing -------------------
-
-  async runCode() {
-    if (!this.currentProblem) return;
-
-    const code = this.editor.getCode();
-    const lang = this.editor.getLanguage();
-    const runBtn = document.getElementById("btn-run-code");
-    const container = document.getElementById("sample-results-container");
-
-    this.switchTestTab("sample");
-    runBtn.disabled = true;
-    runBtn.innerHTML = `<span>Running...</span>`;
-    container.innerHTML = `<div style="text-align: center; padding: 32px; color: var(--accent-cyan); font-weight: 600;">Executing sample test cases...</div>`;
-
-    try {
-      const res = await this.apiPost("/api/run", {
-        problem_id: this.currentProblem.id,
-        language: lang,
-        code: code,
-        is_custom: false
-      });
-
-      const result = res.result;
-
-      if (result.status === "COMPILATION_ERROR") {
-        container.innerHTML = `
-          <div class="result-banner result-banner-failed">
-            <div class="result-banner-title">COMPILATION ERROR</div>
-            <pre style="text-align: left; background: #06090e; padding: 12px; border-radius: 6px; font-size: 12px; overflow-x: auto; color: #fb7185; margin-top: 10px;">${this.escapeHtml(result.compilation_error)}</pre>
-          </div>
-        `;
-        return;
-      }
-
-      const allPassed = result.all_passed;
-      let html = `
-        <div class="result-banner ${allPassed ? 'result-banner-accepted' : 'result-banner-failed'}">
-          <div class="result-banner-title">${allPassed ? 'SAMPLE TESTS PASSED ✓' : 'SOME TESTS FAILED ✗'}</div>
-          <div style="font-size: 13px;">${allPassed ? 'All sample test cases matched expected output.' : 'Check actual output against expected output below.'}</div>
-        </div>
+      document.getElementById('ide-prob-description').innerHTML = `
+        <div style="color:var(--text-primary); font-size:0.95rem; margin-bottom:1rem;">${prob.description}</div>
+        <h4 style="color:var(--accent-cyan); font-size:0.9rem; margin-top:1rem;">Constraints</h4>
+        <pre style="font-family:var(--font-mono); font-size:0.85rem; color:var(--text-secondary);">${prob.constraints || 'Standard constraints'}</pre>
+        <h4 style="color:var(--accent-cyan); font-size:0.9rem; margin-top:1rem;">Sample Cases</h4>
+        ${samplesHtml}
       `;
 
-      html += (result.results || []).map(r => `
-        <div class="case-result-card ${r.passed ? 'passed' : 'failed'}">
-          <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
-            <strong>Test Case #${r.test_case}</strong>
-            <span class="badge ${r.passed ? 'badge-easy' : 'badge-hard'}">${r.status} (${r.runtime}s)</span>
-          </div>
-          <div style="font-size: 11px; color: var(--text-dim); margin-bottom: 2px;">Input:</div>
-          <pre style="background: #06090e; padding: 6px; border-radius: 4px; font-size: 11px; margin-bottom: 6px;">${this.escapeHtml(r.input)}</pre>
-          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
-            <div>
-              <div style="font-size: 11px; color: var(--text-dim); margin-bottom: 2px;">Expected Output:</div>
-              <pre style="background: #06090e; padding: 6px; border-radius: 4px; font-size: 11px; color: #34d399;">${this.escapeHtml(r.expected)}</pre>
-            </div>
-            <div>
-              <div style="font-size: 11px; color: var(--text-dim); margin-bottom: 2px;">Actual Output:</div>
-              <pre style="background: #06090e; padding: 6px; border-radius: 4px; font-size: 11px; color: ${r.passed ? '#34d399' : '#fb7185'};">${this.escapeHtml(r.actual || r.stderr || "(No output)")}</pre>
-            </div>
-          </div>
-        </div>
-      `).join("");
-
-      container.innerHTML = html;
+      this.handleLanguageChange();
+      this.navigate('ide');
     } catch (e) {
-      container.innerHTML = `<div class="result-banner result-banner-failed"><div class="result-banner-title">ERROR</div><div>${this.escapeHtml(e.message)}</div></div>`;
-    } finally {
-      runBtn.disabled = false;
-      runBtn.innerHTML = `<span>Run Code</span>`;
+      this.showToast('Error opening problem: ' + e.message, 'error');
     }
   },
 
-  async runCustomInput() {
-    const code = this.editor.getCode();
-    const lang = this.editor.getLanguage();
-    const customInput = document.getElementById("custom-input-textarea").value;
-    const outputContainer = document.getElementById("custom-output-display");
-    const runBtn = document.getElementById("btn-run-custom-input");
+  handleLanguageChange() {
+    if (!this.activeProblem) return;
+    this.currentLanguage = document.getElementById('ide-lang-select').value;
+    const starter = (this.activeProblem.starter_code && this.activeProblem.starter_code[this.currentLanguage]) || '';
+    this.editor.setValue(starter);
+  },
 
-    runBtn.disabled = true;
-    runBtn.innerText = "Executing...";
-    outputContainer.innerText = "Executing in isolated sandbox...";
+  resetCode() {
+    if (confirm('Reset code to starter template?')) {
+      this.handleLanguageChange();
+    }
+  },
+
+  switchOutputTab(tabId, btn) {
+    document.querySelectorAll('.tabs-header .tab-btn').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.panel-body .tab-pane').forEach(p => p.classList.remove('active'));
+
+    btn.classList.add('active');
+    document.getElementById(`tab-${tabId}`).classList.add('active');
+  },
+
+  async runCode() {
+    if (!this.activeProblem) return;
+    const code = this.editor.getValue();
+    const btn = document.getElementById('btn-run');
+    btn.disabled = true;
+    btn.textContent = 'Running...';
 
     try {
-      const res = await this.apiPost("/api/run", {
-        problem_id: this.currentProblem ? this.currentProblem.id : "scratch",
-        language: lang,
-        code: code,
-        custom_input: customInput,
-        is_custom: true
+      const res = await fetch('/api/run', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          problem_id: this.activeProblem.id,
+          language: this.currentLanguage,
+          code: code
+        })
       });
+      const data = await res.json();
+      const r = data.result;
 
-      const r = res.result;
-      let text = `[Status] : ${r.status}\n[Runtime]: ${r.runtime}s\n\n`;
-      if (r.stdout) text += `--- STDOUT ---\n${r.stdout}\n`;
-      if (r.stderr) text += `\n--- STDERR ---\n${r.stderr}\n`;
-      if (!r.stdout && !r.stderr) text += `(Process completed with no output)`;
+      let html = '';
+      if (r.status === 'COMPILATION_ERROR') {
+        html = `<div style="color:var(--accent-red); font-weight:700;">Compilation Error:</div><pre style="color:#ef4444; font-family:var(--font-mono); font-size:0.85rem; margin-top:0.5rem;">${r.error_message}</pre>`;
+      } else {
+        html = (r.results || []).map(t => `
+          <div style="background:var(--bg-primary); padding:0.6rem; border-radius:6px; margin-bottom:0.5rem; border-left:4px solid ${t.passed ? 'var(--accent-green)' : 'var(--accent-red)'};">
+            <div style="display:flex; justify-content:space-between; font-weight:700;">
+              <span>Sample Test #${t.test_num}</span>
+              <span style="color:${t.passed ? 'var(--accent-green)' : 'var(--accent-red)'};">${t.status} (${t.runtime}s)</span>
+            </div>
+            ${!t.passed ? `
+              <div class="diff-view">
+                <div class="diff-box expected"><strong>Expected:</strong><pre>${t.expected}</pre></div>
+                <div class="diff-box actual"><strong>Actual:</strong><pre>${t.actual || t.error || ''}</pre></div>
+              </div>
+            ` : ''}
+          </div>
+        `).join('');
+      }
 
-      outputContainer.innerText = text;
+      document.getElementById('sample-tests-container').innerHTML = html;
+      this.switchOutputTab('sample-tests', document.querySelector('.tabs-header .tab-btn'));
+      this.showToast(r.all_passed ? 'All sample tests passed!' : 'Some sample tests failed.', r.all_passed ? 'success' : 'warning');
     } catch (e) {
-      outputContainer.innerText = `Error: ${e.message}`;
+      this.showToast('Run error: ' + e.message, 'error');
     } finally {
-      runBtn.disabled = false;
-      runBtn.innerText = "Run Custom Input";
+      btn.disabled = false;
+      btn.textContent = '▶ Run Tests';
     }
   },
 
   async submitCode() {
     if (!this.participant) {
-      this.openModal("register-modal");
-      this.showToast("Please register first to submit solutions.", "info");
+      this.showToast('Please register first before submitting!', 'warning');
+      this.navigate('register');
       return;
     }
+    if (!this.activeProblem) return;
 
-    if (!this.currentProblem) return;
-
-    const code = this.editor.getCode();
-    const lang = this.editor.getLanguage();
-    const submitBtn = document.getElementById("btn-submit-code");
-    const resultsContainer = document.getElementById("submission-results-container");
-
-    this.switchTestTab("results");
-    submitBtn.disabled = true;
-    submitBtn.innerHTML = `<span>Judging...</span>`;
-    resultsContainer.innerHTML = `
-      <div style="text-align: center; padding: 40px;">
-        <div style="font-size: 16px; font-weight: 700; color: var(--accent-cyan); margin-bottom: 8px;">Judging against Hidden Test Cases...</div>
-        <div style="font-size: 13px; color: var(--text-dim);">Compiling and running against secret server test suites</div>
-      </div>
-    `;
+    const code = this.editor.getValue();
+    const btn = document.getElementById('btn-submit');
+    btn.disabled = true;
+    btn.textContent = 'Grading...';
 
     try {
-      const res = await this.apiPost("/api/submit", {
-        participant_id: this.participant.id,
-        participant_name: this.participant.name,
-        problem_id: this.currentProblem.id,
-        language: lang,
-        code: code
+      const res = await fetch('/api/submit', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          participant_id: this.participant.id,
+          participant_name: this.participant.name,
+          problem_id: this.activeProblem.id,
+          language: this.currentLanguage,
+          code: code
+        })
       });
+      const data = await res.json();
 
-      const isAccepted = (res.status === "ACCEPTED");
-      const bannerClass = isAccepted ? "result-banner-accepted" : (res.status === "TIME_LIMIT_EXCEEDED" ? "result-banner-tle" : "result-banner-failed");
+      const verdictEl = document.getElementById('submission-verdict-container');
+      const isAccepted = data.status === 'ACCEPTED';
 
-      resultsContainer.innerHTML = `
-        <div class="result-banner ${bannerClass}">
-          <div class="result-banner-title">${res.status} ${isAccepted ? '✓' : '✗'}</div>
-          <div>${isAccepted ? 'All hidden test cases passed! Points awarded.' : (res.error_message || 'Hidden test case evaluation failed.')}</div>
-        </div>
-
-        <div class="result-stats-row">
-          <div class="result-stat-box">
-            <div class="result-stat-label">Test Cases</div>
-            <div class="result-stat-val" style="color: ${isAccepted ? '#34d399' : '#fb7185'};">${res.passed_count} / ${res.total_count}</div>
-          </div>
-          <div class="result-stat-box">
-            <div class="result-stat-label">Score Earned</div>
-            <div class="result-stat-val" style="color: var(--accent-cyan);">+${res.score_earned} pts</div>
-          </div>
-          <div class="result-stat-box">
-            <div class="result-stat-label">Peak Runtime</div>
-            <div class="result-stat-val">${res.runtime}s</div>
-          </div>
-          <div class="result-stat-box">
-            <div class="result-stat-label">Submission ID</div>
-            <div class="result-stat-val" style="font-size: 13px;">${res.submission_id}</div>
-          </div>
-        </div>
-
-        <div style="display: flex; gap: 10px; margin-top: 20px;">
-          <button class="btn btn-primary" style="flex: 1;" onclick="App.showView('leaderboard')">View Leaderboard</button>
-          <button class="btn btn-secondary" style="flex: 1;" onclick="App.showView('problems')">Back to Problems</button>
+      verdictEl.innerHTML = `
+        <div style="background:var(--bg-primary); padding:1rem; border-radius:8px; border-left:6px solid ${isAccepted ? 'var(--accent-green)' : 'var(--accent-red)'};">
+          <div style="font-size:1.25rem; font-weight:800; color:${isAccepted ? 'var(--accent-green)' : 'var(--accent-red)'};">${data.status}</div>
+          <div style="margin-top:0.5rem; color:var(--text-primary);">Test Cases Passed: <strong>${data.passed_count} / ${data.total_count}</strong></div>
+          <div style="color:var(--accent-cyan); font-weight:700;">Score Earned: +${data.score_earned} pts</div>
+          <div style="font-size:0.85rem; color:var(--text-muted); margin-top:0.25rem;">Total Runtime: ${data.runtime}s</div>
+          ${data.error_message ? `<div style="color:var(--accent-red); margin-top:0.5rem; font-size:0.85rem;">${data.error_message}</div>` : ''}
         </div>
       `;
 
+      // Switch to submission tab
+      const subTabBtn = document.querySelectorAll('.tabs-header .tab-btn')[2];
+      this.switchOutputTab('submission-res', subTabBtn);
+
       if (isAccepted) {
-        this.showToast(`Accepted! +${res.score_earned} points awarded!`, "success");
+        this.showToast(`Accepted! Earned ${data.score_earned} points.`, 'success');
+        this.participant.score = (this.participant.score || 0) + data.score_earned;
+        this.updateUserBadge();
       } else {
-        this.showToast(`Submission Verdict: ${res.status}`, "error");
+        this.showToast(`Submission Verdict: ${data.status}`, 'error');
       }
 
-      // Refresh problems & leaderboard in background
-      this.loadProblems();
       this.loadLeaderboard();
-
     } catch (e) {
-      resultsContainer.innerHTML = `<div class="result-banner result-banner-failed"><div class="result-banner-title">ERROR</div><div>${this.escapeHtml(e.message)}</div></div>`;
+      this.showToast('Submission error: ' + e.message, 'error');
     } finally {
-      submitBtn.disabled = false;
-      submitBtn.innerHTML = `<span>Submit Code</span>`;
+      btn.disabled = false;
+      btn.textContent = '🚀 Submit';
     }
   },
-
-  // ------------------- Leaderboard -------------------
 
   async loadLeaderboard() {
-    const tableBody = document.getElementById("leaderboard-table-body");
-    if (!tableBody) return;
-
     try {
-      const res = await this.apiGet("/api/leaderboard");
-      const board = res.leaderboard || [];
-
-      if (board.length === 0) {
-        tableBody.innerHTML = `<tr><td colspan="8" style="text-align: center; color: var(--text-dim); padding: 32px;">No participants on leaderboard yet. Be the first to conquer a challenge!</td></tr>`;
-        return;
-      }
-
-      tableBody.innerHTML = board.map(item => {
-        let rankClass = "rank-other";
-        if (item.rank === 1) rankClass = "rank-1";
-        else if (item.rank === 2) rankClass = "rank-2";
-        else if (item.rank === 3) rankClass = "rank-3";
-
-        const isMe = this.participant && this.participant.id === item.participant_id;
-
-        return `
-          <tr style="${isMe ? 'background: rgba(0, 242, 254, 0.05); font-weight: 600;' : ''}">
-            <td><div class="rank-badge ${rankClass}">${item.rank}</div></td>
-            <td><strong>${this.escapeHtml(item.name)}</strong> ${isMe ? '<span class="badge badge-solved" style="margin-left: 6px;">You</span>' : ''}</td>
-            <td style="color: var(--text-muted);">${this.escapeHtml(item.college || "-")}</td>
-            <td style="font-family: var(--font-mono);">${item.solved_count}</td>
-            <td><span class="badge badge-easy">${item.easy_solved}</span></td>
-            <td><span class="badge badge-medium">${item.medium_solved}</span></td>
-            <td><span class="badge badge-hard">${item.hard_solved}</span></td>
-            <td style="font-family: var(--font-mono); font-size: 15px; font-weight: 700; color: var(--accent-cyan);">${item.score}</td>
-          </tr>
-        `;
-      }).join("");
+      const res = await fetch('/api/leaderboard');
+      const data = await res.json();
+      this.leaderboardData = data.leaderboard || [];
+      this.renderLeaderboard(this.leaderboardData);
     } catch (e) {
-      console.error("Failed to load leaderboard", e);
+      console.error('Leaderboard load error:', e);
     }
   },
 
-  // ------------------- Modal & Toast System -------------------
+  renderLeaderboard(rows) {
+    const tbody = document.getElementById('leaderboard-table-body');
+    if (!tbody) return;
 
-  openModal(modalId) {
-    const modal = document.getElementById(modalId);
-    if (modal) modal.classList.add("active");
+    tbody.innerHTML = rows.map(r => `
+      <tr>
+        <td style="font-weight:800; color:${r.rank === 1 ? 'gold' : (r.rank === 2 ? 'silver' : (r.rank === 3 ? '#cd7f32' : 'var(--text-muted)'))};">#${r.rank}</td>
+        <td style="font-weight:600; color:#fff;">${r.name}</td>
+        <td style="color:var(--text-secondary);">${r.college}</td>
+        <td style="font-family:var(--font-mono); color:var(--text-muted);">${r.reg_no}</td>
+        <td style="font-family:var(--font-mono); font-weight:800; color:var(--accent-green); font-size:1.05rem;">${r.score}</td>
+        <td style="font-weight:700;">${r.solved_count} / 15</td>
+        <td><span style="color:#10b981;">${r.easy_solved}E</span> · <span style="color:#f59e0b;">${r.medium_solved}M</span> · <span style="color:#ef4444;">${r.hard_solved}H</span></td>
+        <td style="font-family:var(--font-mono); color:var(--text-secondary); font-size:0.85rem;">${r.total_runtime}s</td>
+      </tr>
+    `).join('');
   },
 
-  closeModal(modalId) {
-    const modal = document.getElementById(modalId);
-    if (modal) modal.classList.remove("active");
+  filterLeaderboard() {
+    const q = document.getElementById('leaderboard-search').value.toLowerCase();
+    const filtered = (this.leaderboardData || []).filter(r => 
+      r.name.toLowerCase().includes(q) || r.college.toLowerCase().includes(q) || r.reg_no.toLowerCase().includes(q)
+    );
+    this.renderLeaderboard(filtered);
   },
 
-  showToast(message, type = "info") {
-    let container = document.getElementById("toast-container");
-    if (!container) {
-      container = document.createElement("div");
-      container.id = "toast-container";
-      container.className = "toast-container";
-      document.body.appendChild(container);
-    }
-
-    const toast = document.createElement("div");
-    toast.className = `toast toast-${type}`;
-    toast.innerText = message;
-
-    container.appendChild(toast);
-
-    setTimeout(() => {
-      toast.style.opacity = "0";
-      toast.style.transition = "opacity 0.3s ease";
-      setTimeout(() => toast.remove(), 300);
-    }, 3500);
-  },
-
-  escapeHtml(str) {
-    if (!str) return "";
-    return String(str)
-      .replace(/&/g, "&amp;")
-      .replace(/</g, "&lt;")
-      .replace(/>/g, "&gt;")
-      .replace(/"/g, "&quot;")
-      .replace(/'/g, "&#039;");
+  exportLeaderboardCSV() {
+    window.open('/api/admin/export/csv', '_blank');
   }
 };
 
-// Start application on DOM Ready
-document.addEventListener("DOMContentLoaded", () => {
-  App.init();
-});
+document.addEventListener('DOMContentLoaded', () => App.init());
+window.App = App;

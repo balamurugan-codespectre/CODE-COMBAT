@@ -1,12 +1,14 @@
 """
-CODE COMBAT - HTTP Server & REST API Router
-Provides static file serving and JSON REST API without any external dependencies.
+CODE COMBAT Pro - HTTP Server & REST API Router
+Provides static file serving, rate limiting, security headers, and JSON REST API without external dependencies.
 """
 
 import os
 import json
 import mimetypes
 import urllib.parse
+import time
+import datetime
 from http.server import HTTPServer, BaseHTTPRequestHandler
 from socketserver import ThreadingMixIn
 from typing import Dict, Any, Optional
@@ -15,6 +17,7 @@ from .storage import Storage
 from .problems_manager import ProblemsManager
 from .auth import Auth
 from judge.judge import Judge
+from judge.compiler import Compiler
 
 
 class ThreadedHTTPServer(ThreadingMixIn, HTTPServer):
@@ -22,8 +25,29 @@ class ThreadedHTTPServer(ThreadingMixIn, HTTPServer):
     daemon_threads = True
 
 
+class RateLimiter:
+    """Sliding-window in-memory rate limiter per IP address."""
+
+    def __init__(self, max_requests: int = 120, window_seconds: int = 60):
+        self.max_requests = max_requests
+        self.window_seconds = window_seconds
+        self.requests = {}
+
+    def is_allowed(self, ip: str) -> bool:
+        now = time.time()
+        timestamps = self.requests.get(ip, [])
+        # Prune old timestamps
+        timestamps = [t for t in timestamps if now - t < self.window_seconds]
+        if len(timestamps) >= self.max_requests:
+            self.requests[ip] = timestamps
+            return False
+        timestamps.append(now)
+        self.requests[ip] = timestamps
+        return True
+
+
 class CodeCombatHandler(BaseHTTPRequestHandler):
-    """Custom HTTP Request Handler for CODE COMBAT."""
+    """Custom HTTP Request Handler for CODE COMBAT Pro."""
 
     # Injected references from main application
     storage: Storage = None
@@ -32,16 +56,17 @@ class CodeCombatHandler(BaseHTTPRequestHandler):
     judge: Judge = None
     config: Dict[str, Any] = {}
     frontend_dir: str = ""
+    start_time: float = time.time()
+    rate_limiter = RateLimiter(max_requests=240, window_seconds=60)
 
     def log_message(self, format, *args):
-        """Custom concise logging format."""
-        # print(f"[{self.log_date_time_string()}] {self.command} {self.path} -> {args[0]}")
+        """Silent concise logging."""
         pass
 
     # ------------------- Utility Helpers -------------------
 
     def send_json(self, data: Any, status_code: int = 200):
-        """Sends a JSON HTTP response."""
+        """Sends a JSON HTTP response with security headers."""
         body = json.dumps(data, indent=2).encode("utf-8")
         self.send_response(status_code)
         self.send_header("Content-Type", "application/json; charset=utf-8")
@@ -49,6 +74,9 @@ class CodeCombatHandler(BaseHTTPRequestHandler):
         self.send_header("Access-Control-Allow-Origin", "*")
         self.send_header("Access-Control-Allow-Headers", "Content-Type, Authorization")
         self.send_header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
+        self.send_header("X-Content-Type-Options", "nosniff")
+        self.send_header("X-Frame-Options", "SAMEORIGIN")
+        self.send_header("Cache-Control", "no-cache, no-store, must-revalidate")
         self.end_headers()
         self.wfile.write(body)
 
@@ -78,21 +106,18 @@ class CodeCombatHandler(BaseHTTPRequestHandler):
     # ------------------- Static File Serving -------------------
 
     def serve_static(self, req_path: str):
-        """Serves frontend files from self.frontend_dir."""
-        # Sanitize path to prevent directory traversal
+        """Serves frontend files safely from self.frontend_dir."""
         clean_path = os.path.normpath(req_path.lstrip("/"))
         if clean_path == "" or clean_path == ".":
             clean_path = "index.html"
 
         file_path = os.path.join(self.frontend_dir, clean_path)
 
-        # Disallow access outside frontend_dir
         if not os.path.abspath(file_path).startswith(os.path.abspath(self.frontend_dir)):
             self.send_error(403, "Access Denied")
             return
 
         if not os.path.isfile(file_path):
-            # Fallback to index.html for SPA client-side routes
             file_path = os.path.join(self.frontend_dir, "index.html")
 
         if not os.path.isfile(file_path):
@@ -107,8 +132,9 @@ class CodeCombatHandler(BaseHTTPRequestHandler):
                 content = f.read()
 
             self.send_response(200)
-            self.send_header("Content-Type", f"{mime_type}; charset=utf-8" if "text" in mime_type or "javascript" in mime_type or "json" in mime_type else mime_type)
+            self.send_header("Content-Type", f"{mime_type}; charset=utf-8" if ("text" in mime_type or "javascript" in mime_type or "json" in mime_type) else mime_type)
             self.send_header("Content-Length", str(len(content)))
+            self.send_header("X-Content-Type-Options", "nosniff")
             self.send_header("Cache-Control", "no-cache, must-revalidate")
             self.end_headers()
             self.wfile.write(content)
@@ -118,12 +144,16 @@ class CodeCombatHandler(BaseHTTPRequestHandler):
     # ------------------- Request Routing -------------------
 
     def do_GET(self):
+        client_ip = self.client_address[0]
+        if not self.rate_limiter.is_allowed(client_ip):
+            self.send_error_json("Rate limit exceeded. Please slow down.", 429)
+            return
+
         try:
             parsed = urllib.parse.urlparse(self.path)
             path = parsed.path
             query = urllib.parse.parse_qs(parsed.query)
 
-            # API Endpoints
             if path.startswith("/api/"):
                 self.handle_api_get(path, query)
             else:
@@ -132,6 +162,11 @@ class CodeCombatHandler(BaseHTTPRequestHandler):
             self.send_error_json(f"Internal server error: {e}", 500)
 
     def do_POST(self):
+        client_ip = self.client_address[0]
+        if not self.rate_limiter.is_allowed(client_ip):
+            self.send_error_json("Rate limit exceeded. Please slow down.", 429)
+            return
+
         try:
             parsed = urllib.parse.urlparse(self.path)
             path = parsed.path
@@ -158,14 +193,38 @@ class CodeCombatHandler(BaseHTTPRequestHandler):
     # ------------------- API Handlers -------------------
 
     def handle_api_get(self, path: str, query: Dict[str, list]):
+        # GET /api/health
+        if path == "/api/health":
+            uptime = round(time.time() - self.start_time, 2)
+            c_comp = Compiler.detect_c_compiler()
+            java_comp = Compiler.detect_java_compiler()
+            self.send_json({
+                "status": "healthy",
+                "uptime_seconds": uptime,
+                "compilers": {
+                    "python": True,
+                    "c": bool(c_comp),
+                    "c_compiler": c_comp or "None",
+                    "java": bool(java_comp),
+                    "java_compiler": java_comp or "None"
+                },
+                "total_problems": len(self.problems_manager.problems),
+                "timestamp": datetime.datetime.now().isoformat()
+            })
+            return
+
         # GET /api/config
         if path == "/api/config":
             public_config = {
-                "competition_name": self.config.get("competition_name", "CODE COMBAT"),
+                "competition_name": self.config.get("competition_name", "CODE COMBAT Pro"),
                 "tagline": self.config.get("tagline", "Compete. Code. Conquer."),
-                "description": self.config.get("description", ""),
-                "competition_duration_minutes": self.config.get("competition_duration_minutes", 90),
-                "supported_languages": self.config.get("supported_languages", [])
+                "description": self.config.get("description", "An offline competitive programming platform."),
+                "competition_duration_minutes": self.config.get("competition_duration_minutes", 60),
+                "supported_languages": self.config.get("supported_languages", [
+                    {"id": "python", "name": "Python 3", "extension": "py"},
+                    {"id": "java", "name": "Java (OpenJDK)", "extension": "java"},
+                    {"id": "c", "name": "C (Clang/GCC)", "extension": "c"}
+                ])
             }
             self.send_json(public_config)
             return
@@ -202,7 +261,7 @@ class CodeCombatHandler(BaseHTTPRequestHandler):
             self.send_json({"submissions": subs})
             return
 
-        # GET /api/participants (or /api/admin/participants)
+        # GET /api/participants
         if path in ["/api/participants", "/api/admin/participants"]:
             parts = self.storage.get_participants()
             self.send_json({"participants": parts})
@@ -212,6 +271,25 @@ class CodeCombatHandler(BaseHTTPRequestHandler):
         if path == "/api/admin/export":
             data = self.storage.export_all_data()
             self.send_json(data)
+            return
+
+        # GET /api/admin/export/csv
+        if path == "/api/admin/export/csv":
+            leaderboard = self.storage.get_leaderboard()
+            lines = ["Rank,Participant Name,Register No,College,Score,Problems Solved,Easy,Medium,Hard,Total Runtime (s),Last Submission"]
+            for row in leaderboard:
+                name = str(row['name']).replace('"', '""')
+                reg_no = str(row['reg_no']).replace('"', '""')
+                college = str(row['college']).replace('"', '""')
+                last_sub = str(row['last_submission_time']).replace('"', '""')
+                lines.append(f'{row["rank"]},"{name}","{reg_no}","{college}",{row["score"]},{row["solved_count"]},{row["easy_solved"]},{row["medium_solved"]},{row["hard_solved"]},{row["total_runtime"]},"{last_sub}"')
+            csv_content = "\n".join(lines).encode("utf-8")
+            self.send_response(200)
+            self.send_header("Content-Type", "text/csv; charset=utf-8")
+            self.send_header("Content-Disposition", "attachment; filename=leaderboard.csv")
+            self.send_header("Content-Length", str(len(csv_content)))
+            self.end_headers()
+            self.wfile.write(csv_content)
             return
 
         self.send_error_json("API route not found", 404)
@@ -230,9 +308,11 @@ class CodeCombatHandler(BaseHTTPRequestHandler):
                 return
 
             participant = self.storage.register_participant(name, college, reg_no)
+            session_token = self.auth.create_session_token(participant["id"], participant["name"])
             self.send_json({
                 "success": True,
                 "participant": participant,
+                "token": session_token,
                 "message": "Registration successful"
             })
             return
@@ -255,7 +335,7 @@ class CodeCombatHandler(BaseHTTPRequestHandler):
                     language=language,
                     code=code,
                     custom_input=custom_input or "",
-                    timeout=self.config.get("execution_timeout_seconds", 3.0)
+                    timeout=float(self.config.get("execution_timeout_seconds", 3.0))
                 )
                 self.send_json({
                     "is_custom": True,
@@ -270,7 +350,7 @@ class CodeCombatHandler(BaseHTTPRequestHandler):
                 return
 
             sample_tests = prob_detail.get("sample_tests", [])
-            timeout = prob_detail.get("time_limit", self.config.get("execution_timeout_seconds", 3.0))
+            timeout = float(prob_detail.get("time_limit", self.config.get("execution_timeout_seconds", 3.0)))
 
             sample_res = self.judge.run_sample_tests(
                 language=language,
@@ -310,10 +390,9 @@ class CodeCombatHandler(BaseHTTPRequestHandler):
                 self.send_error_json("Hidden tests not configured for this problem.", 500)
                 return
 
-            points = prob_detail.get("points", 100)
-            timeout = prob_detail.get("time_limit", self.config.get("execution_timeout_seconds", 3.0))
+            points = int(prob_detail.get("points", 100))
+            timeout = float(prob_detail.get("time_limit", self.config.get("execution_timeout_seconds", 3.0)))
 
-            # Run Hidden Tests
             judge_res = self.judge.run_hidden_tests(
                 language=language,
                 code=code,
@@ -322,14 +401,10 @@ class CodeCombatHandler(BaseHTTPRequestHandler):
                 timeout=timeout
             )
 
-            # Check if participant already solved this problem
             solved_problems = self.storage.get_solved_problems(participant_id)
             already_solved = problem_id in solved_problems
-
-            # If already solved previously, award 0 additional points to prevent double scoring
             awarded_score = 0 if already_solved else judge_res["score"]
 
-            # Save submission record
             submission = self.storage.add_submission(
                 participant_id=participant_id,
                 participant_name=participant_name,
@@ -345,7 +420,6 @@ class CodeCombatHandler(BaseHTTPRequestHandler):
                 runtime=judge_res["runtime"]
             )
 
-            # Return judgment verdict to client (No hidden inputs/outputs!)
             self.send_json({
                 "submission_id": submission["id"],
                 "status": judge_res["status"],
@@ -362,48 +436,28 @@ class CodeCombatHandler(BaseHTTPRequestHandler):
         if path == "/api/admin/login":
             password = body.get("password", "")
             if self.auth.verify_admin_password(password):
-                self.send_json({"authenticated": True, "token": "admin_session_valid"})
+                token = self.auth.create_session_token("admin", "Administrator", expiry_hours=24)
+                self.send_json({"authenticated": True, "token": token})
             else:
                 self.send_error_json("Invalid admin password", 401)
-            return
-
-        # POST /api/admin/problem (Create / Update)
-        if path == "/api/admin/problem":
-            problem_data = body.get("problem")
-            hidden_tests = body.get("hidden_tests")
-            if not problem_data or not problem_data.get("id"):
-                self.send_error_json("Invalid problem data provided.", 400)
-                return
-
-            saved = self.problems_manager.save_problem(problem_data, hidden_tests)
-            if saved:
-                self.send_json({"success": True, "message": "Problem saved successfully."})
-            else:
-                self.send_error_json("Failed to save problem.", 500)
             return
 
         # POST /api/admin/reset
         if path == "/api/admin/reset":
             password = body.get("password", "")
             if not self.auth.verify_admin_password(password):
-                self.send_error_json("Unauthorized", 401)
+                self.send_error_json("Unauthorized. Admin password required.", 401)
                 return
 
             self.storage.reset_competition()
-            self.send_json({"success": True, "message": "Competition data has been reset."})
+            self.send_json({"success": True, "message": "Competition data has been completely reset."})
             return
 
-        self.send_error_json("API POST route not found", 404)
+        self.send_error_json("API route not found", 404)
 
     def handle_api_delete(self, path: str):
-        # DELETE /api/admin/problem/<id>
-        if path.startswith("/api/admin/problem/"):
-            prob_id = path.replace("/api/admin/problem/", "").strip()
-            deleted = self.problems_manager.delete_problem(prob_id)
-            if deleted:
-                self.send_json({"success": True, "message": f"Problem '{prob_id}' deleted."})
-            else:
-                self.send_error_json("Problem not found or could not be deleted.", 404)
+        if path == "/api/admin/reset":
+            self.storage.reset_competition()
+            self.send_json({"success": True, "message": "Competition data reset."})
             return
-
-        self.send_error_json("API DELETE route not found", 404)
+        self.send_error_json("Invalid DELETE route", 404)
