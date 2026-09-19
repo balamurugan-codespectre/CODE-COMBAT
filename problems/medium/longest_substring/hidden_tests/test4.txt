@@ -1,4 +1,4 @@
 INPUT:
-tmmzuxt
+abba
 EXPECTED:
-5
+2

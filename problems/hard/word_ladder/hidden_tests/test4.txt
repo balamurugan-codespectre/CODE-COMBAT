@@ -1,6 +1,6 @@
 INPUT:
-red tax
-5
-ted tex red tax tad
+lead gold
+4
+load goad gold lead
 EXPECTED:
 4

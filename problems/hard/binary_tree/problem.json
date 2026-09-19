@@ -1,24 +1,67 @@
 {
+  "tier": "hard",
   "id": "binary_tree",
   "title": "Binary Tree Level Order Traversal",
   "difficulty": "Hard",
   "points": 300,
-  "time_limit": 2.0,
+  "time_limit": 3.0,
   "category": "Trees & BFS",
-  "description": "Given the level-order array representation of a binary tree (where `-1` denotes a `null` node), print the level-order traversal of its node values line by line from top to bottom.",
-  "input_format": "A single line containing integers separated by space representing the binary tree in level order.",
-  "output_format": "Print each level's values on a separate line separated by space.",
-  "constraints": "1 <= number of nodes <= 10^4\n-10^4 <= node value <= 10^4",
+  "description": "Given a serialized binary tree in level-order format where `-1` denotes `null`, print the level-order traversal level by level.\n\nPrint each level on a new line with space-separated values.",
+  "input_format": "The first line contains `N`, the number of elements in the serialized array.\nThe second line contains `N` space-separated integers representing nodes in level order.",
+  "output_format": "Print each level's node values on a separate line.",
+  "constraints": "0 <= N <= 10^5\nNode values between -1000 and 1000.",
   "sample_tests": [
     {
-      "input": "3 9 20 -1 -1 15 7",
+      "input": "7\n3 9 20 -1 -1 15 7",
       "output": "3\n9 20\n15 7",
-      "explanation": "Level 0: [3], Level 1: [9, 20], Level 2: [15, 7]."
+      "explanation": "Level 1: 3 | Level 2: 9, 20 | Level 3: 15, 7."
+    },
+    {
+      "input": "1\n1",
+      "output": "1",
+      "explanation": "Tree with a single root node."
+    },
+    {
+      "input": "3\n1 2 3",
+      "output": "1\n2 3",
+      "explanation": "Root with left and right children."
+    },
+    {
+      "input": "5\n1 2 -1 3 -1",
+      "output": "1\n2\n3",
+      "explanation": "Left-leaning skewed tree."
+    },
+    {
+      "input": "4\n1 -1 2 -1",
+      "output": "1\n2",
+      "explanation": "Right-leaning tree."
     }
   ],
   "starter_code": {
-    "python": "import sys\nfrom collections import deque\n\nclass TreeNode:\n    def __init__(self, val):\n        self.val = val\n        self.left = None\n        self.right = None\n\ndef solve():\n    data = sys.stdin.read().split()\n    if not data or data[0] == '-1':\n        return\n    \n    root = TreeNode(int(data[0]))\n    queue = deque([root])\n    idx = 1\n    while queue and idx < len(data):\n        curr = queue.popleft()\n        # Left child\n        if idx < len(data) and data[idx] != '-1':\n            curr.left = TreeNode(int(data[idx]))\n            queue.append(curr.left)\n        idx += 1\n        # Right child\n        if idx < len(data) and data[idx] != '-1':\n            curr.right = TreeNode(int(data[idx]))\n            queue.append(curr.right)\n        idx += 1\n\n    # BFS level by level\n    bfs = deque([root])\n    while bfs:\n        level_size = len(bfs)\n        level_vals = []\n        for _ in range(level_size):\n            node = bfs.popleft()\n            level_vals.append(str(node.val))\n            if node.left:\n                bfs.append(node.left)\n            if node.right:\n                bfs.append(node.right)\n        print(\" \".join(level_vals))\n\nif __name__ == '__main__':\n    solve()\n",
-    "java": "import java.util.*;\n\npublic class Solution {\n    static class TreeNode {\n        int val;\n        TreeNode left, right;\n        TreeNode(int v) { this.val = v; }\n    }\n    public static void main(String[] args) {\n        Scanner sc = new Scanner(System.in);\n        if (!sc.hasNext()) return;\n        List<String> tokens = new ArrayList<>();\n        while (sc.hasNext()) tokens.add(sc.next());\n        if (tokens.isEmpty() || tokens.get(0).equals(\"-1\")) return;\n        TreeNode root = new TreeNode(Integer.parseInt(tokens.get(0)));\n        Queue<TreeNode> q = new LinkedList<>();\n        q.add(root);\n        int idx = 1;\n        while (!q.isEmpty() && idx < tokens.size()) {\n            TreeNode curr = q.poll();\n            if (idx < tokens.size() && !tokens.get(idx).equals(\"-1\")) {\n                curr.left = new TreeNode(Integer.parseInt(tokens.get(idx)));\n                q.add(curr.left);\n            }\n            idx++;\n            if (idx < tokens.size() && !tokens.get(idx).equals(\"-1\")) {\n                curr.right = new TreeNode(Integer.parseInt(tokens.get(idx)));\n                q.add(curr.right);\n            }\n            idx++;\n        }\n        Queue<TreeNode> levelQ = new LinkedList<>();\n        levelQ.add(root);\n        while (!levelQ.isEmpty()) {\n            int size = levelQ.size();\n            StringBuilder sb = new StringBuilder();\n            for (int i = 0; i < size; i++) {\n                TreeNode node = levelQ.poll();\n                sb.append(node.val).append(i == size - 1 ? \"\" : \" \");\n                if (node.left != null) levelQ.add(node.left);\n                if (node.right != null) levelQ.add(node.right);\n            }\n            System.out.println(sb.toString());\n        }\n    }\n}\n",
-    "c": "#include <stdio.h>\n#include <stdlib.h>\n#include <string.h>\n\ntypedef struct TreeNode {\n    int val;\n    struct TreeNode *left, *right;\n} TreeNode;\n\nTreeNode* createNode(int v) {\n    TreeNode *n = (TreeNode*)malloc(sizeof(TreeNode));\n    n->val = v; n->left = n->right = NULL;\n    return n;\n}\n\nint main() {\n    char token[32];\n    if (scanf(\"%s\", token) != 1) return 0;\n    if (strcmp(token, \"-1\") == 0) return 0;\n    TreeNode *root = createNode(atoi(token));\n    TreeNode *q[20000];\n    int head = 0, tail = 0;\n    q[tail++] = root;\n    while (head < tail) {\n        TreeNode *curr = q[head++];\n        if (scanf(\"%s\", token) == 1) {\n            if (strcmp(token, \"-1\") != 0) {\n                curr->left = createNode(atoi(token));\n                q[tail++] = curr->left;\n            }\n        } else break;\n        if (scanf(\"%s\", token) == 1) {\n            if (strcmp(token, \"-1\") != 0) {\n                curr->right = createNode(atoi(token));\n                q[tail++] = curr->right;\n            }\n        } else break;\n    }\n    TreeNode *levelQ[20000];\n    int lHead = 0, lTail = 0;\n    levelQ[lTail++] = root;\n    while (lHead < lTail) {\n        int size = lTail - lHead;\n        for (int i = 0; i < size; i++) {\n            TreeNode *node = levelQ[lHead++];\n            printf(\"%d%s\", node->val, (i == size - 1) ? \"\\n\" : \" \");\n            if (node->left) levelQ[lTail++] = node->left;\n            if (node->right) levelQ[lTail++] = node->right;\n        }\n    }\n    return 0;\n}\n"
-  }
+    "python": "import sys\nfrom collections import deque\n\ndef solve():\n    data = sys.stdin.read().split()\n    if not data or data[0] == '0':\n        return\n    n = int(data[0])\n    vals = [int(x) for x in data[1:n+1]]\n    if not vals or vals[0] == -1:\n        return\n    \n    queue = deque([0])\n    idx = 1\n    \n    while queue:\n        level_size = len(queue)\n        level = []\n        for _ in range(level_size):\n            curr = queue.popleft()\n            level.append(vals[curr])\n            left = 2 * curr + 1\n            right = 2 * curr + 2\n            if left < len(vals) and vals[left] != -1:\n                queue.append(left)\n            if right < len(vals) and vals[right] != -1:\n                queue.append(right)\n        print(' '.join(map(str, level)))\n\nif __name__ == '__main__':\n    solve()\n",
+    "java": "import java.util.*;\n\npublic class Solution {\n    public static void main(String[] args) {\n        Scanner sc = new Scanner(System.in);\n        if (!sc.hasNextInt()) return;\n        int n = sc.nextInt();\n        if (n <= 0) return;\n        int[] vals = new int[n];\n        for (int i = 0; i < n; i++) vals[i] = sc.nextInt();\n        if (vals[0] == -1) return;\n        \n        Queue<Integer> q = new LinkedList<>();\n        q.add(0);\n        while (!q.isEmpty()) {\n            int sz = q.size();\n            StringBuilder sb = new StringBuilder();\n            for (int i = 0; i < sz; i++) {\n                int curr = q.poll();\n                sb.append(vals[curr]).append(i == sz - 1 ? \"\" : \" \");\n                int left = 2 * curr + 1;\n                int right = 2 * curr + 2;\n                if (left < n && vals[left] != -1) q.add(left);\n                if (right < n && vals[right] != -1) q.add(right);\n            }\n            System.out.println(sb.toString());\n        }\n    }\n}\n",
+    "c": "#include <stdio.h>\n#include <stdlib.h>\n\nint main() {\n    int n;\n    if (scanf(\"%d\", &n) != 1 || n <= 0) return 0;\n    int *vals = malloc(n * sizeof(int));\n    for (int i = 0; i < n; i++) scanf(\"%d\", &vals[i]);\n    if (vals[0] == -1) { free(vals); return 0; }\n    \n    int *queue = malloc(n * sizeof(int));\n    int head = 0, tail = 0;\n    queue[tail++] = 0;\n    \n    while (head < tail) {\n        int sz = tail - head;\n        for (int i = 0; i < sz; i++) {\n            int curr = queue[head++];\n            printf(\"%d%s\", vals[curr], i == sz - 1 ? \"\\n\" : \" \");\n            int left = 2 * curr + 1;\n            int right = 2 * curr + 2;\n            if (left < n && vals[left] != -1) queue[tail++] = left;\n            if (right < n && vals[right] != -1) queue[tail++] = right;\n        }\n    }\n    free(vals);\n    free(queue);\n    return 0;\n}\n"
+  },
+  "hidden_tests": [
+    {
+      "input": "7\n1 2 3 4 5 6 7",
+      "output": "1\n2 3\n4 5 6 7"
+    },
+    {
+      "input": "3\n10 20 -1",
+      "output": "10\n20"
+    },
+    {
+      "input": "5\n100 50 150 25 75",
+      "output": "100\n50 150\n25 75"
+    },
+    {
+      "input": "1\n999",
+      "output": "999"
+    },
+    {
+      "input": "7\n1 -1 2 -1 -1 -1 3",
+      "output": "1\n2\n3"
+    }
+  ]
 }

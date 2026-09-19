@@ -1,4 +1,4 @@
 INPUT:
-8
+10
 EXPECTED:
-92
+724

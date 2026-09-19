@@ -1,6 +1,6 @@
 INPUT:
-lost miss
+talk tail
 4
-most mist miss lost
+talk tall toil tail
 EXPECTED:
 4

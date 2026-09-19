@@ -1,4 +1,4 @@
 INPUT:
-pwwkew
+dvdf
 EXPECTED:
 3

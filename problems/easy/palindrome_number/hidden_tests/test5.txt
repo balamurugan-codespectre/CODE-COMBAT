@@ -1,4 +1,4 @@
 INPUT:
-1000000001
+7
 EXPECTED:
 true

@@ -1,4 +1,4 @@
 INPUT:
-Competitive Programming in Code Combat Platform
+1234567890 !@#$%^&*()
 EXPECTED:
-14
+0

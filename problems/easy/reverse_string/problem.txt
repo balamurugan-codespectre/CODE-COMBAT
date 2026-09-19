@@ -1,4 +1,7 @@
-# Reverse String (Easy - 100 Points)
+# Reverse String [Easy - 100 pts]
+
+## Category
+Strings
 
 ## Description
 Given a single line string `S`, print the reverse of the string.
@@ -14,7 +17,7 @@ Print the reversed string.
 ## Constraints
 1 <= length(S) <= 10^5
 
-## Examples
+## Examples (Visible 2 of 5)
 
 ### Example 1
 Input:

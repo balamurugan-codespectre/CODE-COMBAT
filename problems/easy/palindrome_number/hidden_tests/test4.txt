@@ -1,4 +1,4 @@
 INPUT:
--101
+123456
 EXPECTED:
 false

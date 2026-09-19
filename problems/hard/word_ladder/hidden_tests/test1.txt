@@ -1,6 +1,6 @@
 INPUT:
-hit cog
-5
-hot dot dog lot log
+a b
+1
+b
 EXPECTED:
-0
+2

@@ -1,4 +1,4 @@
 INPUT:
-AEIOUaeiou
+bcdfg hjklmn pqrst vwxyz
 EXPECTED:
-10
+0

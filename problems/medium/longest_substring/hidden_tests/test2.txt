@@ -1,4 +1,4 @@
 INPUT:
-abcdefghijklmnopqrstuvwxyz
+tmmzuxt
 EXPECTED:
-26
+5

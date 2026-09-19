@@ -1,29 +1,67 @@
 {
+  "tier": "medium",
   "id": "rotate_array",
   "title": "Rotate Array",
   "difficulty": "Medium",
   "points": 200,
   "time_limit": 2.0,
   "category": "Arrays",
-  "description": "Given an integer array `nums` of size `N`, rotate the array to the right by `K` steps, where `K` is non-negative.",
-  "input_format": "The first line contains two integers `N` and `K`.\nThe second line contains `N` integers.",
-  "output_format": "Print the rotated array elements separated by spaces.",
-  "constraints": "1 <= N <= 10^5\n0 <= K <= 10^9\n-10^9 <= nums[i] <= 10^9",
+  "description": "Given an array `nums`, rotate the array to the right by `k` steps, where `k` is non-negative.",
+  "input_format": "The first line contains `N` and `K`.\nThe second line contains `N` space-separated integers.",
+  "output_format": "Print the rotated array space-separated.",
+  "constraints": "1 <= N <= 10^5\n0 <= K <= 10^5\n-10^9 <= nums[i] <= 10^9",
   "sample_tests": [
     {
       "input": "7 3\n1 2 3 4 5 6 7",
       "output": "5 6 7 1 2 3 4",
-      "explanation": "Rotate 1 step: [7,1,2,3,4,5,6]\nRotate 2 steps: [6,7,1,2,3,4,5]\nRotate 3 steps: [5,6,7,1,2,3,4]"
+      "explanation": "Rotate 3 steps right."
     },
     {
       "input": "4 2\n-1 -100 3 99",
       "output": "3 99 -1 -100",
-      "explanation": "Rotated right by 2 steps."
+      "explanation": "Rotate 2 steps right."
+    },
+    {
+      "input": "3 0\n1 2 3",
+      "output": "1 2 3",
+      "explanation": "0 rotation leaves array unchanged."
+    },
+    {
+      "input": "5 5\n10 20 30 40 50",
+      "output": "10 20 30 40 50",
+      "explanation": "K = N rotates array full circle."
+    },
+    {
+      "input": "4 5\n1 2 3 4",
+      "output": "4 1 2 3",
+      "explanation": "K = 5 is equivalent to K = 1."
     }
   ],
   "starter_code": {
-    "python": "import sys\n\ndef solve():\n    data = sys.stdin.read().split()\n    if not data:\n        return\n    n = int(data[0])\n    k = int(data[1]) % n\n    nums = data[2:2+n]\n    if k > 0:\n        nums = nums[-k:] + nums[:-k]\n    print(\" \".join(nums))\n\nif __name__ == '__main__':\n    solve()\n",
-    "java": "import java.util.*;\n\npublic class Solution {\n    public static void main(String[] args) {\n        Scanner sc = new Scanner(System.in);\n        if (!sc.hasNextInt()) return;\n        int n = sc.nextInt();\n        int k = sc.nextInt() % n;\n        int[] nums = new int[n];\n        for (int i = 0; i < n; i++) nums[i] = sc.nextInt();\n        int[] res = new int[n];\n        for (int i = 0; i < n; i++) {\n            res[(i + k) % n] = nums[i];\n        }\n        StringBuilder sb = new StringBuilder();\n        for (int i = 0; i < n; i++) {\n            sb.append(res[i]).append(i == n - 1 ? \"\" : \" \");\n        }\n        System.out.println(sb.toString());\n    }\n}\n",
-    "c": "#include <stdio.h>\n#include <stdlib.h>\n\nint main() {\n    int n, k;\n    if (scanf(\"%d %d\", &n, &k) != 2) return 0;\n    k = k % n;\n    long long *arr = (long long*)malloc(n * sizeof(long long));\n    for (int i = 0; i < n; i++) scanf(\"%lld\", &arr[i]);\n    for (int i = 0; i < n; i++) {\n        int src = (i - k + n) % n;\n        printf(\"%lld%s\", arr[src], (i == n - 1) ? \"\\n\" : \" \");\n    }\n    free(arr);\n    return 0;\n}\n"
-  }
+    "python": "import sys\n\ndef solve():\n    data = sys.stdin.read().split()\n    if not data:\n        return\n    n = int(data[0])\n    k = int(data[1]) % n\n    nums = data[2:2+n]\n    if k > 0:\n        nums = nums[-k:] + nums[:-k]\n    print(' '.join(nums))\n\nif __name__ == '__main__':\n    solve()\n",
+    "java": "import java.util.*;\n\npublic class Solution {\n    public static void main(String[] args) {\n        Scanner sc = new Scanner(System.in);\n        if (!sc.hasNextInt()) return;\n        int n = sc.nextInt();\n        int k = sc.nextInt() % n;\n        long[] nums = new long[n];\n        for (int i = 0; i < n; i++) nums[i] = sc.nextLong();\n        long[] rotated = new long[n];\n        for (int i = 0; i < n; i++) {\n            rotated[(i + k) % n] = nums[i];\n        }\n        for (int i = 0; i < n; i++) {\n            System.out.print(rotated[i] + (i == n - 1 ? \"\\n\" : \" \"));\n        }\n    }\n}\n",
+    "c": "#include <stdio.h>\n#include <stdlib.h>\n\nint main() {\n    int n, k;\n    if (scanf(\"%d %d\", &n, &k) != 2) return 0;\n    k %= n;\n    long long *nums = malloc(n * sizeof(long long));\n    long long *res = malloc(n * sizeof(long long));\n    for (int i = 0; i < n; i++) scanf(\"%lld\", &nums[i]);\n    for (int i = 0; i < n; i++) res[(i + k) % n] = nums[i];\n    for (int i = 0; i < n; i++) printf(\"%lld%s\", res[i], i == n - 1 ? \"\\n\" : \" \");\n    free(nums);\n    free(res);\n    return 0;\n}\n"
+  },
+  "hidden_tests": [
+    {
+      "input": "1 10\n42",
+      "output": "42"
+    },
+    {
+      "input": "5 2\n1 2 3 4 5",
+      "output": "4 5 1 2 3"
+    },
+    {
+      "input": "6 4\n10 20 30 40 50 60",
+      "output": "30 40 50 60 10 20"
+    },
+    {
+      "input": "3 1\n1 2 3",
+      "output": "3 1 2"
+    },
+    {
+      "input": "5 1000\n1 2 3 4 5",
+      "output": "1 2 3 4 5"
+    }
+  ]
 }

@@ -1,4 +1,4 @@
 INPUT:
-10
+1234321
 EXPECTED:
-false
+true

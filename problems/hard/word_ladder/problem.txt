@@ -1,24 +1,29 @@
-# Word Ladder (Hard - 300 Points)
+# Word Ladder [Hard - 300 pts]
+
+## Category
+BFS & Graphs
 
 ## Description
-Given two words `beginWord` and `endWord`, and a dictionary of `N` words `wordList`, return the number of words in the shortest transformation sequence from `beginWord` to `endWord`, or `0` if no such sequence exists.
+Given two words, `beginWord` and `endWord`, and a dictionary of words `wordList`, return the number of words in the shortest transformation sequence from `beginWord` to `endWord`, such that:
+1. Only one letter can be changed at a time.
+2. Each transformed word must exist in the word list.
 
-Only one letter can be changed at a time, and each transformed word must exist in `wordList`.
+If no such transformation sequence exists, return `0`.
 
 ## Input Format
-The first line contains `beginWord` and `endWord` separated by a space.
-The second line contains an integer `N`.
+The first line contains `beginWord` and `endWord`.
+The second line contains `N`, the size of `wordList`.
 The third line contains `N` space-separated words in `wordList`.
 
 ## Output Format
-Print the length of the shortest word ladder, or `0`.
+Print the length of the shortest transformation sequence.
 
 ## Constraints
-1 <= length(word) <= 10
-1 <= N <= 5000
-All words have the same length and consist of lowercase letters.
+1 <= beginWord.length <= 10
+1 <= wordList.length <= 5000
+All words have the same length.
 
-## Examples
+## Examples (Visible 2 of 5)
 
 ### Example 1
 Input:
@@ -31,4 +36,17 @@ Output:
 ```
 5
 ```
-Explanation: Shortest transformation: 'hit' -> 'hot' -> 'dot' -> 'dog' -> 'cog' (5 words).
+Explanation: Shortest sequence: 'hit' -> 'hot' -> 'dot' -> 'dog' -> 'cog' (length 5).
+
+### Example 2
+Input:
+```
+hit cog
+5
+hot dot dog lot log
+```
+Output:
+```
+0
+```
+Explanation: The endWord 'cog' is not in wordList, therefore no valid sequence.

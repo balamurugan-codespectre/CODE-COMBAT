@@ -1,7 +1,7 @@
 [
   {
     "id": "SUB-0003",
-    "participant_id": "user_f021f571",
+    "participant_id": "user_5599acfe",
     "participant_name": "Bob Johnson",
     "problem_id": "two_sum",
     "problem_title": "Two Sum",
@@ -13,14 +13,14 @@
     "total_count": 5,
     "score": 100,
     "runtime": 0.05,
-    "timestamp": "2026-09-19T22:44:21.129744"
+    "timestamp": "2026-09-19T22:48:47.159005"
   },
   {
     "id": "SUB-0002",
-    "participant_id": "user_08df54f1",
+    "participant_id": "user_bd7eba37",
     "participant_name": "Alice Smith",
     "problem_id": "maximum_subarray",
-    "problem_title": "Maximum Subarray",
+    "problem_title": "Maximum Subarray (Kadane's)",
     "difficulty": "Medium",
     "language": "python",
     "code": "...",
@@ -29,11 +29,11 @@
     "total_count": 5,
     "score": 200,
     "runtime": 0.045,
-    "timestamp": "2026-09-19T22:44:21.114666"
+    "timestamp": "2026-09-19T22:48:47.145048"
   },
   {
     "id": "SUB-0001",
-    "participant_id": "user_08df54f1",
+    "participant_id": "user_bd7eba37",
     "participant_name": "Alice Smith",
     "problem_id": "two_sum",
     "problem_title": "Two Sum",
@@ -45,6 +45,6 @@
     "total_count": 5,
     "score": 100,
     "runtime": 0.035,
-    "timestamp": "2026-09-19T22:44:21.100605"
+    "timestamp": "2026-09-19T22:48:47.130438"
   }
 ]

@@ -1,4 +1,4 @@
 INPUT:
-Rhythm and Fly
+Quick brown fox jumps over the lazy dog
 EXPECTED:
-1
+11

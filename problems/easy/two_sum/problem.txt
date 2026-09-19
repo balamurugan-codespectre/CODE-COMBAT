@@ -1,4 +1,7 @@
-# Two Sum (Easy - 100 Points)
+# Two Sum [Easy - 100 pts]
+
+## Category
+Arrays & Hash Table
 
 ## Description
 Given an array of integers `nums` and an integer `target`, return the indices of the two numbers such that they add up to `target`.
@@ -21,7 +24,7 @@ Print the two 0-based indices separated by a single space.
 -2 * 10^9 <= target <= 2 * 10^9
 Exactly one valid answer exists.
 
-## Examples
+## Examples (Visible 2 of 5)
 
 ### Example 1
 Input:
@@ -34,7 +37,7 @@ Output:
 ```
 0 1
 ```
-Explanation: nums[0] + nums[1] = 2 + 7 = 9, so output is '0 1'.
+Explanation: nums[0] + nums[1] = 2 + 7 = 9.
 
 ### Example 2
 Input:
@@ -47,4 +50,4 @@ Output:
 ```
 1 2
 ```
-Explanation: nums[1] + nums[2] = 2 + 4 = 6, so output is '1 2'.
+Explanation: nums[1] + nums[2] = 2 + 4 = 6.

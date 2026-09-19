@@ -1,4 +1,4 @@
 INPUT:
-The Quick Brown Fox Jumps Over The Lazy Dog
+Universities across the world
 EXPECTED:
-12
+10

@@ -141,19 +141,21 @@ const App = {
       badge.textContent = prob.difficulty;
       badge.className = `badge badge-${prob.difficulty.toLowerCase()}`;
 
-      let samplesHtml = (prob.sample_tests || []).map((st, i) => `
-        <div style="background:var(--bg-primary); padding:0.75rem; border-radius:6px; margin-top:0.75rem;">
+      const visibleSamples = (prob.sample_tests || []).slice(0, 2);
+      let samplesHtml = visibleSamples.map((st, i) => `
+        <div style="background:var(--bg-primary); padding:0.75rem; border-radius:6px; margin-top:0.75rem; border:1px solid var(--border-color);">
           <div style="font-weight:700; color:var(--accent-cyan); font-size:0.85rem;">Example ${i + 1}</div>
-          <div style="margin-top:0.25rem;"><strong>Input:</strong><pre style="font-family:var(--font-mono); font-size:0.85rem; color:#fff;">${st.input}</pre></div>
-          <div style="margin-top:0.25rem;"><strong>Output:</strong><pre style="font-family:var(--font-mono); font-size:0.85rem; color:var(--accent-green);">${st.output}</pre></div>
+          <div style="margin-top:0.25rem;"><strong>Input:</strong><pre style="font-family:var(--font-mono); font-size:0.85rem; color:#fff; background:rgba(0,0,0,0.3); padding:0.4rem; border-radius:4px;">${st.input}</pre></div>
+          <div style="margin-top:0.25rem;"><strong>Output:</strong><pre style="font-family:var(--font-mono); font-size:0.85rem; color:var(--accent-green); background:rgba(0,0,0,0.3); padding:0.4rem; border-radius:4px;">${st.output}</pre></div>
+          ${st.explanation ? `<div style="margin-top:0.35rem; font-size:0.85rem; color:var(--text-secondary);"><strong>Explanation:</strong> ${st.explanation}</div>` : ''}
         </div>
       `).join('');
 
       document.getElementById('ide-prob-description').innerHTML = `
         <div style="color:var(--text-primary); font-size:0.95rem; margin-bottom:1rem;">${prob.description}</div>
         <h4 style="color:var(--accent-cyan); font-size:0.9rem; margin-top:1rem;">Constraints</h4>
-        <pre style="font-family:var(--font-mono); font-size:0.85rem; color:var(--text-secondary);">${prob.constraints || 'Standard constraints'}</pre>
-        <h4 style="color:var(--accent-cyan); font-size:0.9rem; margin-top:1rem;">Sample Cases</h4>
+        <pre style="font-family:var(--font-mono); font-size:0.85rem; color:var(--text-secondary); background:rgba(0,0,0,0.2); padding:0.5rem; border-radius:4px;">${prob.constraints || 'Standard constraints'}</pre>
+        <h4 style="color:var(--accent-cyan); font-size:0.9rem; margin-top:1rem;">Examples (2 of ${(prob.sample_tests || []).length} Sample Cases Shown)</h4>
         ${samplesHtml}
       `;
 

@@ -1,4 +1,4 @@
 INPUT:
-dvdf
+12345123456
 EXPECTED:
-3
+6

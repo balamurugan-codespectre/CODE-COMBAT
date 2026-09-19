@@ -1,24 +1,67 @@
 {
+  "tier": "hard",
   "id": "dijkstra_algorithm",
   "title": "Dijkstra's Shortest Path",
   "difficulty": "Hard",
   "points": 300,
-  "time_limit": 2.0,
-  "category": "Graphs & Greedy",
-  "description": "Given a directed weighted graph with `V` vertices (numbered `0` to `V-1`) and `E` edges with non-negative weights, find the shortest distance from a starting vertex `S` to all other vertices.\n\nPrint the distances for vertices `0, 1, ..., V-1` separated by a space. If a vertex is unreachable, print `-1` for that vertex.",
-  "input_format": "First line contains `V` and `E`.\nNext `E` lines each contain `u v w` representing a directed edge from `u` to `v` with weight `w`.\nLast line contains source vertex `S`.",
-  "output_format": "Print `V` space-separated integers representing shortest distances.",
-  "constraints": "1 <= V <= 10^4\n0 <= E <= 5*10^4\n0 <= u, v, S < V\n0 <= w <= 10^6",
+  "time_limit": 3.0,
+  "category": "Graphs",
+  "description": "Given a weighted directed graph with `V` vertices (0 to V-1) and `E` edges, compute the shortest path distance from a source vertex `S` to all vertices.\n\nIf a vertex is unreachable, print `-1` for its distance.",
+  "input_format": "The first line contains `V`, `E`, and `S`.\nThe next `E` lines each contain `u`, `v`, and `w` denoting a directed edge from `u` to `v` with weight `w`.",
+  "output_format": "Print `V` space-separated integers representing shortest distances from `S` to vertices 0 through V-1.",
+  "constraints": "1 <= V <= 10^4\n0 <= E <= 10^5\n0 <= w <= 10^5",
   "sample_tests": [
     {
-      "input": "5 6\n0 1 4\n0 2 2\n1 2 1\n1 3 5\n2 3 8\n3 4 3\n0",
-      "output": "0 4 2 9 12",
-      "explanation": "Distances from 0: 0->0=0, 0->1=4, 0->2=2, 0->1->3=9, 0->1->3->4=12."
+      "input": "4 4 0\n0 1 1\n0 2 4\n1 2 2\n2 3 1",
+      "output": "0 1 3 4",
+      "explanation": "Distances from 0: 0->0=0, 0->1=1, 0->1->2=3, 0->1->2->3=4."
+    },
+    {
+      "input": "3 2 0\n0 1 5\n1 2 10",
+      "output": "0 5 15",
+      "explanation": "Linear path from 0 to 2."
+    },
+    {
+      "input": "3 1 0\n0 1 7",
+      "output": "0 7 -1",
+      "explanation": "Node 2 is unreachable, so distance is -1."
+    },
+    {
+      "input": "2 1 0\n0 1 100",
+      "output": "0 100",
+      "explanation": "Direct edge between 0 and 1."
+    },
+    {
+      "input": "1 0 0",
+      "output": "0",
+      "explanation": "Single vertex has distance 0 to itself."
     }
   ],
   "starter_code": {
-    "python": "import sys\nimport heapq\n\ndef solve():\n    data = sys.stdin.read().split()\n    if not data:\n        return\n    v = int(data[0])\n    e = int(data[1])\n    adj = [[] for _ in range(v)]\n    idx = 2\n    for _ in range(e):\n        u = int(data[idx])\n        to = int(data[idx+1])\n        w = int(data[idx+2])\n        adj[u].append((to, w))\n        idx += 3\n    s = int(data[idx])\n    \n    dist = [float('inf')] * v\n    dist[s] = 0\n    pq = [(0, s)]\n    \n    while pq:\n        d, u = heapq.heappop(pq)\n        if d > dist[u]:\n            continue\n        for to, w in adj[u]:\n            if dist[u] + w < dist[to]:\n                dist[to] = dist[u] + w\n                heapq.heappush(pq, (dist[to], to))\n                \n    res = [str(x) if x != float('inf') else '-1' for x in dist]\n    print(\" \".join(res))\n\nif __name__ == '__main__':\n    solve()\n",
-    "java": "import java.util.*;\n\npublic class Solution {\n    static class Edge {\n        int to, weight;\n        Edge(int t, int w) { this.to = t; this.weight = w; }\n    }\n    static class Node implements Comparable<Node> {\n        int id; long dist;\n        Node(int i, long d) { this.id = i; this.dist = d; }\n        public int compareTo(Node o) { return Long.compare(this.dist, o.dist); }\n    }\n    public static void main(String[] args) {\n        Scanner sc = new Scanner(System.in);\n        if (!sc.hasNextInt()) return;\n        int v = sc.nextInt();\n        int e = sc.nextInt();\n        List<List<Edge>> adj = new ArrayList<>();\n        for (int i = 0; i < v; i++) adj.add(new ArrayList<>());\n        for (int i = 0; i < e; i++) {\n            int u = sc.nextInt();\n            int to = sc.nextInt();\n            int w = sc.nextInt();\n            adj.get(u).add(new Edge(to, w));\n        }\n        int s = sc.nextInt();\n        long[] dist = new long[v];\n        Arrays.fill(dist, Long.MAX_VALUE);\n        dist[s] = 0;\n        PriorityQueue<Node> pq = new PriorityQueue<>();\n        pq.add(new Node(s, 0));\n        while (!pq.isEmpty()) {\n            Node cur = pq.poll();\n            if (cur.dist > dist[cur.id]) continue;\n            for (Edge edge : adj.get(cur.id)) {\n                if (dist[cur.id] + edge.weight < dist[edge.to]) {\n                    dist[edge.to] = dist[cur.id] + edge.weight;\n                    pq.add(new Node(edge.to, dist[edge.to]));\n                }\n            }\n        }\n        StringBuilder sb = new StringBuilder();\n        for (int i = 0; i < v; i++) {\n            sb.append(dist[i] == Long.MAX_VALUE ? \"-1\" : dist[i]).append(i == v - 1 ? \"\" : \" \");\n        }\n        System.out.println(sb.toString());\n    }\n}\n",
-    "c": "#include <stdio.h>\n#include <stdlib.h>\n#include <stdbool.h>\n\n#define INF 1000000000000LL\n\ntypedef struct Edge { int to; long long w; struct Edge *next; } Edge;\n\nint main() {\n    int v, e;\n    if (scanf(\"%d %d\", &v, &e) != 2) return 0;\n    Edge **head = (Edge**)calloc(v, sizeof(Edge*));\n    for (int i = 0; i < e; i++) {\n        int u, to;\n        long long w;\n        scanf(\"%d %d %lld\", &u, &to, &w);\n        Edge *edge = (Edge*)malloc(sizeof(Edge));\n        edge->to = to; edge->w = w; edge->next = head[u]; head[u] = edge;\n    }\n    int s;\n    scanf(\"%d\", &s);\n    long long *dist = (long long*)malloc(v * sizeof(long long));\n    bool *visited = (bool*)calloc(v, sizeof(bool));\n    for (int i = 0; i < v; i++) dist[i] = INF;\n    dist[s] = 0;\n    \n    for (int i = 0; i < v; i++) {\n        int u = -1;\n        for (int j = 0; j < v; j++) {\n            if (!visited[j] && (u == -1 || dist[j] < dist[u])) u = j;\n        }\n        if (u == -1 || dist[u] == INF) break;\n        visited[u] = true;\n        for (Edge *p = head[u]; p != NULL; p = p->next) {\n            if (dist[u] + p->w < dist[p->to]) {\n                dist[p->to] = dist[u] + p->w;\n            }\n        }\n    }\n    for (int i = 0; i < v; i++) {\n        if (dist[i] == INF) printf(\"-1%s\", (i == v - 1) ? \"\\n\" : \" \");\n        else printf(\"%lld%s\", dist[i], (i == v - 1) ? \"\\n\" : \" \");\n    }\n    return 0;\n}\n"
-  }
+    "python": "import sys\nimport heapq\n\ndef solve():\n    lines = sys.stdin.read().split()\n    if not lines:\n        return\n    v = int(lines[0])\n    e = int(lines[1])\n    src = int(lines[2])\n    \n    adj = [[] for _ in range(v)]\n    idx = 3\n    for _ in range(e):\n        u = int(lines[idx])\n        to = int(lines[idx+1])\n        w = int(lines[idx+2])\n        adj[u].append((to, w))\n        idx += 3\n        \n    dist = [float('inf')] * v\n    dist[src] = 0\n    pq = [(0, src)]\n    \n    while pq:\n        d, u = heapq.heappop(pq)\n        if d > dist[u]:\n            continue\n        for to, weight in adj[u]:\n            if dist[u] + weight < dist[to]:\n                dist[to] = dist[u] + weight\n                heapq.heappush(pq, (dist[to], to))\n                \n    res = [str(d) if d != float('inf') else '-1' for d in dist]\n    print(' '.join(res))\n\nif __name__ == '__main__':\n    solve()\n",
+    "java": "import java.util.*;\n\npublic class Solution {\n    static class Edge {\n        int to, weight;\n        Edge(int t, int w) { to = t; weight = w; }\n    }\n    public static void main(String[] args) {\n        Scanner sc = new Scanner(System.in);\n        if (!sc.hasNextInt()) return;\n        int v = sc.nextInt();\n        int e = sc.nextInt();\n        int src = sc.nextInt();\n        List<List<Edge>> adj = new ArrayList<>();\n        for (int i = 0; i < v; i++) adj.add(new ArrayList<>());\n        for (int i = 0; i < e; i++) {\n            int u = sc.nextInt();\n            int to = sc.nextInt();\n            int w = sc.nextInt();\n            adj.get(u).add(new Edge(to, w));\n        }\n        long[] dist = new long[v];\n        Arrays.fill(dist, Long.MAX_VALUE);\n        dist[src] = 0;\n        PriorityQueue<long[]> pq = new PriorityQueue<>(Comparator.comparingLong(a -> a[0]));\n        pq.add(new long[]{0, src});\n        while (!pq.isEmpty()) {\n            long[] cur = pq.poll();\n            long d = cur[0];\n            int u = (int)cur[1];\n            if (d > dist[u]) continue;\n            for (Edge edge : adj.get(u)) {\n                if (dist[u] + edge.weight < dist[edge.to]) {\n                    dist[edge.to] = dist[u] + edge.weight;\n                    pq.add(new long[]{dist[edge.to], edge.to});\n                }\n            }\n        }\n        StringBuilder sb = new StringBuilder();\n        for (int i = 0; i < v; i++) {\n            sb.append(dist[i] == Long.MAX_VALUE ? -1 : dist[i]).append(i == v - 1 ? \"\" : \" \");\n        }\n        System.out.println(sb.toString());\n    }\n}\n",
+    "c": "#include <stdio.h>\n#include <stdlib.h>\n#include <limits.h>\n\nint main() {\n    int v, e, src;\n    if (scanf(\"%d %d %d\", &v, &e, &src) != 3) return 0;\n    long long dist[10005];\n    for (int i = 0; i < v; i++) dist[i] = LLONG_MAX;\n    dist[src] = 0;\n    \n    int *u = malloc(e * sizeof(int));\n    int *to = malloc(e * sizeof(int));\n    int *w = malloc(e * sizeof(int));\n    for (int i = 0; i < e; i++) scanf(\"%d %d %d\", &u[i], &to[i], &w[i]);\n    \n    for (int i = 0; i < v - 1; i++) {\n        for (int j = 0; j < e; j++) {\n            if (dist[u[j]] != LLONG_MAX && dist[u[j]] + w[j] < dist[to[j]]) {\n                dist[to[j]] = dist[u[j]] + w[j];\n            }\n        }\n    }\n    for (int i = 0; i < v; i++) {\n        if (dist[i] == LLONG_MAX) printf(\"-1%s\", i == v - 1 ? \"\\n\" : \" \");\n        else printf(\"%lld%s\", dist[i], i == v - 1 ? \"\\n\" : \" \");\n    }\n    free(u); free(to); free(w);\n    return 0;\n}\n"
+  },
+  "hidden_tests": [
+    {
+      "input": "5 6 0\n0 1 2\n0 2 4\n1 2 1\n1 3 7\n2 4 3\n3 4 1",
+      "output": "0 2 3 9 6"
+    },
+    {
+      "input": "4 2 0\n0 1 10\n2 3 20",
+      "output": "0 10 -1 -1"
+    },
+    {
+      "input": "3 3 1\n1 2 2\n2 0 4\n1 0 10",
+      "output": "6 0 2"
+    },
+    {
+      "input": "2 0 0",
+      "output": "0 -1"
+    },
+    {
+      "input": "4 4 3\n3 0 5\n0 1 2\n1 2 3\n3 2 15",
+      "output": "5 7 10 0"
+    }
+  ]
 }

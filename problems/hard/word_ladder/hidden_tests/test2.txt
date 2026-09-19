@@ -1,6 +1,6 @@
 INPUT:
-a c
-3
-a b c
+game over
+4
+game fame fave over
 EXPECTED:
-2
+0

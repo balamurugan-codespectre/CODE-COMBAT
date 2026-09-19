@@ -1,11 +1,14 @@
-# Maximum Subarray (Medium - 200 Points)
+# Maximum Subarray (Kadane's) [Medium - 200 pts]
+
+## Category
+Dynamic Programming
 
 ## Description
-Given an integer array `nums`, find the subarray with the largest sum, and print its sum.
+Given an integer array `nums`, find the contiguous subarray (containing at least one number) which has the largest sum and print its sum.
 
 ## Input Format
 The first line contains an integer `N`.
-The second line contains `N` integers.
+The second line contains `N` space-separated integers.
 
 ## Output Format
 Print the maximum subarray sum.
@@ -14,7 +17,7 @@ Print the maximum subarray sum.
 1 <= N <= 10^5
 -10^4 <= nums[i] <= 10^4
 
-## Examples
+## Examples (Visible 2 of 5)
 
 ### Example 1
 Input:
@@ -26,7 +29,7 @@ Output:
 ```
 6
 ```
-Explanation: The subarray [4,-1,2,1] has the largest sum 6.
+Explanation: [4,-1,2,1] has the largest sum = 6.
 
 ### Example 2
 Input:
@@ -38,4 +41,4 @@ Output:
 ```
 1
 ```
-Explanation: The subarray [1] has the largest sum 1.
+Explanation: The array has only one element.
