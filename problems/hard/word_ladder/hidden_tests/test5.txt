@@ -3,4 +3,4 @@ talk tail
 4
 talk tall toil tail
 EXPECTED:
-4
+3

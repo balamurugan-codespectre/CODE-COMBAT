@@ -61,7 +61,7 @@
     },
     {
       "input": "talk tail\n4\ntalk tall toil tail",
-      "output": "4"
+      "output": "3"
     }
   ]
 }

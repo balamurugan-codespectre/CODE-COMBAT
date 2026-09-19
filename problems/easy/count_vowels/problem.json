@@ -49,7 +49,7 @@
     },
     {
       "input": "Quick brown fox jumps over the lazy dog",
-      "output": "11"
+      "output": "10"
     },
     {
       "input": "Universities across the world",
