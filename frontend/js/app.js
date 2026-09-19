@@ -107,16 +107,31 @@ const App = {
     const tbody = document.getElementById('problems-table-body');
     if (!tbody) return;
 
-    tbody.innerHTML = probs.map(p => `
-      <tr onclick="App.openProblem('${p.id}')">
-        <td>${p.solved ? '<span class="badge badge-solved">✓ Solved</span>' : '<span style="color:var(--text-muted)">-</span>'}</td>
-        <td style="font-weight:600; color:#fff;">${p.title}</td>
-        <td><span class="badge badge-${p.difficulty.toLowerCase()}">${p.difficulty}</span></td>
-        <td style="font-family:var(--font-mono); font-weight:700; color:var(--accent-cyan);">${p.points} pts</td>
-        <td style="color:var(--text-secondary);">${p.time_limit}s</td>
-        <td><button class="btn btn-secondary" style="padding:0.3rem 0.75rem; font-size:0.8rem;">Solve ➔</button></td>
-      </tr>
-    `).join('');
+    tbody.innerHTML = probs.map(p => {
+      const isSolved = Boolean(p.solved || p.status === 'Solved');
+      return `
+        <tr onclick="App.openProblem('${p.id}')">
+          <td>
+            ${isSolved 
+              ? '<span class="badge badge-solved" style="background:rgba(16,185,129,0.2); color:var(--accent-green); border:1px solid var(--accent-green); font-weight:700;">✓ Solved</span>' 
+              : '<span class="badge" style="background:rgba(148,163,184,0.1); color:var(--text-muted); border:1px solid var(--border-color);">Todo</span>'}
+          </td>
+          <td style="font-weight:600; color:#fff;">
+            ${p.title}
+            ${isSolved ? '<span style="color:var(--accent-green); font-size:0.85rem; margin-left:0.5rem;" title="Solved">✓</span>' : ''}
+          </td>
+          <td><span class="badge badge-${p.difficulty.toLowerCase()}">${p.difficulty}</span></td>
+          <td style="font-family:var(--font-mono); font-weight:700; color:var(--accent-cyan);">${p.points} pts</td>
+          <td style="color:var(--text-secondary);">${p.time_limit}s</td>
+          <td>
+            ${isSolved
+              ? `<button class="btn btn-solved" style="padding:0.35rem 0.85rem; font-size:0.8rem; cursor:pointer;" onclick="event.stopPropagation(); App.openProblem('${p.id}')">Solved ✓</button>`
+              : `<button class="btn btn-primary" style="padding:0.35rem 0.85rem; font-size:0.8rem; font-weight:600; cursor:pointer;" onclick="event.stopPropagation(); App.openProblem('${p.id}')">Solve ➔</button>`
+            }
+          </td>
+        </tr>
+      `;
+    }).join('');
   },
 
   filterProblems(difficulty, btn) {
@@ -136,9 +151,12 @@ const App = {
       const prob = await res.json();
       this.activeProblem = prob;
 
+      const probMeta = this.problems.find(p => p.id === problemId);
+      const isSolved = Boolean(probMeta && (probMeta.solved || probMeta.status === 'Solved'));
+
       document.getElementById('ide-prob-title').textContent = prob.title;
       const badge = document.getElementById('ide-prob-badge');
-      badge.textContent = prob.difficulty;
+      badge.innerHTML = `${prob.difficulty}${isSolved ? ' &bull; &check; Solved' : ''}`;
       badge.className = `badge badge-${prob.difficulty.toLowerCase()}`;
 
       const visibleSamples = (prob.sample_tests || []).slice(0, 2);
@@ -285,7 +303,9 @@ const App = {
       if (isAccepted) {
         this.showToast(`Accepted! Earned ${data.score_earned} points.`, 'success');
         this.participant.score = (this.participant.score || 0) + data.score_earned;
+        localStorage.setItem('cc_participant', JSON.stringify(this.participant));
         this.updateUserBadge();
+        this.loadProblems();
       } else {
         this.showToast(`Submission Verdict: ${data.status}`, 'error');
       }

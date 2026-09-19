@@ -77,7 +77,8 @@ class ProblemsManager:
                 "points": data.get("points", 100),
                 "time_limit": data.get("time_limit", 2.0),
                 "category": data.get("category", "General"),
-                "status": "Solved" if is_solved else "Not Started"
+                "status": "Solved" if is_solved else "Not Started",
+                "solved": is_solved
             })
 
         # Sort: Easy -> Medium -> Hard, then Title
