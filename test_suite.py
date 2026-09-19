@@ -100,17 +100,17 @@ def run_tests():
     # 3.1 Python 3 execution
     py_hidden_dir = problems_mgr.get_hidden_tests_dir("two_sum")
     res_py = judge.run_hidden_tests("python", detail["starter_code"]["python"], py_hidden_dir, 100, 3.0)
-    assert_test("Python 3 Judge: Two Sum -> ACCEPTED (5/5)", res_py["status"] == "ACCEPTED" and res_py["passed_count"] == 5)
+    assert_test("Python 3 Judge: Two Sum -> ACCEPTED (5/5)", res_py["status"] == "ACCEPTED" and res_py["passed_count"] == 5, f"status={res_py.get('status')}, error={res_py.get('error_message')}")
 
     # 3.2 Java (javac) execution
     res_java = judge.run_hidden_tests("java", detail["starter_code"]["java"], py_hidden_dir, 100, 3.0)
-    assert_test("Java (javac) Judge: Two Sum -> ACCEPTED (5/5)", res_java["status"] == "ACCEPTED" and res_java["passed_count"] == 5)
+    assert_test("Java (javac) Judge: Two Sum -> ACCEPTED (5/5)", res_java["status"] == "ACCEPTED" and res_java["passed_count"] == 5, f"status={res_java.get('status')}, error={res_java.get('error_message')}")
 
     # 3.3 C compiler detection & execution
     c_compiler = Compiler.detect_c_compiler()
     if c_compiler:
         res_c = judge.run_hidden_tests("c", detail["starter_code"]["c"], py_hidden_dir, 100, 3.0)
-        assert_test(f"C ({os.path.basename(c_compiler)}) Judge: Two Sum -> ACCEPTED (5/5)", res_c["status"] == "ACCEPTED" and res_c["passed_count"] == 5)
+        assert_test(f"C ({os.path.basename(c_compiler)}) Judge: Two Sum -> ACCEPTED (5/5)", res_c["status"] == "ACCEPTED" and res_c["passed_count"] == 5, f"status={res_c.get('status')}, error={res_c.get('error_message')}")
     else:
         assert_test("C compiler not available (optional on Windows host)", True)
 
