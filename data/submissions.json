@@ -1,23 +1,23 @@
 [
   {
     "id": "SUB-0004",
-    "participant_id": "user_ac9fdc22",
-    "participant_name": "Charlie Test",
+    "participant_id": "user_f9ed9155",
+    "participant_name": "C Programmer",
     "problem_id": "two_sum",
     "problem_title": "Two Sum",
     "difficulty": "Easy",
-    "language": "python",
-    "code": "import sys\n\ndef solve():\n    input_data = sys.stdin.read().split()\n    if not input_data:\n        return\n    n = int(input_data[0])\n    nums = [int(x) for x in input_data[1:n+1]]\n    target = int(input_data[n+1])\n    \n    # Write your solution here\n    seen = {}\n    for i, num in enumerate(nums):\n        complement = target - num\n        if complement in seen:\n            print(f\"{seen[complement]} {i}\")\n            return\n        seen[num] = i\n\nif __name__ == '__main__':\n    solve()",
+    "language": "c",
+    "code": "#include <stdio.h>\n#include <stdlib.h>\n\nint main() {\n    int n;\n    if (scanf(\"%d\", &n) != 1) return 0;\n    int *nums = (int*)malloc(n * sizeof(int));\n    for (int i = 0; i < n; i++) {\n        scanf(\"%d\", &nums[i]);\n    }\n    int target;\n    scanf(\"%d\", &target);\n    \n    for (int i = 0; i < n; i++) {\n        for (int j = i + 1; j < n; j++) {\n            if (nums[i] + nums[j] == target) {\n                printf(\"%d %d\\n\", i, j);\n                free(nums);\n                return 0;\n            }\n        }\n    }\n    free(nums);\n    return 0;\n}",
     "status": "ACCEPTED",
     "passed_count": 5,
     "total_count": 5,
     "score": 100,
-    "runtime": 0.1486,
-    "timestamp": "2026-09-19T22:27:13.074897"
+    "runtime": 0.897,
+    "timestamp": "2026-09-19T22:42:40.698091"
   },
   {
     "id": "SUB-0003",
-    "participant_id": "user_5d0c5ae3",
+    "participant_id": "user_e605d543",
     "participant_name": "Bob Johnson",
     "problem_id": "two_sum",
     "problem_title": "Two Sum",
@@ -29,11 +29,11 @@
     "total_count": 5,
     "score": 100,
     "runtime": 0.05,
-    "timestamp": "2026-09-19T22:22:46.997259"
+    "timestamp": "2026-09-19T22:41:12.847890"
   },
   {
     "id": "SUB-0002",
-    "participant_id": "user_8f180a1d",
+    "participant_id": "user_e92d5b5f",
     "participant_name": "Alice Smith",
     "problem_id": "maximum_subarray",
     "problem_title": "Maximum Subarray",
@@ -45,11 +45,11 @@
     "total_count": 5,
     "score": 200,
     "runtime": 0.045,
-    "timestamp": "2026-09-19T22:22:46.986144"
+    "timestamp": "2026-09-19T22:41:12.837045"
   },
   {
     "id": "SUB-0001",
-    "participant_id": "user_8f180a1d",
+    "participant_id": "user_e92d5b5f",
     "participant_name": "Alice Smith",
     "problem_id": "two_sum",
     "problem_title": "Two Sum",
@@ -61,6 +61,6 @@
     "total_count": 5,
     "score": 100,
     "runtime": 0.035,
-    "timestamp": "2026-09-19T22:22:46.973872"
+    "timestamp": "2026-09-19T22:41:12.823654"
   }
 ]

@@ -1,34 +1,34 @@
 [
   {
-    "id": "user_8f180a1d",
+    "id": "user_e92d5b5f",
     "name": "Alice Smith",
     "college": "Oxford University",
     "reg_no": "OX101",
     "score": 300,
-    "registered_at": "2026-09-19T22:22:46.951843",
+    "registered_at": "2026-09-19T22:41:12.801009",
     "solved_problems": [
       "maximum_subarray",
       "two_sum"
     ]
   },
   {
-    "id": "user_5d0c5ae3",
+    "id": "user_e605d543",
     "name": "Bob Johnson",
     "college": "Cambridge",
     "reg_no": "CB202",
     "score": 100,
-    "registered_at": "2026-09-19T22:22:46.962363",
+    "registered_at": "2026-09-19T22:41:12.810917",
     "solved_problems": [
       "two_sum"
     ]
   },
   {
-    "id": "user_ac9fdc22",
-    "name": "Charlie Test",
-    "college": "MIT",
-    "reg_no": "MIT999",
+    "id": "user_f9ed9155",
+    "name": "C Programmer",
+    "college": "IIT",
+    "reg_no": "IIT555",
     "score": 100,
-    "registered_at": "2026-09-19T22:27:12.798875",
+    "registered_at": "2026-09-19T22:42:39.470619",
     "solved_problems": [
       "two_sum"
     ]

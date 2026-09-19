@@ -1,6 +1,6 @@
 """
-CODE COMBAT - Code Compiler Module
-Handles syntax validation and compilation for Python, Java, and C.
+CODE COMBAT Pro - Polyglot Code Compiler Module
+Handles syntax parsing, class extraction, and compilation for Python 3, Java, and C.
 """
 
 import os
@@ -9,7 +9,8 @@ import shutil
 import subprocess
 import ast
 import re
-from typing import Dict, Any, Optional, Tuple
+import tempfile
+from typing import Dict, Any, Optional, Tuple, List
 
 
 class Compiler:
@@ -17,41 +18,88 @@ class Compiler:
 
     def __init__(self, config: Optional[Dict[str, Any]] = None):
         self.config = config or {}
-        self.timeout = self.config.get("compile_timeout_seconds", 10.0)
+        self.timeout = float(self.config.get("compile_timeout_seconds", 10.0))
 
     @staticmethod
-    def detect_c_compiler() -> Optional[str]:
-        """Detects and validates an available working C compiler on the host system."""
-        import tempfile
-        for compiler in ["clang", "gcc", "cl", "clang.exe", "gcc.exe"]:
-            resolved = shutil.which(compiler)
-            if resolved:
-                td = tempfile.mkdtemp(prefix="test_c_")
-                try:
-                    src = os.path.join(td, "test.c")
-                    with open(src, "w", encoding="utf-8") as f:
-                        f.write("int main(){return 0;}\n")
-                    res = subprocess.run(
-                        [resolved, "test.c", "-o", "test.exe"],
-                        cwd=td,
-                        stdout=subprocess.DEVNULL,
-                        stderr=subprocess.DEVNULL,
-                        timeout=3.0
-                    )
-                    if res.returncode == 0 and os.path.exists(os.path.join(td, "test.exe")):
-                        return resolved
-                except Exception:
-                    pass
-                finally:
-                    shutil.rmtree(td, ignore_errors=True)
+    def _find_mingw_root() -> Optional[str]:
+        """Finds MinGW header/library directory for Windows Clang sysroot."""
+        candidates = [
+            r"C:\Users\rajku\AppData\Local\Microsoft\WinGet\Packages\BrechtSanders.WinLibs.POSIX.UCRT_Microsoft.Winget.Source_8wekyb3d8bbwe\mingw64",
+            r"C:\mingw64",
+            r"C:\msys64\mingw64",
+            r"C:\msys64\ucrt64"
+        ]
+        user_profile = os.environ.get("USERPROFILE", "")
+        if user_profile:
+            winget_path = os.path.join(user_profile, "AppData", "Local", "Microsoft", "WinGet", "Packages")
+            if os.path.isdir(winget_path):
+                for folder in os.listdir(winget_path):
+                    if "WinLibs" in folder:
+                        cand = os.path.join(winget_path, folder, "mingw64")
+                        if os.path.isdir(cand):
+                            candidates.insert(0, cand)
+
+        for c in candidates:
+            if os.path.isdir(c) and os.path.isdir(os.path.join(c, "include")):
+                return c
         return None
+
+    @classmethod
+    def get_c_compiler_config(cls) -> Optional[Dict[str, Any]]:
+        """Detects, configures, and validates a working C compiler."""
+        # 1. Look for clang executable
+        clang_candidates = [
+            r"C:\Program Files\LLVM\bin\clang.exe",
+            shutil.which("clang.exe"),
+            shutil.which("clang"),
+            shutil.which("gcc.exe"),
+            shutil.which("gcc")
+        ]
+
+        mingw_root = cls._find_mingw_root()
+
+        for c in [x for x in clang_candidates if x and os.path.exists(x)]:
+            # Build smoke-test command
+            test_cmd = [c]
+            if "clang" in c.lower() and sys.platform.startswith("win") and mingw_root:
+                test_cmd.extend(["--target=x86_64-w64-windows-gnu", f"--sysroot={mingw_root}", "-O2", "-static"])
+            else:
+                test_cmd.extend(["-O2", "-static"])
+
+            # Smoke test
+            td = tempfile.mkdtemp(prefix="smoke_c_")
+            try:
+                src = os.path.join(td, "test.c")
+                exe = os.path.join(td, "test.exe") if sys.platform.startswith("win") else os.path.join(td, "test")
+                with open(src, "w", encoding="utf-8") as f:
+                    f.write("#include <stdio.h>\nint main(){return 0;}\n")
+
+                full_cmd = test_cmd + [src, "-o", exe]
+                res = subprocess.run(full_cmd, cwd=td, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, timeout=4.0)
+                if res.returncode == 0 and os.path.exists(exe):
+                    return {
+                        "executable": c,
+                        "extra_flags": test_cmd[1:],
+                        "display_name": os.path.basename(c)
+                    }
+            except Exception:
+                pass
+            finally:
+                shutil.rmtree(td, ignore_errors=True)
+
+        return None
+
+    @classmethod
+    def detect_c_compiler(cls) -> Optional[str]:
+        """Detects and returns compiler path string for compatibility."""
+        cfg = cls.get_c_compiler_config()
+        return cfg["executable"] if cfg else None
 
     @staticmethod
     def detect_java_compiler() -> Optional[str]:
         """Detects available Java compiler on the host system."""
-        if shutil.which("javac"):
-            return "javac"
-        return None
+        resolved = shutil.which("javac")
+        return resolved if resolved else None
 
     def compile(self, language: str, source_code: str, work_dir: str) -> Tuple[bool, Optional[str], Optional[Dict[str, Any]]]:
         """
@@ -62,27 +110,25 @@ class Compiler:
         """
         lang = language.lower().strip()
 
-        if lang == "python" or lang == "python3" or lang == "py":
+        if lang in ["python", "python3", "py"]:
             return self._prepare_python(source_code, work_dir)
         elif lang == "java":
             return self._compile_java(source_code, work_dir)
-        elif lang == "c":
+        elif lang in ["c", "c99", "c11"]:
             return self._compile_c(source_code, work_dir)
         else:
             return False, f"Unsupported language: '{language}'. Supported: Python, Java, C.", None
 
     def _prepare_python(self, source_code: str, work_dir: str) -> Tuple[bool, Optional[str], Optional[Dict[str, Any]]]:
-        """Validates Python syntax and writes solution.py."""
-        # 1. Syntax check via AST
+        """Validates Python syntax via AST and writes solution.py."""
         try:
             ast.parse(source_code, filename="solution.py")
         except SyntaxError as se:
-            err = f"SyntaxError on line {se.lineno}: {se.msg}\n  {se.text or ''}"
+            err = f"SyntaxError on line {se.lineno}, col {se.offset or 1}: {se.msg}\n  {se.text or ''}"
             return False, err, None
         except Exception as e:
             return False, f"Syntax Error: {str(e)}", None
 
-        # 2. Write file
         file_path = os.path.join(work_dir, "solution.py")
         with open(file_path, "w", encoding="utf-8") as f:
             f.write(source_code)
@@ -98,18 +144,16 @@ class Compiler:
         """Compiles Java source code using javac."""
         javac = self.detect_java_compiler()
         if not javac:
-            return False, "Java compiler (javac) is not found on this system PATH.", None
+            return False, "Java compiler (javac) is not found on this system PATH. Please install OpenJDK / JDK.", None
 
         # Extract public class name if specified, default to Solution
         class_match = re.search(r'public\s+class\s+([A-Za-z0-9_]+)', source_code)
         if class_match:
             class_name = class_match.group(1)
         else:
-            # Check for non-public Solution class
             if re.search(r'class\s+Solution', source_code):
                 class_name = "Solution"
             else:
-                # Find the first class definition
                 first_class = re.search(r'class\s+([A-Za-z0-9_]+)', source_code)
                 class_name = first_class.group(1) if first_class else "Solution"
 
@@ -119,7 +163,7 @@ class Compiler:
 
         try:
             res = subprocess.run(
-                [javac, f"{class_name}.java"],
+                [javac, "-encoding", "UTF-8", f"{class_name}.java"],
                 cwd=work_dir,
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE,
@@ -134,24 +178,23 @@ class Compiler:
         except Exception as e:
             return False, f"Java compilation error: {str(e)}", None
 
-        # Find java runtime
         java_cmd = shutil.which("java") or "java"
         metadata = {
             "entry_file": file_path,
-            "cmd": [java_cmd, "-cp", work_dir, class_name],
+            "cmd": [java_cmd, "-cp", work_dir, "-Xmx256m", class_name],
             "language": "java",
             "class_name": class_name
         }
         return True, None, metadata
 
     def _compile_c(self, source_code: str, work_dir: str) -> Tuple[bool, Optional[str], Optional[Dict[str, Any]]]:
-        """Compiles C source code using gcc or clang."""
-        c_compiler = self.detect_c_compiler()
-        if not c_compiler:
+        """Compiles C source code using auto-configured Clang or GCC."""
+        c_cfg = self.get_c_compiler_config()
+        if not c_cfg:
             return (
                 False,
-                "C compiler (gcc/clang) was not found on this system PATH.\n"
-                "Please install MinGW-w64 / GCC or run solutions in Python or Java.",
+                "C compiler (Clang/GCC) was not found or configured on this system.\n"
+                "Please run solutions in Python 3 or Java (OpenJDK).",
                 None
             )
 
@@ -162,7 +205,7 @@ class Compiler:
         with open(src_path, "w", encoding="utf-8") as f:
             f.write(source_code)
 
-        compile_cmd = [c_compiler, "-O2", "solution.c", "-o", exe_name, "-lm"]
+        compile_cmd = [c_cfg["executable"]] + c_cfg["extra_flags"] + ["solution.c", "-o", exe_name, "-lm"]
         try:
             res = subprocess.run(
                 compile_cmd,
