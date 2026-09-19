@@ -24,9 +24,10 @@
     </ul>
 
     <div style="display:flex; align-items:center; gap:1rem;">
-      <div class="user-badge" id="user-badge" style="display:none;">
+      <div class="user-badge" id="user-badge" style="display:none; align-items:center;">
         <span id="user-name-display">Participant</span>
         <span class="user-score" id="user-score-display">0 pts</span>
+        <span onclick="App.logout()" style="cursor:pointer; font-size:0.9rem; margin-left:0.5rem; opacity:0.75;" title="Sign out / Switch participant">🚪</span>
       </div>
     </div>
   </header>
@@ -40,7 +41,7 @@
         <h1 class="hero-title">Compete. Code. Conquer.</h1>
         <p class="hero-subtitle">The zero-dependency, ultra-fast offline competitive programming platform for college hackathons and coding contests.</p>
         <div class="hero-actions">
-          <button class="btn btn-primary" onclick="App.navigate('register')">🚀 Start Competition</button>
+          <button class="btn btn-primary" onclick="App.navigate('register')">⚔️ Enter Arena (Register)</button>
           <button class="btn btn-secondary" onclick="App.navigate('intro')">📜 Rules & Guidelines</button>
           <button class="btn btn-secondary" onclick="App.navigate('problems')">📂 Browse Challenges</button>
           <button class="btn btn-secondary" onclick="App.navigate('leaderboard')">🏆 Live Rankings</button>

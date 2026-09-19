@@ -29,6 +29,12 @@ const App = {
   },
 
   navigate(viewId) {
+    const protectedViews = ['intro', 'problems', 'ide'];
+    if (protectedViews.includes(viewId) && !this.participant) {
+      this.showToast('Please register first to enter the arena and view rules/challenges!', 'warning');
+      viewId = 'register';
+    }
+
     document.querySelectorAll('.view-section').forEach(sec => sec.classList.remove('active'));
     document.querySelectorAll('.nav-item').forEach(link => link.classList.remove('active'));
 
@@ -43,6 +49,16 @@ const App = {
     if (viewId === 'problems') this.loadProblems();
     if (viewId === 'leaderboard') this.loadLeaderboard();
     if (viewId === 'admin') Admin.checkHealth();
+  },
+
+  logout() {
+    if (confirm('Sign out of current participant session?')) {
+      this.participant = null;
+      localStorage.removeItem('cc_participant');
+      document.getElementById('user-badge').style.display = 'none';
+      this.showToast('Signed out successfully.', 'info');
+      this.navigate('home');
+    }
   },
 
   showToast(message, type = 'info') {
@@ -146,6 +162,11 @@ const App = {
   },
 
   async openProblem(problemId) {
+    if (!this.participant) {
+      this.showToast('Please register first to access coding challenges!', 'warning');
+      this.navigate('register');
+      return;
+    }
     try {
       const res = await fetch(`/api/problems/${problemId}`);
       const prob = await res.json();
