@@ -657,7 +657,7 @@
 
   </main>
 
-  <!-- Solution Password Lock Modal for Players -->
+  <!-- Solution Admin ID & Password Lock Modal for Players -->
   <div id="modal-solution-lock" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.85); backdrop-filter:blur(8px); -webkit-backdrop-filter:blur(8px); z-index:2000; align-items:center; justify-content:center;">
     <div style="background:var(--bg-card); border:1px solid var(--accent-amber); box-shadow:0 0 40px rgba(245,158,11,0.25); border-radius:var(--radius-md); max-width:440px; width:92%; padding:1.75rem; animation:fadeIn 0.2s ease-out;">
       <div style="display:flex; align-items:center; gap:0.6rem; margin-bottom:0.6rem;">
@@ -665,16 +665,23 @@
         <h3 style="color:#fff; font-size:1.2rem; font-weight:800; margin:0;">Unlock Official Solution</h3>
       </div>
       <p style="color:var(--text-secondary); font-size:0.88rem; line-height:1.5; margin-bottom:1.25rem;">
-        Inserting the solution is locked. Enter the password provided by your event coordinator or invigilator to unlock and insert:
+        Inserting the official solution requires administrator credentials. Enter your <strong>Admin ID</strong> and <strong>Admin Password</strong> to unlock:
       </p>
 
       <form id="form-solution-lock" onsubmit="App.submitSolutionUnlock(event)">
+        <div class="form-group" style="margin-bottom:0.9rem;">
+          <label class="form-label" style="font-size:0.82rem; font-weight:600; color:var(--text-primary);">
+            Admin ID
+          </label>
+          <input type="text" id="sol-lock-id" class="form-control" placeholder="Enter Admin ID (e.g. admincse)" required autocomplete="username" style="width:100%; background:var(--bg-primary); font-size:0.95rem;">
+        </div>
+
         <div class="form-group" style="margin-bottom:1rem;">
           <label class="form-label" style="font-size:0.82rem; font-weight:600; color:var(--text-primary); display:flex; justify-content:space-between;">
-            <span>Solution Password</span>
+            <span>Admin Password</span>
           </label>
           <div style="position:relative; display:flex; align-items:center;">
-            <input type="password" id="sol-lock-pass" class="form-control" placeholder="Enter password to unlock solution" required autocomplete="current-password" style="width:100%; background:var(--bg-primary); padding-right:2.5rem; font-size:0.95rem;">
+            <input type="password" id="sol-lock-pass" class="form-control" placeholder="Enter Admin Password" required autocomplete="current-password" style="width:100%; background:var(--bg-primary); padding-right:2.5rem; font-size:0.95rem;">
             <button type="button" onclick="App.toggleSolutionPassVisibility()" style="position:absolute; right:0.6rem; background:none; border:none; color:var(--text-muted); cursor:pointer; font-size:1rem;" title="Show/Hide password">👁️</button>
           </div>
         </div>

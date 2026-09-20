@@ -565,7 +565,7 @@ class CodeCombatHandler(BaseHTTPRequestHandler):
         # POST /api/admin/get-solution or /api/problems/unlock-solution
         if path in ["/api/admin/get-solution", "/api/problems/unlock-solution"]:
             if not self.is_admin_authenticated(body):
-                self.send_error_json("Access denied. Admin password / authentication required to unlock solutions.", 401)
+                self.send_error_json("Access denied. Invalid Admin ID or Password.", 401)
                 return
 
             problem_id = (body.get("problem_id") or "").strip().lower()
