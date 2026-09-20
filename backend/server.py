@@ -192,6 +192,30 @@ class CodeCombatHandler(BaseHTTPRequestHandler):
 
     # ------------------- API Handlers -------------------
 
+    def is_admin_authenticated(self, body: Dict[str, Any] = None) -> bool:
+        """Checks admin authorization via Authorization header token, body token, or password/id."""
+        auth_header = self.headers.get("Authorization", "")
+        if auth_header.startswith("Bearer "):
+            token = auth_header.replace("Bearer ", "").strip()
+            verified = self.auth.verify_session_token(token)
+            if verified and verified.get("pid") == self.auth.admin_id:
+                return True
+
+        if body:
+            token = body.get("token")
+            if token:
+                verified = self.auth.verify_session_token(token)
+                if verified and verified.get("pid") == self.auth.admin_id:
+                    return True
+
+            admin_id = body.get("admin_id") or body.get("username")
+            password = body.get("password") or body.get("admin_password") or body.get("old_password")
+            if password:
+                if admin_id:
+                    return self.auth.verify_admin_credentials(admin_id, password)
+                return self.auth.verify_admin_password(password)
+        return False
+
     def handle_api_get(self, path: str, query: Dict[str, list]):
         # GET /api/health
         if path == "/api/health":
@@ -454,19 +478,32 @@ class CodeCombatHandler(BaseHTTPRequestHandler):
 
         # POST /api/admin/login
         if path == "/api/admin/login":
+            admin_id = body.get("admin_id") or body.get("username")
             password = body.get("password", "")
-            if self.auth.verify_admin_password(password):
-                token = self.auth.create_session_token("admin", "Administrator", expiry_hours=24)
-                self.send_json({"authenticated": True, "token": token})
+
+            valid = False
+            if admin_id:
+                valid = self.auth.verify_admin_credentials(admin_id, password)
             else:
-                self.send_error_json("Invalid admin password", 401)
+                valid = self.auth.verify_admin_password(password)
+
+            if valid:
+                token = self.auth.create_session_token(self.auth.admin_id, "Administrator", expiry_hours=24)
+                self.send_json({
+                    "success": True,
+                    "authenticated": True,
+                    "token": token,
+                    "admin_id": self.auth.admin_id,
+                    "message": "Admin authenticated successfully."
+                })
+            else:
+                self.send_error_json("Invalid Admin ID or Password.", 401)
             return
 
         # POST /api/admin/reset
         if path == "/api/admin/reset":
-            password = body.get("password", "")
-            if not self.auth.verify_admin_password(password):
-                self.send_error_json("Unauthorized. Admin password required.", 401)
+            if not self.is_admin_authenticated(body):
+                self.send_error_json("Unauthorized. Admin credentials or active session required.", 401)
                 return
 
             self.storage.reset_competition()
@@ -475,9 +512,8 @@ class CodeCombatHandler(BaseHTTPRequestHandler):
 
         # POST /api/admin/switch-set
         if path == "/api/admin/switch-set":
-            password = body.get("password", "")
-            if not self.auth.verify_admin_password(password):
-                self.send_error_json("Unauthorized. Invalid admin password.", 401)
+            if not self.is_admin_authenticated(body):
+                self.send_error_json("Unauthorized. Invalid admin password or token.", 401)
                 return
 
             set_id = body.get("set_id", "set1").strip().lower()
@@ -511,18 +547,29 @@ class CodeCombatHandler(BaseHTTPRequestHandler):
         # POST /api/admin/change-password
         if path == "/api/admin/change-password":
             old_password = body.get("old_password", "")
+            current_id = body.get("current_admin_id") or body.get("admin_id")
+            new_id = body.get("new_admin_id") or body.get("new_id")
             new_password = body.get("new_password", "").strip()
 
-            if not self.auth.verify_admin_password(old_password):
-                self.send_error_json("Current admin password is incorrect.", 401)
+            auth_valid = False
+            if current_id:
+                auth_valid = self.auth.verify_admin_credentials(current_id, old_password)
+            elif old_password:
+                auth_valid = self.auth.verify_admin_password(old_password)
+            elif self.is_admin_authenticated(body):
+                auth_valid = True
+
+            if not auth_valid:
+                self.send_error_json("Current admin credentials are incorrect.", 401)
                 return
 
-            if not new_password or len(new_password) < 4:
+            if new_password and len(new_password) < 4:
                 self.send_error_json("New password must be at least 4 characters long.", 400)
                 return
 
-            self.auth.update_admin_password(new_password)
-            self.config["admin_password"] = new_password
+            if new_id or new_password:
+                self.auth.update_admin_credentials(new_id=new_id, new_password=new_password if new_password else None)
+
             config_path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "config.json")
             if os.path.exists(config_path):
                 try:
@@ -533,7 +580,8 @@ class CodeCombatHandler(BaseHTTPRequestHandler):
 
             self.send_json({
                 "success": True,
-                "message": "Admin password updated successfully."
+                "admin_id": self.auth.admin_id,
+                "message": "Admin credentials updated successfully."
             })
             return
 

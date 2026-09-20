@@ -216,7 +216,9 @@ def run_tests():
     assert_test("Tampered HMAC Token Rejected", tampered_ver is None)
 
     assert_test("Admin Password Verification Success", auth.verify_admin_password(config.get("admin_password", "admin123")))
-    assert_test("Admin Wrong Password Rejected", not auth.verify_admin_password("wrong_password"))
+    assert_test("Admin ID & Password Verification Success", auth.verify_admin_credentials("admin", config.get("admin_password", "admin123")))
+    assert_test("Admin Wrong Password Rejected", not auth.verify_admin_credentials("admin", "wrong_password"))
+    assert_test("Admin Wrong ID Rejected", not auth.verify_admin_credentials("wrong_admin", config.get("admin_password", "admin123")))
 
     # Rate Limiter test
     limiter = RateLimiter(max_requests=5, window_seconds=60)
@@ -251,7 +253,7 @@ def run_tests():
     storage.reset_competition()
 
     # ---------------------------------------------------------
-    # TEST 8: Problem Set Switching & Admin Password Management
+    # TEST 8: Problem Set Switching & Admin Credentials Management
     # ---------------------------------------------------------
     print("\n--- [Phase 8: Problem Set Switching & Password Management] ---")
     available_sets = problems_mgr.get_available_sets()
@@ -269,14 +271,15 @@ def run_tests():
     assert_test("Switched back to Problem Set 1", switched_to_set1 and problems_mgr.active_set == "set1")
     assert_test("Set 1 contains 15 valid problems", len(set1_problems) == 15)
 
-    # Password Update
+    # Credentials Update (ID + Password)
+    original_id = config.get("admin_id", "admin")
     original_pass = config.get("admin_password", "admin123")
-    auth.update_admin_password("new_secure_pass_456")
-    assert_test("New Admin Password Accepted", auth.verify_admin_password("new_secure_pass_456"))
-    assert_test("Old Admin Password Rejected", not auth.verify_admin_password(original_pass))
-    # Revert password
-    auth.update_admin_password(original_pass)
-    assert_test("Admin Password Reverted Successfully", auth.verify_admin_password(original_pass))
+    auth.update_admin_credentials(new_id="superadmin", new_password="new_secure_pass_456")
+    assert_test("New Admin ID & Password Accepted", auth.verify_admin_credentials("superadmin", "new_secure_pass_456"))
+    assert_test("Old Admin Credentials Rejected", not auth.verify_admin_credentials(original_id, original_pass))
+    # Revert credentials
+    auth.update_admin_credentials(new_id=original_id, new_password=original_pass)
+    assert_test("Admin Credentials Reverted Successfully", auth.verify_admin_credentials(original_id, original_pass))
 
     # ---------------------------------------------------------
     # FINAL SUMMARY

@@ -3,6 +3,7 @@
   "tagline": "Compete. Code. Conquer.",
   "description": "An offline competitive programming platform inspired by modern coding challenge websites.",
   "competition_duration_minutes": 90,
+  "admin_id": "admin",
   "admin_password": "admin123",
   "server_port": 8000,
   "server_host": "127.0.0.1",

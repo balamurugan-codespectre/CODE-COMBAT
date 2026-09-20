@@ -481,18 +481,61 @@
 
     <!-- VIEW 6: ADMIN PANEL -->
     <section id="view-admin" class="view-section">
-      <div style="max-width: 900px; margin: 1.5rem auto; display: flex; flex-direction: column; gap: 1.5rem;">
+      
+      <!-- 6A: ADMIN AUTHENTICATION GATE (Asks for Admin ID and Password) -->
+      <div id="admin-auth-gate" style="max-width: 440px; margin: 3rem auto; padding: 2.25rem; background: var(--bg-card); border: 1px solid var(--border-color); border-radius: var(--radius-lg); box-shadow: var(--shadow-glow); text-align: center;">
+        <div style="width: 60px; height: 60px; margin: 0 auto 1.25rem; background: rgba(0, 242, 254, 0.1); border: 1px solid var(--accent-cyan); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.8rem; box-shadow: 0 0 20px rgba(0, 242, 254, 0.2);">
+          🔐
+        </div>
+        <h2 style="color: #fff; font-size: 1.4rem; margin-bottom: 0.35rem;">Admin Authentication</h2>
+        <p style="color: var(--text-secondary); font-size: 0.85rem; margin-bottom: 1.75rem;">
+          Enter Administrator ID and Password to access the Admin Control Portal.
+        </p>
+
+        <form onsubmit="Admin.handleLogin(event)" style="display: flex; flex-direction: column; gap: 1.15rem; text-align: left;">
+          <div>
+            <label for="admin-login-id" style="display:flex; justify-content:space-between; font-size:0.85rem; color:var(--text-secondary); margin-bottom:0.35rem; font-weight:600;">
+              <span>Administrator ID</span>
+              <span style="font-size:0.75rem; color:var(--text-muted); font-weight:normal;">Default: admin</span>
+            </label>
+            <input type="text" id="admin-login-id" class="form-control" placeholder="Enter Admin ID" required autocomplete="username" style="width:100%;">
+          </div>
+
+          <div>
+            <label for="admin-login-pass" style="display:flex; justify-content:space-between; font-size:0.85rem; color:var(--text-secondary); margin-bottom:0.35rem; font-weight:600;">
+              <span>Admin Password</span>
+              <span style="font-size:0.75rem; color:var(--text-muted); font-weight:normal;">Default: admin123</span>
+            </label>
+            <input type="password" id="admin-login-pass" class="form-control" placeholder="Enter Admin Password" required autocomplete="current-password" style="width:100%;">
+          </div>
+
+          <div id="admin-auth-error" style="display:none; padding: 0.65rem 0.85rem; border-radius: var(--radius-sm); background: rgba(239, 68, 68, 0.15); border: 1px solid var(--accent-red); color: var(--accent-red); font-size: 0.85rem; text-align: center;"></div>
+
+          <button type="submit" class="btn btn-primary" style="width: 100%; padding: 0.75rem; font-size: 0.95rem; font-weight: 700; margin-top: 0.5rem; justify-content: center;">
+            🔓 Unlock Admin Panel
+          </button>
+        </form>
+      </div>
+
+      <!-- 6B: UNLOCKED ADMIN PORTAL (Displayed upon successful authentication) -->
+      <div id="admin-portal-content" style="display: none; max-width: 900px; margin: 1.5rem auto; flex-direction: column; gap: 1.5rem;">
         
         <!-- Header & Quick Actions -->
         <div class="panel" style="padding:1.5rem;">
-          <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:1rem; margin-bottom:1rem;">
+          <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:1rem;">
             <div>
-              <h2 style="color:#fff; margin-bottom:0.25rem;">Admin Control Portal</h2>
-              <p style="color:var(--text-secondary); font-size:0.85rem;">Manage problem sets, admin credentials, data exports, and competition state.</p>
+              <div style="display:flex; align-items:center; gap:0.5rem; margin-bottom:0.25rem;">
+                <h2 style="color:#fff; margin:0;">Admin Control Portal</h2>
+                <span class="badge badge-easy" style="background:rgba(16,185,129,0.15); color:var(--accent-green); border:1px solid var(--accent-green); font-size:0.75rem;">Authenticated</span>
+              </div>
+              <p style="color:var(--text-secondary); font-size:0.85rem; margin:0;">
+                Logged in as Administrator (<span id="admin-display-id" style="color:var(--accent-cyan); font-family:var(--font-mono);">admin</span>)
+              </p>
             </div>
-            <div style="display:flex; gap:0.75rem; flex-wrap:wrap;">
+            <div style="display:flex; gap:0.75rem; flex-wrap:wrap; align-items:center;">
               <button class="btn btn-secondary" onclick="Admin.exportAllJSON()">📦 Full JSON Backup</button>
               <button class="btn btn-secondary" onclick="App.exportLeaderboardCSV()">📊 Export CSV</button>
+              <button class="btn btn-danger" onclick="Admin.logout()" style="border-color:var(--accent-red); color:var(--accent-red); background:transparent;">🔒 Lock / Logout</button>
             </div>
           </div>
         </div>
@@ -515,44 +558,46 @@
               </select>
             </div>
             <div>
-              <label style="display:block; font-size:0.85rem; color:var(--text-secondary); margin-bottom:0.35rem; font-weight:600;">Admin Password:</label>
-              <input type="password" id="admin-set-pass" class="form-control" placeholder="Enter admin password..." style="width:100%;">
+              <label style="display:flex; align-items:center; gap:0.5rem; color:var(--text-primary); font-size:0.85rem; cursor:pointer; height:42px;">
+                <input type="checkbox" id="admin-set-reset-check" checked style="accent-color:var(--accent-cyan);">
+                <span>Reset participant scores and submissions on switch</span>
+              </label>
             </div>
           </div>
 
-          <div style="margin-top:1rem; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:1rem;">
-            <label style="display:flex; align-items:center; gap:0.5rem; color:var(--text-primary); font-size:0.85rem; cursor:pointer;">
-              <input type="checkbox" id="admin-set-reset-check" checked style="accent-color:var(--accent-cyan);">
-              <span>Reset participant scores and submissions on switch</span>
-            </label>
+          <div style="margin-top:1rem; display:flex; justify-content:flex-end;">
             <button class="btn btn-primary" onclick="Admin.switchProblemSet()">⚡ Switch Problem Set</button>
           </div>
         </div>
 
-        <!-- 2. Change Admin Password -->
+        <!-- 2. Change Admin Credentials -->
         <div class="panel" style="padding:1.5rem; border-left:4px solid var(--accent-green);">
           <h3 style="color:var(--accent-green); font-size:1.1rem; margin-bottom:0.5rem; display:flex; align-items:center; gap:0.5rem;">
-            <span>🔒</span> Change Admin Password
+            <span>🔒</span> Change Admin Credentials (ID & Password)
           </h3>
           <p style="color:var(--text-secondary); font-size:0.85rem; margin-bottom:1rem;">
-            Update the administrator password used for resets, set switching, and portal access.
+            Update administrator login ID and password used for portal access, resets, and set switching.
           </p>
 
-          <form onsubmit="Admin.handleChangePassword(event)" style="display:grid; grid-template-columns:repeat(auto-fit, minmax(220px, 1fr)); gap:1rem; align-items:end;">
+          <form onsubmit="Admin.handleChangeCredentials(event)" style="display:grid; grid-template-columns:repeat(auto-fit, minmax(200px, 1fr)); gap:1rem; align-items:end;">
             <div>
               <label style="display:block; font-size:0.85rem; color:var(--text-secondary); margin-bottom:0.35rem; font-weight:600;">Current Password:</label>
               <input type="password" id="admin-curr-pass" class="form-control" placeholder="Current password" required style="width:100%;">
             </div>
             <div>
+              <label style="display:block; font-size:0.85rem; color:var(--text-secondary); margin-bottom:0.35rem; font-weight:600;">New Admin ID (Optional):</label>
+              <input type="text" id="admin-new-id" class="form-control" placeholder="New ID (leave blank to keep)" style="width:100%;">
+            </div>
+            <div>
               <label style="display:block; font-size:0.85rem; color:var(--text-secondary); margin-bottom:0.35rem; font-weight:600;">New Password:</label>
-              <input type="password" id="admin-new-pass" class="form-control" placeholder="New password (min 4 chars)" required style="width:100%;">
+              <input type="password" id="admin-new-pass" class="form-control" placeholder="New password (min 4 chars)" style="width:100%;">
             </div>
             <div>
               <label style="display:block; font-size:0.85rem; color:var(--text-secondary); margin-bottom:0.35rem; font-weight:600;">Confirm New Password:</label>
-              <input type="password" id="admin-confirm-pass" class="form-control" placeholder="Confirm new password" required style="width:100%;">
+              <input type="password" id="admin-confirm-pass" class="form-control" placeholder="Confirm new password" style="width:100%;">
             </div>
-            <div>
-              <button type="submit" class="btn btn-secondary" style="width:100%; font-weight:600; color:var(--accent-green); border-color:var(--accent-green);">Save New Password</button>
+            <div style="grid-column: 1 / -1; display:flex; justify-content:flex-end;">
+              <button type="submit" class="btn btn-secondary" style="font-weight:600; color:var(--accent-green); border-color:var(--accent-green); min-width:200px;">Save Updated Credentials</button>
             </div>
           </form>
         </div>
