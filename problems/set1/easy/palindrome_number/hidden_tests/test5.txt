@@ -1,4 +1,0 @@
-INPUT:
-7
-EXPECTED:
-true

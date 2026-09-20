@@ -133,19 +133,25 @@ class Solution {
     # 3.3 C compiler detection & execution
     c_compiler = Compiler.detect_c_compiler()
     if c_compiler:
-        c_sol = """
-int* twoSum(int* nums, int numsSize, int target, int* returnSize) {
-    *returnSize = 2;
-    int* res = (int*)malloc(2 * sizeof(int));
-    for (int i = 0; i < numsSize; i++) {
-        for (int j = i + 1; j < numsSize; j++) {
+        c_sol = """#include <stdio.h>
+#include <stdlib.h>
+
+int main() {
+    int n;
+    if (scanf("%d", &n) != 1) return 0;
+    int nums[n];
+    for (int i = 0; i < n; i++) scanf("%d", &nums[i]);
+    int target;
+    scanf("%d", &target);
+    for (int i = 0; i < n; i++) {
+        for (int j = i + 1; j < n; j++) {
             if (nums[i] + nums[j] == target) {
-                res[0] = i; res[1] = j;
-                return res;
+                printf("%d %d\\n", i, j);
+                return 0;
             }
         }
     }
-    return res;
+    return 0;
 }
 """
         res_c = judge.run_hidden_tests("c", c_sol, py_hidden_dir, 100, 3.0, "two_sum")
@@ -187,8 +193,8 @@ int* twoSum(int* nums, int numsSize, int target, int* returnSize) {
     assert_test("Participant Alice Registered", p_alice["id"] is not None and p_alice["reg_no"] == "OX101")
     assert_test("Participant Bob Registered", p_bob["id"] is not None and p_bob["reg_no"] == "CB202")
 
-    # Alice solves two_sum (100) & maximum_subarray (200) -> 300 pts
-    prob_med = problems_mgr.get_problem_detail("maximum_subarray")
+    # Alice solves two_sum (100) & longest_substring (200) -> 300 pts
+    prob_med = problems_mgr.get_problem_detail("longest_substring")
     storage.add_submission(
         participant_id=p_alice["id"],
         participant_name=p_alice["name"],
@@ -206,7 +212,7 @@ int* twoSum(int* nums, int numsSize, int target, int* returnSize) {
     storage.add_submission(
         participant_id=p_alice["id"],
         participant_name=p_alice["name"],
-        problem_id="maximum_subarray",
+        problem_id="longest_substring",
         problem_title=prob_med["title"],
         difficulty="Medium",
         language="python",
@@ -403,34 +409,37 @@ class Solution:
                 sub_rec["participant_score"] == 90 and lb_after_p1[0]["score"] == 90)
 
     # 9.5 Unlock Hint 1 on Medium problem: Points MINUSED (-20 pts) -> Score drops from 90 to 70
-    h1_res = storage.unlock_hint(p_player["id"], "maximum_subarray", 1, 20)
+    h1_res = storage.unlock_hint(p_player["id"], "longest_substring", 1, 20)
     lb_after_h1 = storage.get_leaderboard()
     assert_test("Unlock Hint 1 on Medium Problem: Points MINUSED (-20 pts) -> Score = 70 pts",
                 h1_res["participant_score"] == 70 and lb_after_h1[0]["score"] == 70)
 
     # 9.6 Unlock Hint 2 on Medium problem: Points MINUSED (-30 pts) -> Score drops from 70 to 40
-    h2_res = storage.unlock_hint(p_player["id"], "maximum_subarray", 2, 30)
+    h2_res = storage.unlock_hint(p_player["id"], "longest_substring", 2, 30)
     lb_after_h2 = storage.get_leaderboard()
     assert_test("Unlock Hint 2 on Medium Problem: Points MINUSED (-30 pts) -> Score = 40 pts",
                 h2_res["participant_score"] == 40 and lb_after_h2[0]["score"] == 40)
 
     # 9.7 Solve Medium problem: Points ADDED (+150 pts effective) -> Total Score = 240 pts
-    med_dir = problems_mgr.get_hidden_tests_dir("maximum_subarray")
-    med_detail = problems_mgr.get_problem_detail("maximum_subarray", participant_id=p_player["id"], storage=storage)
-    med_sol = """
-class Solution:
-    def maxSubArray(self, nums: List[int]) -> int:
-        cur = max_s = nums[0]
-        for x in nums[1:]:
-            cur = max(x, cur + x)
-            max_s = max(max_s, cur)
-        return max_s
+    med_dir = problems_mgr.get_hidden_tests_dir("longest_substring")
+    med_detail = problems_mgr.get_problem_detail("longest_substring", participant_id=p_player["id"], storage=storage)
+    med_sol = """class Solution:
+    def lengthOfLongestSubstring(self, s: str) -> int:
+        seen = {}
+        left = 0
+        max_len = 0
+        for right, ch in enumerate(s):
+            if ch in seen and seen[ch] >= left:
+                left = seen[ch] + 1
+            seen[ch] = right
+            max_len = max(max_len, right - left + 1)
+        return max_len
 """
-    med_sub_res = judge.run_hidden_tests("python", med_sol, med_dir, med_detail["max_score"], 3.0, "maximum_subarray")
+    med_sub_res = judge.run_hidden_tests("python", med_sol, med_dir, med_detail["max_score"], 3.0, "longest_substring")
     med_sub_rec = storage.add_submission(
         participant_id=p_player["id"],
         participant_name=p_player["name"],
-        problem_id="maximum_subarray",
+        problem_id="longest_substring",
         problem_title=med_detail["title"],
         difficulty="Medium",
         language="python",
@@ -442,7 +451,7 @@ class Solution:
         runtime=med_sub_res["runtime"]
     )
     lb_final = storage.get_leaderboard()
-    assert_test("Player Solved Maximum Subarray: Points ADDED -> Total Score = 240 pts (90 + 150)",
+    assert_test("Player Solved Longest Substring: Points ADDED -> Total Score = 240 pts (90 + 150)",
                 med_sub_rec["participant_score"] == 240 and lb_final[0]["score"] == 240)
 
     # Cleanup test db

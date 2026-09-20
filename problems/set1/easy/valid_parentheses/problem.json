@@ -1,0 +1,51 @@
+{
+  "id": "valid_parentheses",
+  "title": "Valid Parentheses",
+  "difficulty": "Easy",
+  "points": 100,
+  "category": "Stack",
+  "description": "Given a string `s` containing just the characters `'('`, `')'`, `'{'`, `'}'`, `'['` and `']'`, determine if the input string is valid.\n\nAn input string is valid if:\n1. Open brackets must be closed by the same type of brackets.\n2. Open brackets must be closed in the correct order.\n3. Every close bracket has a corresponding open bracket of the same type.",
+  "input_format": "A single line containing the bracket string `s`.",
+  "output_format": "Print `true` if the string is valid, otherwise print `false`.",
+  "constraints": "1 <= s.length <= 10^4\ns consists of parentheses only '()[]{}'.",
+  "sample_tests": [
+    {
+      "input": "()",
+      "output": "true",
+      "explanation": "Matching parentheses."
+    },
+    {
+      "input": "()[]{}",
+      "output": "true",
+      "explanation": "All pairs properly opened and closed."
+    },
+    {
+      "input": "(]",
+      "output": "false",
+      "explanation": "Mismatched bracket types."
+    }
+  ],
+  "starter_code": {
+    "python": "# Valid Parentheses\n# Read input and solve\n\n# Your code here\n",
+    "python_class": "class Solution:\n    def isValid(self, s: str) -> bool:\n        # Write your code here\n        pass\n",
+    "java": "import java.util.*;\n\nclass Solution {\n    public boolean isValid(String s) {\n        // Write your solution here\n        return 0;\n    }\n}",
+    "c": "#include <stdio.h>\n\nint main() {\n    // Write your solution here\n    return 0;\n}\n"
+  },
+  "hints": [
+    {
+      "index": 1,
+      "penalty": 10,
+      "text": "Use a Stack (LIFO) to keep track of expected closing brackets."
+    },
+    {
+      "index": 2,
+      "penalty": 15,
+      "text": "When you see an opening bracket '(', '{', '[', push it onto the stack."
+    },
+    {
+      "index": 3,
+      "penalty": 25,
+      "text": "When you see a closing bracket, check if the stack is non-empty and top matches. If yes, pop; else invalid. At the end, stack must be empty."
+    }
+  ]
+}

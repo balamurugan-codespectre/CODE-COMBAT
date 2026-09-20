@@ -1,6 +1,6 @@
 INPUT:
-game over
-4
-game fame fave over
+hit cog
+5
+hot dot dog lot log
 EXPECTED:
 0

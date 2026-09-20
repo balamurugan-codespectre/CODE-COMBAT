@@ -1,4 +1,0 @@
-INPUT:
-Universities across the world
-EXPECTED:
-10

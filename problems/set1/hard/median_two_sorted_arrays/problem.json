@@ -1,0 +1,46 @@
+{
+  "id": "median_two_sorted_arrays",
+  "title": "Median of Two Sorted Arrays",
+  "difficulty": "Hard",
+  "points": 300,
+  "category": "Binary Search",
+  "description": "Given two sorted arrays `nums1` and `nums2` of size `m` and `n` respectively, return the median of the two sorted arrays.\n\nThe overall run time complexity should be `O(log (m+n))`.",
+  "input_format": "The first line contains two integers `m` and `n`.\nThe second line contains `m` space-separated sorted integers (or blank if `m = 0`).\nThe third line contains `n` space-separated sorted integers (or blank if `n = 0`).",
+  "output_format": "Print the median formatted with 1 decimal place (e.g. `2.0` or `2.5`).",
+  "constraints": "nums1.length == m\nnums2.length == n\n0 <= m <= 1000\n0 <= n <= 1000\n1 <= m + n <= 2000\n-10^6 <= nums1[i], nums2[i] <= 10^6",
+  "sample_tests": [
+    {
+      "input": "2 1\n1 3\n2",
+      "output": "2.0",
+      "explanation": "Merged array = [1, 2, 3] and median is 2.0."
+    },
+    {
+      "input": "2 2\n1 2\n3 4",
+      "output": "2.5",
+      "explanation": "Merged array = [1, 2, 3, 4] and median is (2 + 3) / 2 = 2.5."
+    }
+  ],
+  "starter_code": {
+    "python": "# Median of Two Sorted Arrays\n# Read input and solve\n\n# Your code here\n",
+    "python_class": "class Solution:\n    def findMedianSortedArrays(self, nums1: List[int], nums2: List[int]) -> float:\n        # Write your code here\n        pass\n",
+    "java": "import java.util.*;\n\nclass Solution {\n    public double findMedianSortedArrays(int[] nums1, int[] nums2) {\n        // Write your solution here\n        return 0;\n    }\n}",
+    "c": "#include <stdio.h>\n\nint main() {\n    // Write your solution here\n    return 0;\n}\n"
+  },
+  "hints": [
+    {
+      "index": 1,
+      "penalty": 30,
+      "text": "Use Binary Search on the shorter array to find a partition such that all elements on the left side are smaller than or equal to elements on the right side."
+    },
+    {
+      "index": 2,
+      "penalty": 45,
+      "text": "Let partitionX + partitionY = (m + n + 1) / 2."
+    },
+    {
+      "index": 3,
+      "penalty": 75,
+      "text": "Check if maxLeftX <= minRightY and maxLeftY <= minRightX. If yes, calculate median from the boundary values."
+    }
+  ]
+}

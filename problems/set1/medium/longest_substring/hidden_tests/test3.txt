@@ -1,4 +1,4 @@
 INPUT:
-anviaj
+pwwkew
 EXPECTED:
-5
+3

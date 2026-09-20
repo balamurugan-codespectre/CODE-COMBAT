@@ -1,6 +1,6 @@
 INPUT:
-cat dog
-5
-cot cog dog lot log
+a c
+3
+a b c
 EXPECTED:
-4
+2

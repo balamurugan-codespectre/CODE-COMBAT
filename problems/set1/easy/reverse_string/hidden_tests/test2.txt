@@ -1,4 +1,4 @@
 INPUT:
-The quick brown fox jumps over the lazy dog
+CodeCombat 2026
 EXPECTED:
-god yzal eht revo spmuj xof nworb kciuq ehT
+6202 tabmoCedoC

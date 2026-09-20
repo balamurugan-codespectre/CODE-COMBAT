@@ -1,0 +1,51 @@
+{
+  "id": "minimum_window_substring",
+  "title": "Minimum Window Substring",
+  "difficulty": "Hard",
+  "points": 300,
+  "category": "Sliding Window",
+  "description": "Given two strings `s` and `t` of lengths `m` and `n` respectively, return the minimum window substring of `s` such that every character in `t` (including duplicates) is included in the window. If there is no such substring, return the empty string `\"\"`.",
+  "input_format": "The first line contains string `s`.\nThe second line contains string `t`.",
+  "output_format": "Print the minimum window substring (or empty line if no such window exists).",
+  "constraints": "m == s.length\nn == t.length\n1 <= m, n <= 10^5\ns and t consist of uppercase and lowercase English letters.",
+  "sample_tests": [
+    {
+      "input": "ADOBECODEBANC\nABC",
+      "output": "BANC",
+      "explanation": "The minimum window substring 'BANC' includes 'A', 'B', and 'C'."
+    },
+    {
+      "input": "a\na",
+      "output": "a",
+      "explanation": "The entire string s is the minimum window."
+    },
+    {
+      "input": "a\naa",
+      "output": "",
+      "explanation": "Both 'a's from t must be in the window, but s only has one 'a'."
+    }
+  ],
+  "starter_code": {
+    "python": "# Minimum Window Substring\n# Read input and solve\n\n# Your code here\n",
+    "python_class": "from collections import Counter\n\nclass Solution:\n    def minWindow(self, s: str, t: str) -> str:\n        # Write your code here\n        pass\n",
+    "java": "import java.util.*;\n\nclass Solution {\n    public String minWindow(String s, String t) {\n        // Write your solution here\n        return 0;\n    }\n}",
+    "c": "#include <stdio.h>\n\nint main() {\n    // Write your solution here\n    return 0;\n}\n"
+  },
+  "hints": [
+    {
+      "index": 1,
+      "penalty": 30,
+      "text": "Use two frequency maps: one for `t` requirements and one for the current window in `s`."
+    },
+    {
+      "index": 2,
+      "penalty": 45,
+      "text": "Expand `right` pointer until the current window contains all required characters with sufficient frequency."
+    },
+    {
+      "index": 3,
+      "penalty": 75,
+      "text": "Once valid, contract `left` pointer to minimize the window while maintaining validity."
+    }
+  ]
+}

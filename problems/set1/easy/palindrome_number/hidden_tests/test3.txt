@@ -1,4 +1,0 @@
-INPUT:
--101
-EXPECTED:
-false

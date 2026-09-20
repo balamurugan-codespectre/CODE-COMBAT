@@ -1,0 +1,46 @@
+{
+  "id": "top_k_frequent",
+  "title": "Top K Frequent Elements",
+  "difficulty": "Medium",
+  "points": 200,
+  "category": "HashMap + Heap",
+  "description": "Given an integer array `nums` and an integer `k`, return the `k` most frequent elements.\n\nPrint the elements space-separated.",
+  "input_format": "The first line contains `N` and `K`.\nThe second line contains `N` space-separated integers.",
+  "output_format": "Print the `k` most frequent elements space-separated.",
+  "constraints": "1 <= nums.length <= 10^5\n-10^4 <= nums[i] <= 10^4\nk is in the range [1, the number of unique elements in the array].",
+  "sample_tests": [
+    {
+      "input": "6 2\n1 1 1 2 2 3",
+      "output": "1 2",
+      "explanation": "1 appears 3 times, 2 appears 2 times."
+    },
+    {
+      "input": "1 1\n1",
+      "output": "1",
+      "explanation": "Only element 1."
+    }
+  ],
+  "starter_code": {
+    "python": "# Top K Frequent Elements\n# Read input and solve\n\n# Your code here\n",
+    "python_class": "from collections import Counter\nimport heapq\n\nclass Solution:\n    def topKFrequent(self, nums: List[int], k: int) -> List[int]:\n        # Write your code here\n        pass\n",
+    "java": "import java.util.*;\n\nclass Solution {\n    public int[] topKFrequent(int[] nums, int k) {\n        // Write your solution here\n        return 0;\n    }\n}",
+    "c": "#include <stdio.h>\n\nint main() {\n    // Write your solution here\n    return 0;\n}\n"
+  },
+  "hints": [
+    {
+      "index": 1,
+      "penalty": 20,
+      "text": "Count frequencies of each number using a Hash Map (O(n) time)."
+    },
+    {
+      "index": 2,
+      "penalty": 30,
+      "text": "Use a Min-Heap of size k to keep track of the top k elements with the highest frequencies."
+    },
+    {
+      "index": 3,
+      "penalty": 50,
+      "text": "Alternatively, use Bucket Sort where the index represents frequency to achieve O(n) runtime."
+    }
+  ]
+}

@@ -1,0 +1,51 @@
+{
+  "id": "reverse_linked_list",
+  "title": "Reverse Linked List",
+  "difficulty": "Easy",
+  "points": 100,
+  "category": "Linked List",
+  "description": "Given the head of a singly linked list represented as a sequence of node values, reverse the list, and print the reversed list node values.",
+  "input_format": "The first line contains `N`, the number of nodes.\nThe second line contains `N` space-separated integers representing the node values (or blank if `N = 0`).",
+  "output_format": "Print the reversed list values space-separated on a single line.",
+  "constraints": "0 <= N <= 5000\n-5000 <= Node.val <= 5000",
+  "sample_tests": [
+    {
+      "input": "5\n1 2 3 4 5",
+      "output": "5 4 3 2 1",
+      "explanation": "Reversing [1,2,3,4,5] gives [5,4,3,2,1]."
+    },
+    {
+      "input": "2\n1 2",
+      "output": "2 1",
+      "explanation": "Reversing [1,2] gives [2,1]."
+    },
+    {
+      "input": "0\n",
+      "output": "",
+      "explanation": "Empty list reversed is empty."
+    }
+  ],
+  "starter_code": {
+    "python": "# Reverse Linked List\n# Read input and solve\n\n# Your code here\n",
+    "python_class": "class Solution:\n    def reverseList(self, head: Optional[ListNode]) -> Optional[ListNode]:\n        # Write your code here\n        pass\n",
+    "java": "class Solution {\n    public ListNode reverseList(ListNode head) {\n        // Write your solution here\n        return 0;\n    }\n}",
+    "c": "#include <stdio.h>\n\nint main() {\n    // Write your solution here\n    return 0;\n}\n"
+  },
+  "hints": [
+    {
+      "index": 1,
+      "penalty": 10,
+      "text": "To reverse a linked list, maintain three pointers: `prev` (initially null), `curr` (initially head), and `next`."
+    },
+    {
+      "index": 2,
+      "penalty": 15,
+      "text": "At each step, save `next = curr.next`, set `curr.next = prev`, then advance `prev = curr` and `curr = next`."
+    },
+    {
+      "index": 3,
+      "penalty": 25,
+      "text": "When `curr` becomes null, `prev` is the new head of the reversed list."
+    }
+  ]
+}

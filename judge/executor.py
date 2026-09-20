@@ -47,7 +47,7 @@ class Executor:
 
         try:
             process = None
-            for attempt in range(6):
+            for attempt in range(10):
                 try:
                     process = subprocess.Popen(
                         cmd,
@@ -60,8 +60,8 @@ class Executor:
                     )
                     break
                 except (PermissionError, OSError) as pe:
-                    if attempt < 5 and sys.platform.startswith("win"):
-                        time.sleep(0.12 * (attempt + 1))
+                    if attempt < 9 and sys.platform.startswith("win"):
+                        time.sleep(0.15 * (attempt + 1))
                     else:
                         raise pe
 

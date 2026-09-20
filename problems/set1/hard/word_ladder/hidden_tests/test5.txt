@@ -1,6 +1,6 @@
 INPUT:
-talk tail
+cat fin
 4
-talk tall toil tail
+cat fat fit fin
 EXPECTED:
-3
+4

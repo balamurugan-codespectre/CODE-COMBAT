@@ -1,4 +1,4 @@
 INPUT:
-abba
+
 EXPECTED:
-2
+0

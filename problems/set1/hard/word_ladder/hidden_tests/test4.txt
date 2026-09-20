@@ -1,6 +1,6 @@
 INPUT:
-lead gold
-4
-load goad gold lead
+hot dog
+3
+hot dot dog
 EXPECTED:
-4
+3
