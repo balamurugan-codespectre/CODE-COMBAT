@@ -760,37 +760,105 @@ body {
   font-weight: bold;
 }
 
-.lc-hint-item {
+/* 3-Tier Progressive Hints with Penalty Mechanics */
+.lc-hints-container {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin-top: 0.5rem;
+}
+
+.lc-hint-card {
   background: var(--bg-primary);
   border: 1px solid var(--border-color);
-  border-radius: var(--radius-sm);
-  margin-bottom: 0.5rem;
-  overflow: hidden;
+  border-radius: var(--radius-md);
+  padding: 0.85rem 1rem;
+  transition: var(--transition);
 }
 
-.lc-hint-summary {
-  padding: 0.5rem 0.85rem;
-  font-weight: 600;
-  font-size: 0.85rem;
-  color: var(--accent-amber);
-  cursor: pointer;
-  user-select: none;
+.lc-hint-card.locked {
+  border-left: 4px solid var(--accent-amber);
+  background: rgba(245, 158, 11, 0.04);
+}
+
+.lc-hint-card.unlocked {
+  border-left: 4px solid var(--accent-cyan);
+  background: rgba(0, 242, 254, 0.03);
+}
+
+.lc-hint-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.4rem;
+}
+
+.lc-hint-title {
+  font-weight: 700;
+  font-size: 0.88rem;
+  color: #fff;
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: 0.35rem;
 }
 
-.lc-hint-summary:hover {
-  background: rgba(245, 158, 11, 0.08);
+.lc-hint-badge {
+  font-size: 0.75rem;
+  font-family: var(--font-mono);
+  font-weight: 600;
+  padding: 0.2rem 0.55rem;
+  border-radius: 4px;
 }
 
-.lc-hint-body {
-  padding: 0.65rem 0.85rem;
-  font-size: 0.85rem;
+.lc-hint-badge.penalty-badge {
+  background: rgba(239, 68, 68, 0.15);
+  color: #ef4444;
+  border: 1px solid rgba(239, 68, 68, 0.3);
+}
+
+.lc-hint-cost {
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--accent-amber);
+}
+
+.lc-hint-lock-desc {
+  font-size: 0.82rem;
   color: var(--text-secondary);
-  border-top: 1px solid var(--border-color);
-  background: rgba(0,0,0,0.15);
-  line-height: 1.5;
+  margin-bottom: 0.65rem;
+  line-height: 1.4;
+}
+
+.lc-hint-text {
+  font-size: 0.88rem;
+  color: var(--text-primary);
+  line-height: 1.55;
+  background: rgba(0, 0, 0, 0.2);
+  padding: 0.6rem 0.75rem;
+  border-radius: 4px;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.btn-unlock-hint {
+  background: rgba(245, 158, 11, 0.15);
+  border: 1px solid var(--accent-amber);
+  color: var(--accent-amber);
+  font-weight: 700;
+  font-size: 0.8rem;
+  padding: 0.4rem 0.9rem;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: var(--transition);
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.btn-unlock-hint:hover {
+  background: var(--accent-amber);
+  color: #000;
+  box-shadow: 0 0 10px rgba(245, 158, 11, 0.4);
 }
 
 @keyframes fadeIn {

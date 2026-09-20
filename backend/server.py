@@ -265,7 +265,8 @@ class CodeCombatHandler(BaseHTTPRequestHandler):
         # GET /api/problems/<id>
         if path.startswith("/api/problems/"):
             prob_id = path.replace("/api/problems/", "").strip()
-            detail = self.problems_manager.get_problem_detail(prob_id)
+            participant_id = query.get("participant_id", [None])[0]
+            detail = self.problems_manager.get_problem_detail(prob_id, participant_id=participant_id, storage=self.storage)
             if detail:
                 self.send_json(detail)
             else:
@@ -408,6 +409,55 @@ class CodeCombatHandler(BaseHTTPRequestHandler):
             })
             return
 
+        # POST /api/problems/unlock-hint
+        if path == "/api/problems/unlock-hint":
+            participant_id = body.get("participant_id", "").strip()
+            problem_id = body.get("problem_id", "").strip()
+            try:
+                hint_index = int(body.get("hint_index", 1))
+            except (ValueError, TypeError):
+                self.send_error_json("Invalid hint index. Must be 1, 2, or 3.", 400)
+                return
+
+            if not participant_id:
+                self.send_error_json("Participant ID is required to unlock hints.", 400)
+                return
+            if not problem_id:
+                self.send_error_json("Problem ID is required.", 400)
+                return
+            if hint_index not in [1, 2, 3]:
+                self.send_error_json("Invalid hint index. Must be 1, 2, or 3.", 400)
+                return
+
+            prob_detail = self.problems_manager.get_problem_detail(problem_id)
+            if not prob_detail:
+                self.send_error_json("Problem not found.", 404)
+                return
+
+            pid = prob_detail["id"]
+            difficulty = prob_detail.get("difficulty", "Easy")
+            base_points = int(prob_detail.get("points", 100))
+            penalty = self.problems_manager.get_hint_penalty(difficulty, hint_index)
+
+            # Record unlock in database
+            newly_unlocked = self.storage.unlock_hint(participant_id, pid, hint_index, penalty)
+            total_penalty = self.storage.get_total_hint_penalty(participant_id, pid)
+            max_score = max(int(base_points * 0.25), base_points - total_penalty)
+            hint_text = self.problems_manager.get_hint_text(pid, hint_index)
+
+            self.send_json({
+                "success": True,
+                "already_unlocked": not newly_unlocked,
+                "problem_id": pid,
+                "hint_index": hint_index,
+                "hint_text": hint_text,
+                "penalty": penalty,
+                "total_hint_penalty": total_penalty,
+                "max_score": max_score,
+                "message": f"Hint {hint_index} unlocked (-{penalty} pts penalty applied)."
+            })
+            return
+
         # POST /api/submit (Evaluate against hidden tests)
         if path == "/api/submit":
             participant_id = body.get("participant_id", "").strip()
@@ -434,26 +484,29 @@ class CodeCombatHandler(BaseHTTPRequestHandler):
                 self.send_error_json("Hidden tests not configured for this problem.", 500)
                 return
 
-            points = int(prob_detail.get("points", 100))
+            pid = prob_detail.get("id", problem_id)
+            base_points = int(prob_detail.get("points", 100))
+            hint_penalty = self.storage.get_total_hint_penalty(participant_id, pid)
+            effective_max_points = max(int(base_points * 0.25), base_points - hint_penalty)
             timeout = float(prob_detail.get("time_limit", self.config.get("execution_timeout_seconds", 3.0)))
 
             judge_res = self.judge.run_hidden_tests(
                 language=language,
                 code=code,
                 hidden_tests_dir=hidden_dir,
-                problem_points=points,
+                problem_points=effective_max_points,
                 timeout=timeout
             )
 
             solved_problems = self.storage.get_solved_problems(participant_id)
-            already_solved = problem_id in solved_problems
+            already_solved = (problem_id in solved_problems) or (pid in solved_problems)
             awarded_score = 0 if already_solved else judge_res["score"]
 
             submission = self.storage.add_submission(
                 participant_id=participant_id,
                 participant_name=participant_name,
-                problem_id=problem_id,
-                problem_title=prob_detail.get("title", problem_id),
+                problem_id=pid,
+                problem_title=prob_detail.get("title", pid),
                 difficulty=prob_detail.get("difficulty", "Easy"),
                 language=language,
                 code=code,
@@ -470,6 +523,8 @@ class CodeCombatHandler(BaseHTTPRequestHandler):
                 "passed_count": judge_res["passed_count"],
                 "total_count": judge_res["total_count"],
                 "score_earned": awarded_score,
+                "effective_max_points": effective_max_points,
+                "hint_penalty": hint_penalty,
                 "already_solved": already_solved,
                 "runtime": judge_res["runtime"],
                 "error_message": judge_res.get("error_message")

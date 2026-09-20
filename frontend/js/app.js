@@ -210,7 +210,8 @@ const App = {
       return;
     }
     try {
-      const res = await fetch(`/api/problems/${problemId}`);
+      const pidParam = this.participant ? `?participant_id=${this.participant.id}` : '';
+      const res = await fetch(`/api/problems/${problemId}${pidParam}`);
       const prob = await res.json();
       this.activeProblem = prob;
 
@@ -223,19 +224,14 @@ const App = {
       badge.innerHTML = `${prob.difficulty}${isSolved ? ' &bull; &check; Solved' : ''}`;
       badge.className = `badge badge-${prob.difficulty.toLowerCase()}`;
 
-      // 1. Interactive Chips (Topics, Companies, Hint)
+      // 1. Interactive Chips (Topics, Companies, Hints)
       const topicsList = prob.topics || [prob.category || 'Algorithms'];
       const companiesList = prob.companies || ['Amazon', 'Google', 'Microsoft', 'Meta'];
-      const hintsList = prob.hints || ['Think about edge cases and potential time complexity optimizations.'];
+      const hintsList = prob.hints || [];
 
       const topicsPills = topicsList.map(t => `<span class="lc-tag-pill">🏷️ ${t}</span>`).join('');
       const companiesPills = companiesList.map(c => `<span class="lc-tag-pill" style="border-color:rgba(0,242,254,0.3); color:var(--accent-cyan);">🏢 ${c}</span>`).join('');
-      const hintsAccordions = hintsList.map((h, i) => `
-        <details class="lc-hint-item">
-          <summary class="lc-hint-summary">💡 Hint ${i + 1}</summary>
-          <div class="lc-hint-body">${h}</div>
-        </details>
-      `).join('');
+      const hintsContentHtml = this.renderHintsHtml(hintsList, prob.total_hint_penalty || 0, prob.max_score || prob.points, prob.points);
 
       // 2. Examples (LeetCode style)
       let examplesHtml = '';
@@ -270,16 +266,19 @@ const App = {
       const constraintsHtml = constraintLines.map(line => `<li class="lc-constraint-item">${line.replace(/`/g, '')}</li>`).join('');
 
       // 4. Render Problem Pane
+      const maxScoreDisplay = prob.max_score || prob.points;
+      const penaltyDisplay = prob.total_hint_penalty || 0;
+
       document.getElementById('ide-prob-description').innerHTML = `
         <!-- LeetCode Header Metadata & Chips -->
         <div class="lc-header-tags">
           ${isSolved ? '<span class="badge badge-solved" style="background:rgba(16,185,129,0.15); color:var(--accent-green); border:1px solid var(--accent-green); font-size:0.75rem;">✓ Solved</span>' : '<span class="badge" style="background:rgba(148,163,184,0.1); color:var(--text-muted); border:1px solid var(--border-color); font-size:0.75rem;">Todo</span>'}
           <span class="badge badge-${prob.difficulty.toLowerCase()}" style="font-size:0.75rem;">${prob.difficulty}</span>
-          <span style="font-family:var(--font-mono); font-size:0.78rem; font-weight:700; color:var(--accent-cyan); background:rgba(0,242,254,0.08); padding:0.2rem 0.5rem; border-radius:4px; border:1px solid rgba(0,242,254,0.2);">${prob.points} pts</span>
+          <span id="ide-prob-points-badge" style="font-family:var(--font-mono); font-size:0.78rem; font-weight:700; color:${penaltyDisplay > 0 ? 'var(--accent-amber)' : 'var(--accent-cyan)'}; background:rgba(0,242,254,0.08); padding:0.2rem 0.5rem; border-radius:4px; border:1px solid rgba(0,242,254,0.2);" title="Current Max Earnable Score">Max: ${maxScoreDisplay} / ${prob.points} pts</span>
           
           <button class="lc-chip-btn" id="lc-btn-topics" onclick="App.toggleProblemSection('topics')">🏷️ Topics</button>
           <button class="lc-chip-btn" id="lc-btn-companies" onclick="App.toggleProblemSection('companies')">🏢 Companies</button>
-          <button class="lc-chip-btn" id="lc-btn-hints" onclick="App.toggleProblemSection('hints')">💡 Hint</button>
+          <button class="lc-chip-btn" id="lc-btn-hints" onclick="App.toggleProblemSection('hints')">💡 Hints (3)</button>
         </div>
 
         <!-- Hidden Sections: Topics, Companies, Hints -->
@@ -294,8 +293,7 @@ const App = {
         </div>
 
         <div id="lc-sec-hints" class="lc-section-box" style="display:none;">
-          <div style="font-size:0.8rem; font-weight:700; color:var(--accent-amber); margin-bottom:0.5rem;">Hints & Strategy:</div>
-          <div>${hintsAccordions}</div>
+          ${hintsContentHtml}
         </div>
 
         <!-- Problem Description Statement -->
@@ -319,6 +317,115 @@ const App = {
       this.navigate('ide');
     } catch (e) {
       this.showToast('Error opening problem: ' + e.message, 'error');
+    }
+  },
+
+  renderHintsHtml(hints, totalPenalty, maxScore, basePoints) {
+    if (!hints || !hints.length) {
+      return '<div style="color:var(--text-muted); font-size:0.85rem;">No hints available for this problem.</div>';
+    }
+    return `
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.6rem;">
+        <span style="font-size:0.85rem; font-weight:700; color:var(--accent-amber);">💡 3-Tier Progressive Hints:</span>
+        <span style="font-size:0.75rem; color:var(--text-muted); font-family:var(--font-mono);">
+          Max Score: <strong style="color:var(--accent-cyan);">${maxScore}</strong> / ${basePoints} pts
+          ${totalPenalty > 0 ? `<span style="color:#ef4444; margin-left:0.35rem;">(-${totalPenalty} penalty)</span>` : ''}
+        </span>
+      </div>
+      <div class="lc-hints-container">
+        ${hints.map(h => {
+          if (h.unlocked) {
+            return `
+              <div class="lc-hint-card unlocked">
+                <div class="lc-hint-header">
+                  <span class="lc-hint-title">💡 Hint ${h.index}</span>
+                  <span class="lc-hint-badge penalty-badge">✓ Unlocked (-${h.penalty} pts)</span>
+                </div>
+                <div class="lc-hint-text">${h.text || 'Hint unlocked.'}</div>
+              </div>
+            `;
+          } else {
+            return `
+              <div class="lc-hint-card locked" id="hint-card-${h.index}">
+                <div class="lc-hint-header">
+                  <span class="lc-hint-title">🔒 Hint ${h.index}</span>
+                  <span class="lc-hint-cost">Penalty: -${h.penalty} pts</span>
+                </div>
+                <div class="lc-hint-lock-desc">
+                  Viewing this progressive clue will deduct <strong>${h.penalty} points</strong> from your maximum score for this problem.
+                </div>
+                <div>
+                  <button class="btn btn-unlock-hint" onclick="App.unlockHint(${h.index}, ${h.penalty})">
+                    🔓 Unlock Hint ${h.index} (-${h.penalty} pts)
+                  </button>
+                </div>
+              </div>
+            `;
+          }
+        }).join('')}
+      </div>
+    `;
+  },
+
+  async unlockHint(hintIndex, penalty) {
+    if (!this.participant || !this.participant.id) {
+      this.showToast('Please register first to unlock hints.', 'warning');
+      return;
+    }
+    if (!this.activeProblem) return;
+
+    const confirmed = confirm(
+      `Unlock Hint ${hintIndex}?\n\nViewing this hint will permanently deduct ${penalty} points from your maximum score for "${this.activeProblem.title}".\n\nDo you want to unlock it?`
+    );
+    if (!confirmed) return;
+
+    try {
+      const res = await fetch('/api/problems/unlock-hint', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          participant_id: this.participant.id,
+          problem_id: this.activeProblem.id,
+          hint_index: hintIndex
+        })
+      });
+      const data = await res.json();
+      if (data.success) {
+        if (this.activeProblem.hints) {
+          const targetHint = this.activeProblem.hints.find(h => h.index === hintIndex);
+          if (targetHint) {
+            targetHint.unlocked = true;
+            targetHint.text = data.hint_text;
+          }
+        }
+        this.activeProblem.max_score = data.max_score;
+        this.activeProblem.total_hint_penalty = data.total_hint_penalty;
+
+        const ptsBadge = document.getElementById('ide-prob-points-badge');
+        if (ptsBadge) {
+          ptsBadge.textContent = `Max: ${data.max_score} / ${this.activeProblem.points} pts`;
+          if (data.total_hint_penalty > 0) {
+            ptsBadge.style.color = 'var(--accent-amber)';
+            ptsBadge.title = `Total Hint Penalty: -${data.total_hint_penalty} pts`;
+          }
+        }
+
+        const hintsSec = document.getElementById('lc-sec-hints');
+        if (hintsSec) {
+          hintsSec.innerHTML = this.renderHintsHtml(
+            this.activeProblem.hints,
+            data.total_hint_penalty,
+            data.max_score,
+            this.activeProblem.points
+          );
+        }
+
+        this.showToast(`Hint ${hintIndex} unlocked! (-${penalty} pts penalty applied)`, 'info');
+      } else {
+        this.showToast(data.error || 'Failed to unlock hint', 'error');
+      }
+    } catch (e) {
+      this.showToast('Error unlocking hint: ' + e.message, 'error');
     }
   },
 

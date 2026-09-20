@@ -81,6 +81,17 @@ class Storage:
                         );
                     """)
                     conn.execute("""
+                        CREATE TABLE IF NOT EXISTS hint_unlocks (
+                            participant_id TEXT NOT NULL,
+                            problem_id TEXT NOT NULL,
+                            hint_index INTEGER NOT NULL,
+                            penalty INTEGER NOT NULL,
+                            unlocked_at TEXT NOT NULL,
+                            PRIMARY KEY (participant_id, problem_id, hint_index),
+                            FOREIGN KEY (participant_id) REFERENCES participants(id) ON DELETE CASCADE
+                        );
+                    """)
+                    conn.execute("""
                         CREATE TABLE IF NOT EXISTS audit_logs (
                             id INTEGER PRIMARY KEY AUTOINCREMENT,
                             action TEXT NOT NULL,
@@ -348,16 +359,69 @@ class Storage:
             finally:
                 conn.close()
 
+    # ------------------- Hint Management & Penalties -------------------
+
+    def unlock_hint(self, participant_id: str, problem_id: str, hint_index: int, penalty: int) -> Dict[str, Any]:
+        """Records that a participant unlocked a hint and stores the penalty."""
+        with self.lock:
+            conn = self._get_connection()
+            try:
+                now = datetime.datetime.now().isoformat()
+                with conn:
+                    conn.execute("""
+                        INSERT OR IGNORE INTO hint_unlocks (participant_id, problem_id, hint_index, penalty, unlocked_at)
+                        VALUES (?, ?, ?, ?, ?);
+                    """, (participant_id, problem_id, int(hint_index), int(penalty), now))
+                return {
+                    "participant_id": participant_id,
+                    "problem_id": problem_id,
+                    "hint_index": hint_index,
+                    "penalty": penalty,
+                    "unlocked": True
+                }
+            finally:
+                conn.close()
+
+    def get_unlocked_hints(self, participant_id: str, problem_id: str) -> List[int]:
+        """Returns the list of unlocked hint indices (e.g. [1, 2]) for a participant on a problem."""
+        conn = self._get_connection()
+        try:
+            cursor = conn.cursor()
+            cursor.execute("""
+                SELECT hint_index FROM hint_unlocks
+                WHERE participant_id = ? AND problem_id = ?
+                ORDER BY hint_index ASC;
+            """, (participant_id, problem_id))
+            rows = cursor.fetchall()
+            return [int(r[0]) for r in rows]
+        finally:
+            conn.close()
+
+    def get_total_hint_penalty(self, participant_id: str, problem_id: str) -> int:
+        """Returns the total point deduction for unlocked hints on a problem."""
+        conn = self._get_connection()
+        try:
+            cursor = conn.cursor()
+            cursor.execute("""
+                SELECT COALESCE(SUM(penalty), 0) FROM hint_unlocks
+                WHERE participant_id = ? AND problem_id = ?;
+            """, (participant_id, problem_id))
+            row = cursor.fetchone()
+            return int(row[0]) if row else 0
+        finally:
+            conn.close()
+
     # ------------------- Administration -------------------
 
     def reset_competition(self):
-        """Wipes participants, submissions, solved problems, and audit logs."""
+        """Wipes participants, submissions, solved problems, hint unlocks, and audit logs."""
         with self.lock:
             conn = self._get_connection()
             try:
                 with conn:
                     conn.execute("DELETE FROM submissions;")
                     conn.execute("DELETE FROM solved_problems;")
+                    conn.execute("DELETE FROM hint_unlocks;")
                     conn.execute("DELETE FROM participants;")
                     conn.execute("DELETE FROM audit_logs;")
                 self._sync_json_mirrors()
