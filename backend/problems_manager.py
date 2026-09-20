@@ -9,6 +9,14 @@ import shutil
 import glob
 from typing import Dict, Any, List, Optional, Set
 
+try:
+    from judge.harness import Harness
+except ImportError:
+    try:
+        from ..judge.harness import Harness
+    except Exception:
+        Harness = None
+
 
 class ProblemsManager:
     """Manages problem metadata, starter templates, visible samples, hints, and hidden test suites."""
@@ -595,7 +603,7 @@ class ProblemsManager:
             "hints": hints_data,
             "leetcode_examples": meta.get("leetcode_examples"),
             "sample_tests": raw.get("sample_tests", []),
-            "starter_code": raw.get("starter_code", {})
+            "starter_code": Harness.get_starter_code(pid) if Harness else raw.get("starter_code", {})
         }
 
     def get_hint_text(self, problem_id: str, hint_index: int) -> Optional[str]:

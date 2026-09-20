@@ -380,6 +380,7 @@ class CodeCombatHandler(BaseHTTPRequestHandler):
                     language=language,
                     code=code,
                     custom_input=custom_input or "",
+                    problem_id=problem_id or None,
                     timeout=float(self.config.get("execution_timeout_seconds", 3.0))
                 )
                 self.send_json({
@@ -394,6 +395,7 @@ class CodeCombatHandler(BaseHTTPRequestHandler):
                 self.send_error_json(f"Problem '{problem_id}' not found.", 404)
                 return
 
+            pid = prob_detail.get("id", problem_id)
             sample_tests = prob_detail.get("sample_tests", [])
             timeout = float(prob_detail.get("time_limit", self.config.get("execution_timeout_seconds", 3.0)))
 
@@ -401,6 +403,7 @@ class CodeCombatHandler(BaseHTTPRequestHandler):
                 language=language,
                 code=code,
                 sample_tests=sample_tests,
+                problem_id=pid,
                 timeout=timeout
             )
             self.send_json({
@@ -496,6 +499,7 @@ class CodeCombatHandler(BaseHTTPRequestHandler):
                 code=code,
                 hidden_tests_dir=hidden_dir,
                 problem_points=effective_max_points,
+                problem_id=pid,
                 timeout=timeout
             )
 

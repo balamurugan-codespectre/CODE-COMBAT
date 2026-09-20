@@ -99,17 +99,56 @@ def run_tests():
 
     # 3.1 Python 3 execution
     py_hidden_dir = problems_mgr.get_hidden_tests_dir("two_sum")
-    res_py = judge.run_hidden_tests("python", detail["starter_code"]["python"], py_hidden_dir, 100, 3.0)
+    py_sol = """
+class Solution:
+    def twoSum(self, nums: List[int], target: int) -> List[int]:
+        m = {}
+        for i, n in enumerate(nums):
+            comp = target - n
+            if comp in m:
+                return [m[comp], i]
+            m[n] = i
+        return []
+"""
+    res_py = judge.run_hidden_tests("python", py_sol, py_hidden_dir, 100, 3.0, "two_sum")
     assert_test("Python 3 Judge: Two Sum -> ACCEPTED (5/5)", res_py["status"] == "ACCEPTED" and res_py["passed_count"] == 5, f"status={res_py.get('status')}, error={res_py.get('error_message')}")
 
     # 3.2 Java (javac) execution
-    res_java = judge.run_hidden_tests("java", detail["starter_code"]["java"], py_hidden_dir, 100, 3.0)
+    java_sol = """
+class Solution {
+    public int[] twoSum(int[] nums, int target) {
+        Map<Integer, Integer> map = new HashMap<>();
+        for (int i = 0; i < nums.length; i++) {
+            int comp = target - nums[i];
+            if (map.containsKey(comp)) return new int[]{map.get(comp), i};
+            map.put(nums[i], i);
+        }
+        return new int[]{};
+    }
+}
+"""
+    res_java = judge.run_hidden_tests("java", java_sol, py_hidden_dir, 100, 3.0, "two_sum")
     assert_test("Java (javac) Judge: Two Sum -> ACCEPTED (5/5)", res_java["status"] == "ACCEPTED" and res_java["passed_count"] == 5, f"status={res_java.get('status')}, error={res_java.get('error_message')}")
 
     # 3.3 C compiler detection & execution
     c_compiler = Compiler.detect_c_compiler()
     if c_compiler:
-        res_c = judge.run_hidden_tests("c", detail["starter_code"]["c"], py_hidden_dir, 100, 3.0)
+        c_sol = """
+int* twoSum(int* nums, int numsSize, int target, int* returnSize) {
+    *returnSize = 2;
+    int* res = (int*)malloc(2 * sizeof(int));
+    for (int i = 0; i < numsSize; i++) {
+        for (int j = i + 1; j < numsSize; j++) {
+            if (nums[i] + nums[j] == target) {
+                res[0] = i; res[1] = j;
+                return res;
+            }
+        }
+    }
+    return res;
+}
+"""
+        res_c = judge.run_hidden_tests("c", c_sol, py_hidden_dir, 100, 3.0, "two_sum")
         assert_test(f"C ({os.path.basename(c_compiler)}) Judge: Two Sum -> ACCEPTED (5/5)", res_c["status"] == "ACCEPTED" and res_c["passed_count"] == 5, f"status={res_c.get('status')}, error={res_c.get('error_message')}")
     else:
         assert_test("C compiler not available (optional on Windows host)", True)
@@ -215,10 +254,12 @@ def run_tests():
     tampered_ver = auth.verify_session_token(tampered_token)
     assert_test("Tampered HMAC Token Rejected", tampered_ver is None)
 
-    assert_test("Admin Password Verification Success", auth.verify_admin_password(config.get("admin_password", "admin123")))
-    assert_test("Admin ID & Password Verification Success", auth.verify_admin_credentials("admin", config.get("admin_password", "admin123")))
-    assert_test("Admin Wrong Password Rejected", not auth.verify_admin_credentials("admin", "wrong_password"))
-    assert_test("Admin Wrong ID Rejected", not auth.verify_admin_credentials("wrong_admin", config.get("admin_password", "admin123")))
+    admin_id = config.get("admin_id", "admincse")
+    admin_pass = config.get("admin_password", "uceacse")
+    assert_test("Admin Password Verification Success", auth.verify_admin_password(admin_pass))
+    assert_test("Admin ID & Password Verification Success", auth.verify_admin_credentials(admin_id, admin_pass))
+    assert_test("Admin Wrong Password Rejected", not auth.verify_admin_credentials(admin_id, "wrong_password"))
+    assert_test("Admin Wrong ID Rejected", not auth.verify_admin_credentials("wrong_admin", admin_pass))
 
     # Rate Limiter test
     limiter = RateLimiter(max_requests=5, window_seconds=60)
@@ -332,7 +373,17 @@ def run_tests():
     # 9.4 Submission adds points (+90 pts)
     two_sum_dir = problems_mgr.get_hidden_tests_dir("two_sum")
     effective_pts = max(25, 100 - pen1)
-    sub_res = judge.run_hidden_tests("python", p_detail["starter_code"]["python"], two_sum_dir, effective_pts, 3.0)
+    two_sum_sol = """
+class Solution:
+    def twoSum(self, nums: List[int], target: int) -> List[int]:
+        m = {}
+        for i, n in enumerate(nums):
+            comp = target - n
+            if comp in m: return [m[comp], i]
+            m[n] = i
+        return []
+"""
+    sub_res = judge.run_hidden_tests("python", two_sum_sol, two_sum_dir, effective_pts, 3.0, "two_sum")
     sub_rec = storage.add_submission(
         participant_id=p_player["id"],
         participant_name=p_player["name"],
@@ -340,7 +391,7 @@ def run_tests():
         problem_title=p_detail["title"],
         difficulty="Easy",
         language="python",
-        code=p_detail["starter_code"]["python"],
+        code=two_sum_sol,
         status=sub_res["status"],
         passed_count=sub_res["passed_count"],
         total_count=sub_res["total_count"],
@@ -366,7 +417,16 @@ def run_tests():
     # 9.7 Solve Medium problem: Points ADDED (+150 pts effective) -> Total Score = 240 pts
     med_dir = problems_mgr.get_hidden_tests_dir("maximum_subarray")
     med_detail = problems_mgr.get_problem_detail("maximum_subarray", participant_id=p_player["id"], storage=storage)
-    med_sub_res = judge.run_hidden_tests("python", med_detail["starter_code"]["python"], med_dir, med_detail["max_score"], 3.0)
+    med_sol = """
+class Solution:
+    def maxSubArray(self, nums: List[int]) -> int:
+        cur = max_s = nums[0]
+        for x in nums[1:]:
+            cur = max(x, cur + x)
+            max_s = max(max_s, cur)
+        return max_s
+"""
+    med_sub_res = judge.run_hidden_tests("python", med_sol, med_dir, med_detail["max_score"], 3.0, "maximum_subarray")
     med_sub_rec = storage.add_submission(
         participant_id=p_player["id"],
         participant_name=p_player["name"],
@@ -374,7 +434,7 @@ def run_tests():
         problem_title=med_detail["title"],
         difficulty="Medium",
         language="python",
-        code=med_detail["starter_code"]["python"],
+        code=med_sol,
         status=med_sub_res["status"],
         passed_count=med_sub_res["passed_count"],
         total_count=med_sub_res["total_count"],

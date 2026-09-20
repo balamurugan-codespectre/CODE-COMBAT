@@ -13,6 +13,9 @@ import tempfile
 from typing import Dict, Any, Optional, Tuple, List
 
 
+from .harness import Harness
+
+
 class Compiler:
     """Manages compilation and pre-execution checks for supported languages."""
 
@@ -101,13 +104,21 @@ class Compiler:
         resolved = shutil.which("javac")
         return resolved if resolved else None
 
-    def compile(self, language: str, source_code: str, work_dir: str) -> Tuple[bool, Optional[str], Optional[Dict[str, Any]]]:
+    def compile(self, language: str, source_code: str, work_dir: str, problem_id: Optional[str] = None) -> Tuple[bool, Optional[str], Optional[Dict[str, Any]]]:
         """
         Prepares and compiles source code inside work_dir.
+        If problem_id is supplied and the code does not contain a standalone main(),
+        it is automatically wrapped with the LeetCode driver harness.
 
         Returns:
             (success: bool, error_message: Optional[str], metadata: Optional[Dict[str, Any]])
         """
+        if problem_id:
+            try:
+                source_code = Harness.wrap_code(language, problem_id, source_code)
+            except Exception as e:
+                return False, f"Harness preparation error: {str(e)}", None
+
         lang = language.lower().strip()
 
         if lang in ["python", "python3", "py"]:

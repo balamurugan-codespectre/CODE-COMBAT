@@ -62,13 +62,14 @@ class Judge:
         language: str,
         code: str,
         custom_input: str,
+        problem_id: Optional[str] = None,
         timeout: Optional[float] = None
     ) -> Dict[str, Any]:
         """Runs user code against a custom stdin string in an isolated directory."""
         work_dir = tempfile.mkdtemp(dir=self.temp_root, prefix="cc_run_")
         try:
             # 1. Compile / Prepare
-            ok, err_msg, meta = self.compiler.compile(language, code, work_dir)
+            ok, err_msg, meta = self.compiler.compile(language, code, work_dir, problem_id=problem_id)
             if not ok:
                 return {
                     "status": "COMPILATION_ERROR",
@@ -108,6 +109,7 @@ class Judge:
         language: str,
         code: str,
         sample_tests: List[Dict[str, str]],
+        problem_id: Optional[str] = None,
         timeout: Optional[float] = None
     ) -> Dict[str, Any]:
         """Evaluates code against visible problem sample test cases."""
@@ -118,7 +120,7 @@ class Judge:
 
         try:
             # 1. Compile / Prepare
-            ok, err_msg, meta = self.compiler.compile(language, code, work_dir)
+            ok, err_msg, meta = self.compiler.compile(language, code, work_dir, problem_id=problem_id)
             if not ok:
                 return {
                     "status": "COMPILATION_ERROR",
@@ -200,12 +202,26 @@ class Judge:
         code: str,
         hidden_tests_dir: str,
         problem_points: int = 100,
-        timeout: Optional[float] = None
+        timeout: Optional[Any] = None,
+        problem_id: Optional[str] = None
     ) -> Dict[str, Any]:
         """
         Evaluates submission against server-side hidden test cases.
         Guarantees that test inputs/outputs are never returned in public payload.
         """
+        # Handle flexible positional argument types
+        if isinstance(timeout, str) and problem_id is None:
+            problem_id = timeout
+            timeout = None
+        elif isinstance(problem_id, (int, float)) and timeout is None:
+            timeout = float(problem_id)
+            problem_id = None
+
+        if not problem_id and hidden_tests_dir:
+            inferred = os.path.basename(os.path.dirname(os.path.abspath(hidden_tests_dir)))
+            if inferred and inferred not in ["hidden_tests", "easy", "medium", "hard", "set1", "set2"]:
+                problem_id = inferred
+
         work_dir = tempfile.mkdtemp(dir=self.temp_root, prefix="cc_judge_")
         total_runtime = 0.0
         passed_count = 0
@@ -214,7 +230,7 @@ class Judge:
 
         try:
             # 1. Compile / Prepare
-            ok, err_msg, meta = self.compiler.compile(language, code, work_dir)
+            ok, err_msg, meta = self.compiler.compile(language, code, work_dir, problem_id=problem_id)
             if not ok:
                 return {
                     "status": "COMPILATION_ERROR",
