@@ -191,6 +191,18 @@ const App = {
     }
   },
 
+  toggleProblemSection(sectionId) {
+    const el = document.getElementById(`lc-sec-${sectionId}`);
+    const btn = document.getElementById(`lc-btn-${sectionId}`);
+    if (!el) return;
+    const isHidden = (el.style.display === 'none' || !el.style.display);
+    el.style.display = isHidden ? 'block' : 'none';
+    if (btn) {
+      if (isHidden) btn.classList.add('active');
+      else btn.classList.remove('active');
+    }
+  },
+
   async openProblem(problemId) {
     if (!this.participant) {
       this.showToast('Please register first to access coding challenges!', 'warning');
@@ -204,28 +216,103 @@ const App = {
 
       const probMeta = this.problems.find(p => p.id === problemId);
       const isSolved = Boolean(probMeta && (probMeta.solved || probMeta.status === 'Solved'));
+      const probNum = prob.number ? `${prob.number}. ` : '';
 
-      document.getElementById('ide-prob-title').textContent = prob.title;
+      document.getElementById('ide-prob-title').textContent = `${probNum}${prob.title}`;
       const badge = document.getElementById('ide-prob-badge');
       badge.innerHTML = `${prob.difficulty}${isSolved ? ' &bull; &check; Solved' : ''}`;
       badge.className = `badge badge-${prob.difficulty.toLowerCase()}`;
 
-      const visibleSamples = (prob.sample_tests || []).slice(0, 2);
-      let samplesHtml = visibleSamples.map((st, i) => `
-        <div style="background:var(--bg-primary); padding:0.75rem; border-radius:6px; margin-top:0.75rem; border:1px solid var(--border-color);">
-          <div style="font-weight:700; color:var(--accent-cyan); font-size:0.85rem;">Example ${i + 1}</div>
-          <div style="margin-top:0.25rem;"><strong>Input:</strong><pre style="font-family:var(--font-mono); font-size:0.85rem; color:#fff; background:rgba(0,0,0,0.3); padding:0.4rem; border-radius:4px;">${st.input}</pre></div>
-          <div style="margin-top:0.25rem;"><strong>Output:</strong><pre style="font-family:var(--font-mono); font-size:0.85rem; color:var(--accent-green); background:rgba(0,0,0,0.3); padding:0.4rem; border-radius:4px;">${st.output}</pre></div>
-          ${st.explanation ? `<div style="margin-top:0.35rem; font-size:0.85rem; color:var(--text-secondary);"><strong>Explanation:</strong> ${st.explanation}</div>` : ''}
-        </div>
+      // 1. Interactive Chips (Topics, Companies, Hint)
+      const topicsList = prob.topics || [prob.category || 'Algorithms'];
+      const companiesList = prob.companies || ['Amazon', 'Google', 'Microsoft', 'Meta'];
+      const hintsList = prob.hints || ['Think about edge cases and potential time complexity optimizations.'];
+
+      const topicsPills = topicsList.map(t => `<span class="lc-tag-pill">🏷️ ${t}</span>`).join('');
+      const companiesPills = companiesList.map(c => `<span class="lc-tag-pill" style="border-color:rgba(0,242,254,0.3); color:var(--accent-cyan);">🏢 ${c}</span>`).join('');
+      const hintsAccordions = hintsList.map((h, i) => `
+        <details class="lc-hint-item">
+          <summary class="lc-hint-summary">💡 Hint ${i + 1}</summary>
+          <div class="lc-hint-body">${h}</div>
+        </details>
       `).join('');
 
+      // 2. Examples (LeetCode style)
+      let examplesHtml = '';
+      if (prob.leetcode_examples && prob.leetcode_examples.length > 0) {
+        examplesHtml = prob.leetcode_examples.map((ex, i) => `
+          <div class="lc-example-card">
+            <div class="lc-example-title">Example ${i + 1}:</div>
+            <div class="lc-example-block">
+              <div><strong class="lc-code-kw">Input:</strong> <span>${ex.input}</span></div>
+              <div><strong class="lc-code-kw">Output:</strong> <span style="color:var(--accent-cyan); font-weight:600;">${ex.output}</span></div>
+              ${ex.explanation ? `<div class="lc-explanation"><strong class="lc-code-kw">Explanation:</strong> ${ex.explanation}</div>` : ''}
+            </div>
+          </div>
+        `).join('');
+      } else {
+        const visibleSamples = (prob.sample_tests || []).slice(0, 3);
+        examplesHtml = visibleSamples.map((st, i) => `
+          <div class="lc-example-card">
+            <div class="lc-example-title">Example ${i + 1}:</div>
+            <div class="lc-example-block">
+              <div><strong class="lc-code-kw">Input:</strong> <code>${st.input.replace(/\n/g, ' ')}</code></div>
+              <div><strong class="lc-code-kw">Output:</strong> <code style="color:var(--accent-cyan);">${st.output}</code></div>
+              ${st.explanation ? `<div class="lc-explanation"><strong class="lc-code-kw">Explanation:</strong> ${st.explanation}</div>` : ''}
+            </div>
+          </div>
+        `).join('');
+      }
+
+      // 3. Constraints items
+      const rawConstraints = prob.constraints || 'Standard constraints apply.';
+      const constraintLines = rawConstraints.split('\n').filter(c => c.trim().length > 0);
+      const constraintsHtml = constraintLines.map(line => `<li class="lc-constraint-item">${line.replace(/`/g, '')}</li>`).join('');
+
+      // 4. Render Problem Pane
       document.getElementById('ide-prob-description').innerHTML = `
-        <div style="color:var(--text-primary); font-size:0.95rem; margin-bottom:1rem;">${prob.description}</div>
-        <h4 style="color:var(--accent-cyan); font-size:0.9rem; margin-top:1rem;">Constraints</h4>
-        <pre style="font-family:var(--font-mono); font-size:0.85rem; color:var(--text-secondary); background:rgba(0,0,0,0.2); padding:0.5rem; border-radius:4px;">${prob.constraints || 'Standard constraints'}</pre>
-        <h4 style="color:var(--accent-cyan); font-size:0.9rem; margin-top:1rem;">Examples (2 of ${(prob.sample_tests || []).length} Sample Cases Shown)</h4>
-        ${samplesHtml}
+        <!-- LeetCode Header Metadata & Chips -->
+        <div class="lc-header-tags">
+          ${isSolved ? '<span class="badge badge-solved" style="background:rgba(16,185,129,0.15); color:var(--accent-green); border:1px solid var(--accent-green); font-size:0.75rem;">✓ Solved</span>' : '<span class="badge" style="background:rgba(148,163,184,0.1); color:var(--text-muted); border:1px solid var(--border-color); font-size:0.75rem;">Todo</span>'}
+          <span class="badge badge-${prob.difficulty.toLowerCase()}" style="font-size:0.75rem;">${prob.difficulty}</span>
+          <span style="font-family:var(--font-mono); font-size:0.78rem; font-weight:700; color:var(--accent-cyan); background:rgba(0,242,254,0.08); padding:0.2rem 0.5rem; border-radius:4px; border:1px solid rgba(0,242,254,0.2);">${prob.points} pts</span>
+          
+          <button class="lc-chip-btn" id="lc-btn-topics" onclick="App.toggleProblemSection('topics')">🏷️ Topics</button>
+          <button class="lc-chip-btn" id="lc-btn-companies" onclick="App.toggleProblemSection('companies')">🏢 Companies</button>
+          <button class="lc-chip-btn" id="lc-btn-hints" onclick="App.toggleProblemSection('hints')">💡 Hint</button>
+        </div>
+
+        <!-- Hidden Sections: Topics, Companies, Hints -->
+        <div id="lc-sec-topics" class="lc-section-box" style="display:none;">
+          <div style="font-size:0.8rem; font-weight:700; color:var(--text-secondary); margin-bottom:0.4rem;">Related Topics:</div>
+          <div>${topicsPills}</div>
+        </div>
+
+        <div id="lc-sec-companies" class="lc-section-box" style="display:none;">
+          <div style="font-size:0.8rem; font-weight:700; color:var(--text-secondary); margin-bottom:0.4rem;">Asked By Companies:</div>
+          <div>${companiesPills}</div>
+        </div>
+
+        <div id="lc-sec-hints" class="lc-section-box" style="display:none;">
+          <div style="font-size:0.8rem; font-weight:700; color:var(--accent-amber); margin-bottom:0.5rem;">Hints & Strategy:</div>
+          <div>${hintsAccordions}</div>
+        </div>
+
+        <!-- Problem Description Statement -->
+        <div style="color:var(--text-primary); font-size:0.95rem; line-height:1.7; margin-bottom:1.25rem;">
+          ${prob.description.replace(/\n\n/g, '<br><br>')}
+        </div>
+
+        <!-- Examples Section -->
+        ${examplesHtml}
+
+        <!-- Constraints Section -->
+        <div style="margin-top:1.5rem;">
+          <h4 style="color:#fff; font-size:0.92rem; margin-bottom:0.5rem;">Constraints:</h4>
+          <ul class="lc-constraints-list">
+            ${constraintsHtml}
+          </ul>
+        </div>
       `;
 
       this.handleLanguageChange();

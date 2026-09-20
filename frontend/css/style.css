@@ -642,9 +642,166 @@ body {
   to { transform: translateX(0); opacity: 1; }
 }
 
+/* ==========================================================================
+   LeetCode Problem Experience & Rich UI
+   ========================================================================== */
+
+.lc-header-tags {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  margin: 0.75rem 0 1rem 0;
+}
+
+.lc-chip-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.25rem 0.65rem;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--border-color);
+  border-radius: 14px;
+  font-size: 0.78rem;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: var(--transition);
+  user-select: none;
+}
+
+.lc-chip-btn:hover, .lc-chip-btn.active {
+  background: rgba(0, 242, 254, 0.1);
+  border-color: var(--accent-cyan);
+  color: var(--accent-cyan);
+}
+
+.lc-tag-pill {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.2rem 0.55rem;
+  background: rgba(24, 29, 41, 0.95);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  font-size: 0.75rem;
+  color: var(--text-primary);
+  margin-right: 0.35rem;
+  margin-bottom: 0.35rem;
+}
+
+.lc-section-box {
+  background: rgba(0, 0, 0, 0.25);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  padding: 0.75rem 1rem;
+  margin-bottom: 1rem;
+  animation: fadeIn 0.2s ease-in;
+}
+
+.lc-example-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  padding: 1rem 1.15rem;
+  margin-top: 0.85rem;
+  margin-bottom: 1rem;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+}
+
+.lc-example-title {
+  font-weight: 700;
+  color: #fff;
+  font-size: 0.92rem;
+  margin-bottom: 0.6rem;
+}
+
+.lc-example-block {
+  font-family: var(--font-mono);
+  font-size: 0.86rem;
+  line-height: 1.6;
+  color: var(--text-primary);
+  background: rgba(0, 0, 0, 0.35);
+  border-left: 3px solid var(--accent-cyan);
+  padding: 0.65rem 0.85rem;
+  border-radius: 4px;
+}
+
+.lc-code-kw {
+  color: #fff;
+  font-weight: 600;
+}
+
+.lc-explanation {
+  margin-top: 0.5rem;
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  line-height: 1.5;
+}
+
+.lc-constraints-list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  margin-top: 0.5rem;
+}
+
+.lc-constraint-item {
+  font-family: var(--font-mono);
+  font-size: 0.84rem;
+  color: var(--text-primary);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.lc-constraint-item::before {
+  content: "•";
+  color: var(--accent-cyan);
+  font-weight: bold;
+}
+
+.lc-hint-item {
+  background: var(--bg-primary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  margin-bottom: 0.5rem;
+  overflow: hidden;
+}
+
+.lc-hint-summary {
+  padding: 0.5rem 0.85rem;
+  font-weight: 600;
+  font-size: 0.85rem;
+  color: var(--accent-amber);
+  cursor: pointer;
+  user-select: none;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.lc-hint-summary:hover {
+  background: rgba(245, 158, 11, 0.08);
+}
+
+.lc-hint-body {
+  padding: 0.65rem 0.85rem;
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  border-top: 1px solid var(--border-color);
+  background: rgba(0,0,0,0.15);
+  line-height: 1.5;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-3px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
 @media (max-width: 1024px) {
   .studio-container {
     grid-template-columns: 1fr;
     height: auto;
   }
 }
+
