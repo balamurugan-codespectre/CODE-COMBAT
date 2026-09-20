@@ -255,7 +255,7 @@ int* twoSum(int* nums, int numsSize, int target, int* returnSize) {
     assert_test("Tampered HMAC Token Rejected", tampered_ver is None)
 
     admin_id = config.get("admin_id", "admincse")
-    admin_pass = config.get("admin_password", "uceacse")
+    admin_pass = config.get("admin_password", "infinixa26#cse@8148")
     assert_test("Admin Password Verification Success", auth.verify_admin_password(admin_pass))
     assert_test("Admin ID & Password Verification Success", auth.verify_admin_credentials(admin_id, admin_pass))
     assert_test("Admin Wrong Password Rejected", not auth.verify_admin_credentials(admin_id, "wrong_password"))
