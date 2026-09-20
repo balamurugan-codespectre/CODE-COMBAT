@@ -597,23 +597,139 @@ const App = {
     }
   },
 
-  loadSolutionIntoEditor() {
+  openSolutionModal() {
     if (!this.activeProblem) {
-      this.showToast('No active problem selected.', 'warning');
-      return;
-    }
-    const lang = this.currentLanguage || 'python';
-    const sols = this.activeProblem.solutions || {};
-    const solCode = sols[lang] || (lang === 'python' ? sols['py'] : '') || '';
-
-    if (!solCode) {
-      this.showToast(`No solution template found for ${lang.toUpperCase()}`, 'warning');
+      this.showToast('Please select a problem first.', 'warning');
       return;
     }
 
-    this.editor.setValue(solCode);
-    const langDisplay = lang === 'python' ? 'Python 3' : (lang === 'java' ? 'Java' : 'C');
-    this.showToast(`✨ ${langDisplay} solution inserted into text editor! Click "Run Tests" or "Submit".`, 'success');
+    // If admin is already authenticated in session, directly fetch & insert solution
+    if (typeof Admin !== 'undefined' && Admin.isAuthenticated()) {
+      this.fetchAndInsertSolution(Admin.getToken());
+      return;
+    }
+
+    const modal = document.getElementById('modal-solution-lock');
+    const idInput = document.getElementById('sol-lock-id');
+    const passInput = document.getElementById('sol-lock-pass');
+    const errorEl = document.getElementById('sol-lock-error');
+
+    if (errorEl) errorEl.style.display = 'none';
+    if (idInput) idInput.value = (typeof Admin !== 'undefined' ? Admin.getAdminId() : '') || 'admin';
+    if (passInput) passInput.value = '';
+
+    if (modal) {
+      modal.style.display = 'flex';
+      setTimeout(() => {
+        if (passInput) passInput.focus();
+      }, 50);
+    }
+  },
+
+  closeSolutionModal() {
+    const modal = document.getElementById('modal-solution-lock');
+    if (modal) modal.style.display = 'none';
+  },
+
+  async submitSolutionUnlock(e) {
+    if (e) e.preventDefault();
+    if (!this.activeProblem) return;
+
+    const idInput = document.getElementById('sol-lock-id');
+    const passInput = document.getElementById('sol-lock-pass');
+    const errorEl = document.getElementById('sol-lock-error');
+    const submitBtn = document.getElementById('btn-sol-lock-submit');
+
+    const adminId = idInput ? idInput.value.trim() : 'admin';
+    const password = passInput ? passInput.value.trim() : '';
+
+    if (!password) {
+      if (errorEl) {
+        errorEl.textContent = 'Please enter administrator password.';
+        errorEl.style.display = 'block';
+      }
+      return;
+    }
+
+    if (submitBtn) {
+      submitBtn.disabled = true;
+      submitBtn.textContent = 'Verifying...';
+    }
+
+    try {
+      const res = await fetch('/api/admin/get-solution', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          problem_id: this.activeProblem.id,
+          language: this.currentLanguage,
+          admin_id: adminId,
+          password: password
+        })
+      });
+
+      const data = await res.json();
+      if (data.success && data.solution) {
+        if (data.token) {
+          sessionStorage.setItem('cc_admin_token', data.token);
+          sessionStorage.setItem('cc_admin_id', data.admin_id || adminId);
+        }
+
+        this.closeSolutionModal();
+        this.editor.setValue(data.solution);
+        const langDisplay = this.currentLanguage === 'python' ? 'Python 3' : (this.currentLanguage === 'java' ? 'Java' : 'C');
+        this.showToast(`🔓 ${langDisplay} solution unlocked & inserted by Admin!`, 'success');
+      } else {
+        const errMsg = data.error || 'Invalid Admin ID or Password. Access Denied.';
+        if (errorEl) {
+          errorEl.textContent = errMsg;
+          errorEl.style.display = 'block';
+        }
+        this.showToast(errMsg, 'error');
+      }
+    } catch (err) {
+      const msg = 'Verification request failed: ' + err.message;
+      if (errorEl) {
+        errorEl.textContent = msg;
+        errorEl.style.display = 'block';
+      }
+      this.showToast(msg, 'error');
+    } finally {
+      if (submitBtn) {
+        submitBtn.disabled = false;
+        submitBtn.textContent = '🔓 Unlock & Insert';
+      }
+    }
+  },
+
+  async fetchAndInsertSolution(token) {
+    if (!this.activeProblem) return;
+    try {
+      const res = await fetch('/api/admin/get-solution', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          problem_id: this.activeProblem.id,
+          language: this.currentLanguage,
+          token: token
+        })
+      });
+
+      const data = await res.json();
+      if (data.success && data.solution) {
+        this.editor.setValue(data.solution);
+        const langDisplay = this.currentLanguage === 'python' ? 'Python 3' : (this.currentLanguage === 'java' ? 'Java' : 'C');
+        this.showToast(`🔓 ${langDisplay} solution inserted into editor!`, 'success');
+      } else {
+        sessionStorage.removeItem('cc_admin_token');
+        this.openSolutionModal();
+      }
+    } catch (err) {
+      this.openSolutionModal();
+    }
   },
 
   switchOutputTab(tabId, btn) {

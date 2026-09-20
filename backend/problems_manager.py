@@ -545,7 +545,7 @@ class ProblemsManager:
         problem_list.sort(key=lambda p: (p["difficulty_rank"], p["title"]))
         return problem_list
 
-    def get_problem_detail(self, problem_id: str, participant_id: Optional[str] = None, storage: Optional[Any] = None) -> Optional[Dict[str, Any]]:
+    def get_problem_detail(self, problem_id: str, participant_id: Optional[str] = None, storage: Optional[Any] = None, is_admin: bool = False) -> Optional[Dict[str, Any]]:
         """Returns problem details with 3 progressive hints and unlock status."""
         clean_id = (problem_id or "").strip().lower()
         if clean_id in self.problems:
@@ -594,7 +594,7 @@ class ProblemsManager:
 
         max_score = max(int(base_points * 0.25), base_points - total_penalty)
 
-        return {
+        res = {
             "id": pid,
             "title": raw.get("title"),
             "number": meta.get("number"),
@@ -613,9 +613,18 @@ class ProblemsManager:
             "hints": hints_data,
             "leetcode_examples": meta.get("leetcode_examples"),
             "sample_tests": raw.get("sample_tests", []),
-            "starter_code": Harness.get_starter_code(pid) if Harness else raw.get("starter_code", {}),
-            "solutions": get_all_solutions_for_problem(pid)
+            "starter_code": Harness.get_starter_code(pid) if Harness else raw.get("starter_code", {})
         }
+        if is_admin:
+            res["solutions"] = get_all_solutions_for_problem(pid)
+        return res
+
+    def get_solutions_for_problem(self, problem_id: str) -> Dict[str, str]:
+        """Returns the dictionary of solutions for a problem."""
+        clean_id = (problem_id or "").strip().lower()
+        raw = self.problems.get(clean_id) or next((p for p in self.problems.values() if p.get("id", "").lower() == clean_id or p.get("slug", "").lower() == clean_id), None)
+        pid = raw.get("id", clean_id) if raw else clean_id
+        return get_all_solutions_for_problem(pid)
 
     def get_hint_text(self, problem_id: str, hint_index: int) -> Optional[str]:
         """Returns the specific raw hint string (1-indexed)."""

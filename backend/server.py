@@ -561,6 +561,44 @@ class CodeCombatHandler(BaseHTTPRequestHandler):
                 self.send_error_json("Invalid Admin ID or Password.", 401)
             return
 
+        # POST /api/admin/get-solution or /api/problems/unlock-solution
+        if path in ["/api/admin/get-solution", "/api/problems/unlock-solution"]:
+            if not self.is_admin_authenticated(body):
+                self.send_error_json("Access denied. Admin password / authentication required to unlock solutions.", 401)
+                return
+
+            problem_id = (body.get("problem_id") or "").strip().lower()
+            language = (body.get("language") or "python").strip().lower()
+
+            prob_detail = self.problems_manager.get_problem_detail(problem_id)
+            if not prob_detail:
+                self.send_error_json("Problem not found.", 404)
+                return
+
+            pid = prob_detail["id"]
+            solutions = self.problems_manager.get_solutions_for_problem(pid)
+            sol_code = solutions.get(language) or solutions.get("python") or ""
+
+            if not sol_code:
+                self.send_error_json(f"No solution found for problem '{pid}' in {language.upper()}.", 404)
+                return
+
+            token = body.get("token")
+            if not token:
+                token = self.auth.create_session_token(self.auth.admin_id, "Administrator", expiry_hours=24)
+
+            self.send_json({
+                "success": True,
+                "problem_id": pid,
+                "language": language,
+                "solution": sol_code,
+                "solutions": solutions,
+                "token": token,
+                "admin_id": self.auth.admin_id,
+                "message": f"Solution for {prob_detail.get('title', pid)} unlocked successfully."
+            })
+            return
+
         # POST /api/admin/reset
         if path == "/api/admin/reset":
             if not self.is_admin_authenticated(body):
