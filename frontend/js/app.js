@@ -610,13 +610,14 @@ const App = {
     }
 
     const modal = document.getElementById('modal-solution-lock');
-    const idInput = document.getElementById('sol-lock-id');
     const passInput = document.getElementById('sol-lock-pass');
     const errorEl = document.getElementById('sol-lock-error');
 
     if (errorEl) errorEl.style.display = 'none';
-    if (idInput) idInput.value = (typeof Admin !== 'undefined' ? Admin.getAdminId() : '') || 'admin';
-    if (passInput) passInput.value = '';
+    if (passInput) {
+      passInput.value = '';
+      passInput.type = 'password';
+    }
 
     if (modal) {
       modal.style.display = 'flex';
@@ -631,21 +632,25 @@ const App = {
     if (modal) modal.style.display = 'none';
   },
 
+  toggleSolutionPassVisibility() {
+    const passInput = document.getElementById('sol-lock-pass');
+    if (!passInput) return;
+    passInput.type = passInput.type === 'password' ? 'text' : 'password';
+  },
+
   async submitSolutionUnlock(e) {
     if (e) e.preventDefault();
     if (!this.activeProblem) return;
 
-    const idInput = document.getElementById('sol-lock-id');
     const passInput = document.getElementById('sol-lock-pass');
     const errorEl = document.getElementById('sol-lock-error');
     const submitBtn = document.getElementById('btn-sol-lock-submit');
 
-    const adminId = idInput ? idInput.value.trim() : 'admin';
     const password = passInput ? passInput.value.trim() : '';
 
     if (!password) {
       if (errorEl) {
-        errorEl.textContent = 'Please enter administrator password.';
+        errorEl.textContent = 'Please enter the unlock password.';
         errorEl.style.display = 'block';
       }
       return;
@@ -663,24 +668,18 @@ const App = {
         body: JSON.stringify({
           problem_id: this.activeProblem.id,
           language: this.currentLanguage,
-          admin_id: adminId,
           password: password
         })
       });
 
       const data = await res.json();
       if (data.success && data.solution) {
-        if (data.token) {
-          sessionStorage.setItem('cc_admin_token', data.token);
-          sessionStorage.setItem('cc_admin_id', data.admin_id || adminId);
-        }
-
         this.closeSolutionModal();
         this.editor.setValue(data.solution);
         const langDisplay = this.currentLanguage === 'python' ? 'Python 3' : (this.currentLanguage === 'java' ? 'Java' : 'C');
-        this.showToast(`🔓 ${langDisplay} solution unlocked & inserted by Admin!`, 'success');
+        this.showToast(`✨ ${langDisplay} solution unlocked & inserted into editor!`, 'success');
       } else {
-        const errMsg = data.error || 'Invalid Admin ID or Password. Access Denied.';
+        const errMsg = data.error || 'Incorrect password. Access denied.';
         if (errorEl) {
           errorEl.textContent = errMsg;
           errorEl.style.display = 'block';

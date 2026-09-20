@@ -651,27 +651,28 @@
 
   </main>
 
-  <!-- Solution Password Lock Modal -->
-  <div id="modal-solution-lock" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.8); backdrop-filter:blur(8px); -webkit-backdrop-filter:blur(8px); z-index:2000; align-items:center; justify-content:center;">
-    <div style="background:var(--bg-card); border:1px solid var(--accent-amber); box-shadow:0 0 35px rgba(245,158,11,0.25); border-radius:var(--radius-md); max-width:440px; width:90%; padding:1.75rem; animation:fadeIn 0.2s ease-out;">
-      <div style="display:flex; align-items:center; gap:0.6rem; margin-bottom:0.75rem;">
-        <span style="font-size:1.5rem;">🔒</span>
-        <h3 style="color:#fff; font-size:1.15rem; font-weight:800; margin:0;">Admin Protected Action</h3>
+  <!-- Solution Password Lock Modal for Players -->
+  <div id="modal-solution-lock" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.85); backdrop-filter:blur(8px); -webkit-backdrop-filter:blur(8px); z-index:2000; align-items:center; justify-content:center;">
+    <div style="background:var(--bg-card); border:1px solid var(--accent-amber); box-shadow:0 0 40px rgba(245,158,11,0.25); border-radius:var(--radius-md); max-width:440px; width:92%; padding:1.75rem; animation:fadeIn 0.2s ease-out;">
+      <div style="display:flex; align-items:center; gap:0.6rem; margin-bottom:0.6rem;">
+        <span style="font-size:1.6rem;">🔑</span>
+        <h3 style="color:#fff; font-size:1.2rem; font-weight:800; margin:0;">Unlock Official Solution</h3>
       </div>
       <p style="color:var(--text-secondary); font-size:0.88rem; line-height:1.5; margin-bottom:1.25rem;">
-        Inserting the official solution is password-protected. Enter Administrator credentials to unlock and populate the solution into the editor.
+        Inserting the solution is locked. Enter the password provided by your event coordinator or invigilator to unlock and insert:
       </p>
 
       <form id="form-solution-lock" onsubmit="App.submitSolutionUnlock(event)">
-        <div class="form-group" style="margin-bottom:0.85rem;">
-          <label class="form-label" style="font-size:0.8rem;">Admin ID</label>
-          <input type="text" id="sol-lock-id" class="form-control" placeholder="Admin ID (e.g. admin)" required style="width:100%; background:var(--bg-primary);">
-        </div>
         <div class="form-group" style="margin-bottom:1rem;">
-          <label class="form-label" style="font-size:0.8rem;">Admin Password</label>
-          <input type="password" id="sol-lock-pass" class="form-control" placeholder="Enter administrator password" required style="width:100%; background:var(--bg-primary);">
+          <label class="form-label" style="font-size:0.82rem; font-weight:600; color:var(--text-primary); display:flex; justify-content:space-between;">
+            <span>Solution Password</span>
+          </label>
+          <div style="position:relative; display:flex; align-items:center;">
+            <input type="password" id="sol-lock-pass" class="form-control" placeholder="Enter password to unlock solution" required autocomplete="current-password" style="width:100%; background:var(--bg-primary); padding-right:2.5rem; font-size:0.95rem;">
+            <button type="button" onclick="App.toggleSolutionPassVisibility()" style="position:absolute; right:0.6rem; background:none; border:none; color:var(--text-muted); cursor:pointer; font-size:1rem;" title="Show/Hide password">👁️</button>
+          </div>
         </div>
-        <div id="sol-lock-error" style="display:none; color:var(--accent-red); font-size:0.82rem; margin-bottom:0.75rem; background:rgba(239,68,68,0.1); padding:0.4rem 0.6rem; border-radius:4px; border:1px solid rgba(239,68,68,0.2);"></div>
+        <div id="sol-lock-error" style="display:none; color:var(--accent-red); font-size:0.82rem; margin-bottom:0.75rem; background:rgba(239,68,68,0.1); padding:0.45rem 0.75rem; border-radius:4px; border:1px solid rgba(239,68,68,0.2);"></div>
         
         <div style="display:flex; justify-content:flex-end; gap:0.75rem; margin-top:1.25rem;">
           <button type="button" class="btn btn-secondary" onclick="App.closeSolutionModal()" style="padding:0.45rem 1rem;">Cancel</button>
