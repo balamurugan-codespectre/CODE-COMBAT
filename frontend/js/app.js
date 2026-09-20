@@ -597,6 +597,25 @@ const App = {
     }
   },
 
+  loadSolutionIntoEditor() {
+    if (!this.activeProblem) {
+      this.showToast('No active problem selected.', 'warning');
+      return;
+    }
+    const lang = this.currentLanguage || 'python';
+    const sols = this.activeProblem.solutions || {};
+    const solCode = sols[lang] || (lang === 'python' ? sols['py'] : '') || '';
+
+    if (!solCode) {
+      this.showToast(`No solution template found for ${lang.toUpperCase()}`, 'warning');
+      return;
+    }
+
+    this.editor.setValue(solCode);
+    const langDisplay = lang === 'python' ? 'Python 3' : (lang === 'java' ? 'Java' : 'C');
+    this.showToast(`✨ ${langDisplay} solution inserted into text editor! Click "Run Tests" or "Submit".`, 'success');
+  },
+
   switchOutputTab(tabId, btn) {
     document.querySelectorAll('.tabs-header .tab-btn').forEach(b => b.classList.remove('active'));
     document.querySelectorAll('.panel-body .tab-pane').forEach(p => p.classList.remove('active'));

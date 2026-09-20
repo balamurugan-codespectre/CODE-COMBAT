@@ -17,6 +17,16 @@ except ImportError:
     except Exception:
         Harness = None
 
+try:
+    from .solutions_registry import SOLUTIONS_REGISTRY, get_all_solutions_for_problem
+except ImportError:
+    try:
+        from backend.solutions_registry import SOLUTIONS_REGISTRY, get_all_solutions_for_problem
+    except Exception:
+        SOLUTIONS_REGISTRY = {}
+        get_all_solutions_for_problem = lambda pid: {}
+
+
 
 class ProblemsManager:
     """Manages problem metadata, starter templates, visible samples, hints, and hidden test suites."""
@@ -603,7 +613,8 @@ class ProblemsManager:
             "hints": hints_data,
             "leetcode_examples": meta.get("leetcode_examples"),
             "sample_tests": raw.get("sample_tests", []),
-            "starter_code": Harness.get_starter_code(pid) if Harness else raw.get("starter_code", {})
+            "starter_code": Harness.get_starter_code(pid) if Harness else raw.get("starter_code", {}),
+            "solutions": get_all_solutions_for_problem(pid)
         }
 
     def get_hint_text(self, problem_id: str, hint_index: int) -> Optional[str]:
