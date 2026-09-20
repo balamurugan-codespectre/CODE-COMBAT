@@ -1022,4 +1022,139 @@ body {
   }
 }
 
+/* ==========================================================================
+   Dedicated Separate Error Box & Diagnostic Console
+   ========================================================================== */
+.error-box-card {
+  background: linear-gradient(180deg, rgba(239, 68, 68, 0.12) 0%, rgba(15, 23, 42, 0.95) 100%);
+  border: 1px solid rgba(239, 68, 68, 0.45);
+  border-left: 5px solid var(--accent-red);
+  border-radius: var(--radius-sm);
+  padding: 1rem;
+  margin-bottom: 0.85rem;
+  box-shadow: 0 4px 20px rgba(239, 68, 68, 0.18);
+  animation: fadeIn 0.25s ease-out;
+}
+
+.error-box-card.warning-style {
+  background: linear-gradient(180deg, rgba(245, 158, 11, 0.12) 0%, rgba(15, 23, 42, 0.95) 100%);
+  border-color: rgba(245, 158, 11, 0.45);
+  border-left-color: var(--accent-amber);
+  box-shadow: 0 4px 20px rgba(245, 158, 11, 0.15);
+}
+
+.error-box-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.65rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid rgba(239, 68, 68, 0.25);
+}
+
+.error-box-card.warning-style .error-box-header {
+  border-bottom-color: rgba(245, 158, 11, 0.25);
+}
+
+.error-box-title-group {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.error-badge-icon {
+  font-size: 1.15rem;
+}
+
+.error-box-title {
+  font-size: 0.95rem;
+  font-weight: 800;
+  letter-spacing: 0.03em;
+  color: #fca5a5;
+  text-transform: uppercase;
+}
+
+.error-box-card.warning-style .error-box-title {
+  color: #fde68a;
+}
+
+.error-box-meta {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  background: rgba(0, 0, 0, 0.4);
+  padding: 0.15rem 0.5rem;
+  border-radius: 4px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.error-terminal {
+  background: #090d13;
+  border: 1px solid rgba(239, 68, 68, 0.25);
+  border-radius: 4px;
+  padding: 0.75rem 0.9rem;
+  font-family: var(--font-mono);
+  font-size: 0.84rem;
+  line-height: 1.5;
+  color: #fee2e2;
+  white-space: pre-wrap;
+  word-break: break-word;
+  max-height: 240px;
+  overflow-y: auto;
+  margin: 0.5rem 0;
+}
+
+.error-box-card.warning-style .error-terminal {
+  border-color: rgba(245, 158, 11, 0.25);
+  color: #fef3c7;
+}
+
+.error-tips-box {
+  background: rgba(0, 242, 254, 0.05);
+  border: 1px solid rgba(0, 242, 254, 0.2);
+  border-radius: 4px;
+  padding: 0.5rem 0.75rem;
+  margin-top: 0.65rem;
+  font-size: 0.8rem;
+  color: #cbd5e1;
+  display: flex;
+  align-items: flex-start;
+  gap: 0.45rem;
+  line-height: 1.45;
+}
+
+.copy-error-btn {
+  background: rgba(239, 68, 68, 0.15);
+  border: 1px solid rgba(239, 68, 68, 0.4);
+  color: #fca5a5;
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 0.25rem 0.6rem;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: var(--transition);
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.copy-error-btn:hover {
+  background: #ef4444;
+  color: #fff;
+  box-shadow: 0 0 10px rgba(239, 68, 68, 0.4);
+}
+
+.error-box-card.warning-style .copy-error-btn {
+  background: rgba(245, 158, 11, 0.15);
+  border-color: rgba(245, 158, 11, 0.4);
+  color: #fde68a;
+}
+
+.error-box-card.warning-style .copy-error-btn:hover {
+  background: #f59e0b;
+  color: #000;
+  box-shadow: 0 0 10px rgba(245, 158, 11, 0.4);
+}
+
+
 

@@ -223,6 +223,102 @@ const App = {
     }
   },
 
+  escapeHtml(str) {
+    if (str === null || str === undefined) return '';
+    return String(str)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#039;');
+  },
+
+  copyErrorMessage(encodedText) {
+    try {
+      const text = decodeURIComponent(encodedText);
+      navigator.clipboard.writeText(text).then(() => {
+        this.showToast('📋 Error message copied to clipboard!', 'info');
+      }).catch(() => {
+        const ta = document.createElement('textarea');
+        ta.value = text;
+        document.body.appendChild(ta);
+        ta.select();
+        document.execCommand('copy');
+        document.body.removeChild(ta);
+        this.showToast('📋 Error message copied to clipboard!', 'info');
+      });
+    } catch (e) {
+      this.showToast('Failed to copy error message', 'warning');
+    }
+  },
+
+  renderErrorBox({ type, title, message, tips, meta, warningStyle } = {}) {
+    const rawMsg = (message || 'An error occurred during execution.').trim();
+    const encodedMsg = encodeURIComponent(rawMsg);
+    const boxClass = warningStyle ? 'error-box-card warning-style' : 'error-box-card';
+    
+    let defaultTitle = 'Execution Error';
+    let icon = '⚠️';
+    if (type === 'COMPILATION') {
+      defaultTitle = 'Compilation / Syntax Error';
+      icon = '❌';
+    } else if (type === 'RUNTIME') {
+      defaultTitle = 'Runtime Error / Exception';
+      icon = '💥';
+    } else if (type === 'TLE') {
+      defaultTitle = 'Time Limit Exceeded';
+      icon = '⏱️';
+    } else if (type === 'WA') {
+      defaultTitle = 'Wrong Answer (Output Mismatch)';
+      icon = '❌';
+    }
+
+    const displayTitle = title || defaultTitle;
+
+    // Generate beginner-friendly smart debugging tips
+    let autoTip = tips;
+    if (!autoTip) {
+      const lower = rawMsg.toLowerCase();
+      if (lower.includes('syntaxerror') || lower.includes('expected') || lower.includes(';') || lower.includes('error: expected')) {
+        autoTip = 'Check for missing semicolons <code>;</code>, unmatched parentheses <code>()</code>, brackets <code>[]</code>, curly braces <code>{}</code>, or missing colons <code>:</code>.';
+      } else if (lower.includes('nameerror') || lower.includes('cannot find symbol') || lower.includes('undeclared identifier')) {
+        autoTip = 'A variable, function, or method name is misspelled, not defined, or declared in a different scope.';
+      } else if (lower.includes('indexerror') || lower.includes('arrayindexoutofboundsexception') || lower.includes('segmentation fault') || lower.includes('out of bounds')) {
+        autoTip = 'Array or list index out of range. Ensure your loop bounds stay within valid indexes (e.g. <code>i &lt; len(arr)</code> or <code>i &lt; n</code>).';
+      } else if (lower.includes('zerodivisionerror') || lower.includes('/ by zero') || lower.includes('arithmeticexception')) {
+        autoTip = 'Division or modulo by zero occurred. Add a check to confirm the denominator is not zero before dividing.';
+      } else if (lower.includes('nullpointerexception') || lower.includes('nonetype') || lower.includes('none type') || lower.includes('null')) {
+        autoTip = 'Null or NoneType reference accessed. Ensure objects, arrays, or return values are properly initialized before accessing their properties.';
+      } else if (lower.includes('timed out') || lower.includes('time limit') || type === 'TLE') {
+        autoTip = 'Execution exceeded runtime limit (> 2.0s). Check for infinite loops (<code>while</code> conditions that never terminate) or optimize nested loops from $O(N^2)$ to $O(N)$.';
+      } else if (lower.includes('wrong answer') || type === 'WA') {
+        autoTip = 'Your output does not match expected output. Verify your logic against edge cases (zeroes, negative numbers, single elements) and check spacing/newlines.';
+      }
+    }
+
+    return `
+      <div class="${boxClass}">
+        <div class="error-box-header">
+          <div class="error-box-title-group">
+            <span class="error-badge-icon">${icon}</span>
+            <span class="error-box-title">${displayTitle}</span>
+          </div>
+          <div style="display:flex; align-items:center; gap:0.5rem;">
+            ${meta ? `<span class="error-box-meta">${meta}</span>` : ''}
+            <button class="copy-error-btn" onclick="App.copyErrorMessage('${encodedMsg}')">📋 Copy Error</button>
+          </div>
+        </div>
+        <pre class="error-terminal"><code>${this.escapeHtml(rawMsg)}</code></pre>
+        ${autoTip ? `
+          <div class="error-tips-box">
+            <span>💡</span>
+            <div><strong>Debugging Tip:</strong> ${autoTip}</div>
+          </div>
+        ` : ''}
+      </div>
+    `;
+  },
+
   async openProblem(problemId) {
     if (!this.participant) {
       this.showToast('Please register first to access coding challenges!', 'warning');
@@ -536,10 +632,12 @@ const App = {
 
       if (!res.ok || data.error) {
         const errorMsg = data.error || `Run failed (HTTP ${res.status})`;
-        document.getElementById('sample-tests-container').innerHTML = `
-          <div style="color:var(--accent-red); font-weight:700;">Run Error:</div>
-          <pre style="color:#ef4444; font-family:var(--font-mono); font-size:0.85rem; margin-top:0.5rem;">${errorMsg}</pre>
-        `;
+        document.getElementById('sample-tests-container').innerHTML = this.renderErrorBox({
+          type: 'COMPILATION',
+          title: 'Execution / Server Error',
+          message: errorMsg,
+          meta: this.currentLanguage.toUpperCase()
+        });
         this.switchOutputTab('sample-tests', document.querySelector('.tabs-header .tab-btn'));
         this.showToast(errorMsg, 'error');
         return;
@@ -549,42 +647,121 @@ const App = {
         const r = data.result || {};
         const outBox = document.getElementById('custom-stdout');
         if (outBox) {
-          outBox.innerHTML = `
-            <div style="color:var(--accent-cyan); font-weight:700; margin-bottom:0.25rem;">Verdict: ${r.status || 'DONE'} (${r.runtime ? r.runtime.toFixed(3) : 0}s)</div>
-            ${r.stdout ? `<div style="color:#fff;"><strong>Stdout:</strong><pre style="margin-top:0.25rem; white-space:pre-wrap;">${r.stdout}</pre></div>` : ''}
-            ${r.stderr || r.error ? `<div style="color:var(--accent-red); margin-top:0.5rem;"><strong>Stderr:</strong><pre style="margin-top:0.25rem; white-space:pre-wrap;">${r.stderr || r.error}</pre></div>` : ''}
+          const isErr = (r.status !== 'ACCEPTED' && r.status !== 'OK' && r.status !== 'DONE') || Boolean(r.stderr || r.error);
+          const hasStdout = Boolean(r.stdout && r.stdout.trim().length > 0);
+          
+          let html = `
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.65rem;">
+              <span style="font-weight:700; color:${isErr ? 'var(--accent-red)' : 'var(--accent-green)'};">
+                ${isErr ? '❌ Verdict: ' + (r.status || 'ERROR') : '✓ Verdict: ACCEPTED'}
+              </span>
+              <span style="font-family:var(--font-mono); font-size:0.8rem; color:var(--text-muted);">${r.runtime ? r.runtime.toFixed(3) : '0.000'}s</span>
+            </div>
           `;
+
+          if (hasStdout) {
+            html += `
+              <div style="margin-bottom:0.65rem;">
+                <div style="font-size:0.75rem; font-weight:700; color:var(--text-muted); text-transform:uppercase; margin-bottom:0.25rem;">Standard Output (stdout):</div>
+                <pre class="sample-pre" style="color:#fff;">${this.escapeHtml(r.stdout)}</pre>
+              </div>
+            `;
+          }
+
+          if (r.stderr || r.error || r.status === 'COMPILATION_ERROR' || r.status === 'RUNTIME_ERROR' || r.status === 'TIME_LIMIT_EXCEEDED') {
+            html += this.renderErrorBox({
+              type: r.status === 'COMPILATION_ERROR' ? 'COMPILATION' : (r.status === 'TIME_LIMIT_EXCEEDED' ? 'TLE' : 'RUNTIME'),
+              title: r.status === 'COMPILATION_ERROR' ? 'Compilation Error' : (r.status === 'TIME_LIMIT_EXCEEDED' ? 'Time Limit Exceeded' : 'Runtime Error / Stderr'),
+              message: r.stderr || r.error || 'Execution failed.',
+              meta: this.currentLanguage.toUpperCase(),
+              warningStyle: r.status === 'TIME_LIMIT_EXCEEDED'
+            });
+          } else if (!hasStdout) {
+            html += `<div style="color:var(--text-muted); font-size:0.85rem; font-style:italic;">(Program completed with no stdout output)</div>`;
+          }
+
+          outBox.innerHTML = html;
         }
         this.switchOutputTab('custom-input', document.querySelectorAll('.tabs-header .tab-btn')[1]);
-        this.showToast(`Custom run completed (${r.status})`, 'info');
+        this.showToast(`Custom run completed (${r.status || 'DONE'})`, isErr ? 'warning' : 'info');
         return;
       }
 
       const r = data.result || {};
       let html = '';
       if (r.status === 'COMPILATION_ERROR') {
-        html = `<div style="color:var(--accent-red); font-weight:700;">Compilation Error:</div><pre style="color:#ef4444; font-family:var(--font-mono); font-size:0.85rem; margin-top:0.5rem; white-space:pre-wrap;">${r.error_message || 'Compilation failed.'}</pre>`;
+        html = this.renderErrorBox({
+          type: 'COMPILATION',
+          title: 'Compilation / Syntax Error',
+          message: r.error_message || 'Compilation failed. Please verify syntax, imports, and method signatures.',
+          meta: this.currentLanguage.toUpperCase()
+        });
       } else {
-        html = (r.results || []).map(t => `
-          <div style="background:var(--bg-primary); padding:0.6rem; border-radius:6px; margin-bottom:0.5rem; border-left:4px solid ${t.passed ? 'var(--accent-green)' : 'var(--accent-red)'};">
-            <div style="display:flex; justify-content:space-between; font-weight:700;">
-              <span>Sample Test #${t.test_num}</span>
-              <span style="color:${t.passed ? 'var(--accent-green)' : 'var(--accent-red)'};">${t.status} (${typeof t.runtime === 'number' ? t.runtime.toFixed(3) : t.runtime}s)</span>
-            </div>
-            ${!t.passed ? `
-              <div class="diff-view">
-                <div class="diff-box expected"><strong>Expected:</strong><pre>${t.expected}</pre></div>
-                <div class="diff-box actual"><strong>Actual:</strong><pre>${t.actual || t.error || ''}</pre></div>
+        html = (r.results || []).map(t => {
+          if (t.passed) {
+            return `
+              <div style="background:var(--bg-primary); padding:0.75rem 1rem; border-radius:6px; margin-bottom:0.65rem; border-left:4px solid var(--accent-green);">
+                <div style="display:flex; justify-content:space-between; align-items:center; font-weight:700;">
+                  <span style="color:var(--accent-green); display:flex; align-items:center; gap:0.4rem;">
+                    <span>✓</span> Sample Test #${t.test_num}: ACCEPTED
+                  </span>
+                  <span style="font-family:var(--font-mono); font-size:0.8rem; color:var(--text-muted);">${typeof t.runtime === 'number' ? t.runtime.toFixed(3) : t.runtime}s</span>
+                </div>
               </div>
-            ` : ''}
-          </div>
-        `).join('');
+            `;
+          }
+
+          // Test failed (Wrong Answer, Runtime Error, or TLE)
+          const isTLE = t.status === 'TIME_LIMIT_EXCEEDED';
+          const isRuntime = t.status === 'RUNTIME_ERROR' || Boolean(t.error || t.stderr);
+
+          return `
+            <div style="background:var(--bg-primary); padding:0.85rem 1rem; border-radius:6px; margin-bottom:0.85rem; border-left:4px solid ${isTLE ? 'var(--accent-amber)' : 'var(--accent-red)'};">
+              <div style="display:flex; justify-content:space-between; align-items:center; font-weight:700; margin-bottom:0.5rem;">
+                <span style="color:${isTLE ? 'var(--accent-amber)' : 'var(--accent-red)'}; display:flex; align-items:center; gap:0.4rem;">
+                  <span>${isTLE ? '⏱️' : '❌'}</span> Sample Test #${t.test_num}: ${t.status}
+                </span>
+                <span style="font-family:var(--font-mono); font-size:0.8rem; color:var(--text-muted);">${typeof t.runtime === 'number' ? t.runtime.toFixed(3) : t.runtime}s</span>
+              </div>
+
+              ${isRuntime ? this.renderErrorBox({
+                type: 'RUNTIME',
+                title: `Test #${t.test_num} Runtime Exception`,
+                message: t.stderr || t.error || t.actual || 'Runtime error occurred.',
+                meta: this.currentLanguage.toUpperCase()
+              }) : ''}
+
+              ${isTLE ? this.renderErrorBox({
+                type: 'TLE',
+                title: `Test #${t.test_num} Time Limit Exceeded`,
+                message: `Execution timed out (> 2.0s). Your program did not finish within the allowed runtime limit.`,
+                warningStyle: true
+              }) : ''}
+
+              <div class="diff-view">
+                <div class="diff-box expected">
+                  <div style="font-size:0.75rem; font-weight:700; color:var(--accent-green); text-transform:uppercase; margin-bottom:0.25rem;">Expected Output:</div>
+                  <pre style="margin:0; font-family:var(--font-mono); font-size:0.85rem; color:#fff; white-space:pre-wrap;">${this.escapeHtml(t.expected)}</pre>
+                </div>
+                <div class="diff-box actual">
+                  <div style="font-size:0.75rem; font-weight:700; color:var(--accent-red); text-transform:uppercase; margin-bottom:0.25rem;">Your Output:</div>
+                  <pre style="margin:0; font-family:var(--font-mono); font-size:0.85rem; color:#fca5a5; white-space:pre-wrap;">${this.escapeHtml(t.actual || '(No stdout produced)')}</pre>
+                </div>
+              </div>
+            </div>
+          `;
+        }).join('');
       }
 
       document.getElementById('sample-tests-container').innerHTML = html;
       this.switchOutputTab('sample-tests', document.querySelector('.tabs-header .tab-btn'));
       this.showToast(r.all_passed ? 'All sample tests passed!' : 'Some sample tests failed.', r.all_passed ? 'success' : 'warning');
     } catch (e) {
+      document.getElementById('sample-tests-container').innerHTML = this.renderErrorBox({
+        type: 'RUNTIME',
+        title: 'Run Error',
+        message: e.message
+      });
       this.showToast('Run error: ' + e.message, 'error');
     } finally {
       btn.disabled = false;
@@ -633,13 +810,12 @@ const App = {
 
       if (!res.ok || data.error || !data.status) {
         const errorMsg = data.error || `Evaluation failed (HTTP ${res.status})`;
-        verdictEl.innerHTML = `
-          <div style="background:var(--bg-primary); padding:1rem; border-radius:8px; border-left:6px solid var(--accent-red);">
-            <div style="font-size:1.25rem; font-weight:800; color:var(--accent-red);">Submission Error</div>
-            <div style="margin-top:0.5rem; color:#ef4444; font-size:0.9rem;">${errorMsg}</div>
-            ${data.error_message ? `<pre style="color:#ef4444; font-family:var(--font-mono); font-size:0.85rem; margin-top:0.5rem; white-space:pre-wrap;">${data.error_message}</pre>` : ''}
-          </div>
-        `;
+        verdictEl.innerHTML = this.renderErrorBox({
+          type: 'COMPILATION',
+          title: 'Submission Error',
+          message: `${errorMsg}\n${data.error_message || ''}`,
+          meta: this.currentLanguage.toUpperCase()
+        });
         this.switchOutputTab('submission-res', subTabBtn);
         this.showToast(errorMsg, 'error');
         return;
@@ -657,15 +833,32 @@ const App = {
       else if (status === 'TIME_LIMIT_EXCEEDED') statusColor = 'var(--accent-amber)';
       else if (['WRONG_ANSWER', 'COMPILATION_ERROR', 'RUNTIME_ERROR'].includes(status)) statusColor = 'var(--accent-red)';
 
+      let errorBoxHtml = '';
+      if (!isAccepted && (data.error_message || status === 'COMPILATION_ERROR' || status === 'RUNTIME_ERROR' || status === 'TIME_LIMIT_EXCEEDED' || status === 'WRONG_ANSWER')) {
+        const errType = status === 'COMPILATION_ERROR' ? 'COMPILATION' : (status === 'TIME_LIMIT_EXCEEDED' ? 'TLE' : (status === 'RUNTIME_ERROR' ? 'RUNTIME' : 'WA'));
+        const errTitle = status === 'COMPILATION_ERROR' ? 'Compilation / Syntax Error' : (status === 'TIME_LIMIT_EXCEEDED' ? 'Time Limit Exceeded' : (status === 'RUNTIME_ERROR' ? 'Runtime Error' : 'Test Failure Breakdown'));
+        errorBoxHtml = this.renderErrorBox({
+          type: errType,
+          title: errTitle,
+          message: data.error_message || `Solution failed on hidden test cases (${passedCount}/${totalCount} passed).`,
+          meta: this.currentLanguage.toUpperCase(),
+          warningStyle: status === 'TIME_LIMIT_EXCEEDED'
+        });
+      }
+
       verdictEl.innerHTML = `
-        <div style="background:var(--bg-primary); padding:1rem; border-radius:8px; border-left:6px solid ${statusColor};">
-          <div style="font-size:1.25rem; font-weight:800; color:${statusColor};">${status}</div>
-          <div style="margin-top:0.5rem; color:var(--text-primary);">Test Cases Passed: <strong>${passedCount} / ${totalCount}</strong></div>
-          <div style="color:var(--accent-cyan); font-weight:700;">Score Earned: +${scoreEarned} pts</div>
-          <div style="font-size:0.85rem; color:var(--text-muted); margin-top:0.25rem;">Total Runtime: ${runtime}s</div>
+        <div style="background:var(--bg-primary); padding:1rem; border-radius:8px; border-left:6px solid ${statusColor}; margin-bottom:0.75rem;">
+          <div style="display:flex; justify-content:space-between; align-items:center;">
+            <div style="font-size:1.25rem; font-weight:800; color:${statusColor};">${status}</div>
+            <div style="font-family:var(--font-mono); font-size:0.85rem; color:var(--text-muted);">Runtime: ${runtime}s</div>
+          </div>
+          <div style="margin-top:0.5rem; color:var(--text-primary); font-size:0.9rem;">
+            Hidden Test Cases Passed: <strong style="color:${isAccepted ? 'var(--accent-green)' : (passedCount > 0 ? 'var(--accent-amber)' : 'var(--accent-red)')};">${passedCount} / ${totalCount}</strong>
+          </div>
+          <div style="color:var(--accent-cyan); font-weight:700; margin-top:0.2rem;">Score Earned: +${scoreEarned} pts</div>
           ${data.already_solved ? `<div style="color:var(--accent-green); font-size:0.85rem; margin-top:0.35rem;">✓ Problem already solved previously. Points are recorded.</div>` : ''}
-          ${data.error_message ? `<div style="color:var(--accent-red); margin-top:0.5rem; font-size:0.85rem; white-space:pre-wrap; font-family:var(--font-mono);">${data.error_message}</div>` : ''}
         </div>
+        ${errorBoxHtml}
       `;
 
       this.switchOutputTab('submission-res', subTabBtn);
