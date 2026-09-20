@@ -203,6 +203,26 @@ const App = {
     }
   },
 
+  copySampleInput(encodedText) {
+    try {
+      const text = decodeURIComponent(encodedText);
+      navigator.clipboard.writeText(text).then(() => {
+        this.showToast('📋 Sample input copied to clipboard!', 'success');
+      }).catch(() => {
+        // Fallback for older browsers / iframe contexts
+        const ta = document.createElement('textarea');
+        ta.value = text;
+        document.body.appendChild(ta);
+        ta.select();
+        document.execCommand('copy');
+        document.body.removeChild(ta);
+        this.showToast('📋 Sample input copied to clipboard!', 'success');
+      });
+    } catch (e) {
+      this.showToast('Failed to copy sample input', 'warning');
+    }
+  },
+
   async openProblem(problemId) {
     if (!this.participant) {
       this.showToast('Please register first to access coding challenges!', 'warning');
@@ -233,32 +253,53 @@ const App = {
       const companiesPills = companiesList.map(c => `<span class="lc-tag-pill" style="border-color:rgba(0,242,254,0.3); color:var(--accent-cyan);">🏢 ${c}</span>`).join('');
       const hintsContentHtml = this.renderHintsHtml(hintsList, prob.total_hint_penalty || 0, prob.max_score || prob.points, prob.points);
 
-      // 2. Examples (LeetCode style)
-      let examplesHtml = '';
-      if (prob.leetcode_examples && prob.leetcode_examples.length > 0) {
-        examplesHtml = prob.leetcode_examples.map((ex, i) => `
-          <div class="lc-example-card">
-            <div class="lc-example-title">Example ${i + 1}:</div>
-            <div class="lc-example-block">
-              <div><strong class="lc-code-kw">Input:</strong> <span>${ex.input}</span></div>
-              <div><strong class="lc-code-kw">Output:</strong> <span style="color:var(--accent-cyan); font-weight:600;">${ex.output}</span></div>
-              ${ex.explanation ? `<div class="lc-explanation"><strong class="lc-code-kw">Explanation:</strong> ${ex.explanation}</div>` : ''}
+      // 2. Beginner-friendly Sample Test Cases & Format
+      const inputFormatHtml = prob.input_format ? `
+        <div class="io-format-card">
+          <div class="io-format-title">📥 Input Format</div>
+          <div class="io-format-text">${prob.input_format}</div>
+        </div>
+      ` : '';
+
+      const outputFormatHtml = prob.output_format ? `
+        <div class="io-format-card output-card">
+          <div class="io-format-title">📤 Output Format</div>
+          <div class="io-format-text">${prob.output_format}</div>
+        </div>
+      ` : '';
+
+      const ioGridHtml = (inputFormatHtml || outputFormatHtml) ? `
+        <div class="io-format-grid">
+          ${inputFormatHtml}
+          ${outputFormatHtml}
+        </div>
+      ` : '';
+
+      const samples = (prob.sample_tests && prob.sample_tests.length > 0) ? prob.sample_tests : (prob.leetcode_examples || []);
+      const sampleCasesHtml = samples.slice(0, 4).map((st, i) => {
+        const rawIn = st.input || '';
+        const rawOut = st.output || '';
+        const encodedIn = encodeURIComponent(rawIn);
+        return `
+          <div class="sample-case-card">
+            <div class="sample-case-header">
+              <span class="sample-case-title">Sample Test Case ${i + 1}</span>
+              <button class="copy-input-btn" onclick="App.copySampleInput('${encodedIn}')">📋 Copy Input</button>
             </div>
-          </div>
-        `).join('');
-      } else {
-        const visibleSamples = (prob.sample_tests || []).slice(0, 3);
-        examplesHtml = visibleSamples.map((st, i) => `
-          <div class="lc-example-card">
-            <div class="lc-example-title">Example ${i + 1}:</div>
-            <div class="lc-example-block">
-              <div><strong class="lc-code-kw">Input:</strong> <code>${st.input.replace(/\n/g, ' ')}</code></div>
-              <div><strong class="lc-code-kw">Output:</strong> <code style="color:var(--accent-cyan);">${st.output}</code></div>
-              ${st.explanation ? `<div class="lc-explanation"><strong class="lc-code-kw">Explanation:</strong> ${st.explanation}</div>` : ''}
+            <div class="sample-case-grid">
+              <div>
+                <div class="sample-label">Sample Input:</div>
+                <pre class="sample-pre"><code>${rawIn}</code></pre>
+              </div>
+              <div>
+                <div class="sample-label">Expected Output:</div>
+                <pre class="sample-pre output-pre"><code>${rawOut}</code></pre>
+              </div>
             </div>
+            ${st.explanation ? `<div class="sample-explanation"><strong>💡 Explanation:</strong> ${st.explanation}</div>` : ''}
           </div>
-        `).join('');
-      }
+        `;
+      }).join('');
 
       // 3. Constraints items
       const rawConstraints = prob.constraints || 'Standard constraints apply.';
@@ -270,7 +311,7 @@ const App = {
       const penaltyDisplay = prob.total_hint_penalty || 0;
 
       document.getElementById('ide-prob-description').innerHTML = `
-        <!-- LeetCode Header Metadata & Chips -->
+        <!-- Header Metadata & Action Chips -->
         <div class="lc-header-tags">
           ${isSolved ? '<span class="badge badge-solved" style="background:rgba(16,185,129,0.15); color:var(--accent-green); border:1px solid var(--accent-green); font-size:0.75rem;">✓ Solved</span>' : '<span class="badge" style="background:rgba(148,163,184,0.1); color:var(--text-muted); border:1px solid var(--border-color); font-size:0.75rem;">Todo</span>'}
           <span class="badge badge-${prob.difficulty.toLowerCase()}" style="font-size:0.75rem;">${prob.difficulty}</span>
@@ -296,13 +337,24 @@ const App = {
           ${hintsContentHtml}
         </div>
 
+        <!-- Beginner Tip Banner -->
+        <div class="beginner-tip-banner">
+          <span>💡 <strong>Beginner Friendly:</strong> Starter code with input reading is pre-loaded in the editor. Write your logic where indicated, or write your own custom function. Both are evaluated automatically!</span>
+        </div>
+
         <!-- Problem Description Statement -->
         <div style="color:var(--text-primary); font-size:0.95rem; line-height:1.7; margin-bottom:1.25rem;">
           ${prob.description.replace(/\n\n/g, '<br><br>')}
         </div>
 
-        <!-- Examples Section -->
-        ${examplesHtml}
+        <!-- Input / Output Specifications -->
+        ${ioGridHtml}
+
+        <!-- Sample Test Cases Section -->
+        <div style="margin-top:1.5rem;">
+          <h4 style="color:#fff; font-size:0.92rem; margin-bottom:0.75rem; display:flex; align-items:center; gap:0.4rem;">🧪 Sample Test Cases:</h4>
+          ${sampleCasesHtml}
+        </div>
 
         <!-- Constraints Section -->
         <div style="margin-top:1.5rem;">
