@@ -329,7 +329,7 @@ def run_tests():
                 isinstance(p_detail["hints"][0]["text"], str) and
                 p_detail["hints"][1]["unlocked"] is False)
 
-    # 9.4 Submission awards 90 pts instead of 100 pts
+    # 9.4 Submission adds points (+90 pts)
     two_sum_dir = problems_mgr.get_hidden_tests_dir("two_sum")
     effective_pts = max(25, 100 - pen1)
     sub_res = judge.run_hidden_tests("python", p_detail["starter_code"]["python"], two_sum_dir, effective_pts, 3.0)
@@ -347,25 +347,47 @@ def run_tests():
         score=sub_res["score"],
         runtime=sub_res["runtime"]
     )
-    lb_after_hint = storage.get_leaderboard()
-    assert_test("Player Earned Exactly 90 pts on Two Sum with Hint 1 Deduction",
-                sub_res["score"] == 90 and lb_after_hint[0]["score"] == 90)
+    lb_after_p1 = storage.get_leaderboard()
+    assert_test("Player Solved Two Sum: Points ADDED (+90 pts) -> Score = 90 pts",
+                sub_rec["participant_score"] == 90 and lb_after_p1[0]["score"] == 90)
 
-    # 9.5 Unlock all 3 hints on Medium problem (Max Subarray: 200 pts - 100 pts penalty = 100 pts)
-    storage.unlock_hint(p_player["id"], "maximum_subarray", 1, 20)
-    storage.unlock_hint(p_player["id"], "maximum_subarray", 2, 30)
-    storage.unlock_hint(p_player["id"], "maximum_subarray", 3, 50)
-    total_med_pen = storage.get_total_hint_penalty(p_player["id"], "maximum_subarray")
-    assert_test("Medium Problem All 3 Hints Unlocked: Penalty = 100 pts", total_med_pen == 100)
+    # 9.5 Unlock Hint 1 on Medium problem: Points MINUSED (-20 pts) -> Score drops from 90 to 70
+    h1_res = storage.unlock_hint(p_player["id"], "maximum_subarray", 1, 20)
+    lb_after_h1 = storage.get_leaderboard()
+    assert_test("Unlock Hint 1 on Medium Problem: Points MINUSED (-20 pts) -> Score = 70 pts",
+                h1_res["participant_score"] == 70 and lb_after_h1[0]["score"] == 70)
 
+    # 9.6 Unlock Hint 2 on Medium problem: Points MINUSED (-30 pts) -> Score drops from 70 to 40
+    h2_res = storage.unlock_hint(p_player["id"], "maximum_subarray", 2, 30)
+    lb_after_h2 = storage.get_leaderboard()
+    assert_test("Unlock Hint 2 on Medium Problem: Points MINUSED (-30 pts) -> Score = 40 pts",
+                h2_res["participant_score"] == 40 and lb_after_h2[0]["score"] == 40)
+
+    # 9.7 Solve Medium problem: Points ADDED (+150 pts effective) -> Total Score = 240 pts
+    med_dir = problems_mgr.get_hidden_tests_dir("maximum_subarray")
     med_detail = problems_mgr.get_problem_detail("maximum_subarray", participant_id=p_player["id"], storage=storage)
-    assert_test("Medium Detail API: Max Score is 100 / 200 pts with all 3 hints revealed",
-                med_detail["max_score"] == 100 and
-                all(h["unlocked"] is True and h["text"] for h in med_detail["hints"]))
+    med_sub_res = judge.run_hidden_tests("python", med_detail["starter_code"]["python"], med_dir, med_detail["max_score"], 3.0)
+    med_sub_rec = storage.add_submission(
+        participant_id=p_player["id"],
+        participant_name=p_player["name"],
+        problem_id="maximum_subarray",
+        problem_title=med_detail["title"],
+        difficulty="Medium",
+        language="python",
+        code=med_detail["starter_code"]["python"],
+        status=med_sub_res["status"],
+        passed_count=med_sub_res["passed_count"],
+        total_count=med_sub_res["total_count"],
+        score=med_sub_res["score"],
+        runtime=med_sub_res["runtime"]
+    )
+    lb_final = storage.get_leaderboard()
+    assert_test("Player Solved Maximum Subarray: Points ADDED -> Total Score = 240 pts (90 + 150)",
+                med_sub_rec["participant_score"] == 240 and lb_final[0]["score"] == 240)
 
     # Cleanup test db
     storage.reset_competition()
-    assert_test("Reset Competition wipes hint unlocks", len(storage.get_unlocked_hints(p_player["id"], "two_sum")) == 0)
+    assert_test("Reset Competition wipes hint unlocks and scores", len(storage.get_unlocked_hints(p_player["id"], "two_sum")) == 0)
 
     # ---------------------------------------------------------
     # FINAL SUMMARY

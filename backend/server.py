@@ -439,21 +439,22 @@ class CodeCombatHandler(BaseHTTPRequestHandler):
             base_points = int(prob_detail.get("points", 100))
             penalty = self.problems_manager.get_hint_penalty(difficulty, hint_index)
 
-            # Record unlock in database
-            newly_unlocked = self.storage.unlock_hint(participant_id, pid, hint_index, penalty)
+            # Record unlock in database and recalculate live score
+            unlock_res = self.storage.unlock_hint(participant_id, pid, hint_index, penalty)
             total_penalty = self.storage.get_total_hint_penalty(participant_id, pid)
             max_score = max(int(base_points * 0.25), base_points - total_penalty)
             hint_text = self.problems_manager.get_hint_text(pid, hint_index)
 
             self.send_json({
                 "success": True,
-                "already_unlocked": not newly_unlocked,
+                "already_unlocked": not unlock_res.get("unlocked", True),
                 "problem_id": pid,
                 "hint_index": hint_index,
                 "hint_text": hint_text,
                 "penalty": penalty,
                 "total_hint_penalty": total_penalty,
                 "max_score": max_score,
+                "participant_score": unlock_res.get("participant_score", 0),
                 "message": f"Hint {hint_index} unlocked (-{penalty} pts penalty applied)."
             })
             return
@@ -526,6 +527,7 @@ class CodeCombatHandler(BaseHTTPRequestHandler):
                 "effective_max_points": effective_max_points,
                 "hint_penalty": hint_penalty,
                 "already_solved": already_solved,
+                "participant_score": submission.get("participant_score", 0),
                 "runtime": judge_res["runtime"],
                 "error_message": judge_res.get("error_message")
             })

@@ -420,7 +420,14 @@ const App = {
           );
         }
 
-        this.showToast(`Hint ${hintIndex} unlocked! (-${penalty} pts penalty applied)`, 'info');
+        if (typeof data.participant_score === 'number' && this.participant) {
+          this.participant.score = data.participant_score;
+          localStorage.setItem('cc_participant', JSON.stringify(this.participant));
+          this.updateUserBadge();
+        }
+        this.loadLeaderboard();
+
+        this.showToast(`Hint ${hintIndex} unlocked! (-${penalty} pts). Total Score: ${this.participant ? this.participant.score : 0} pts`, 'info');
       } else {
         this.showToast(data.error || 'Failed to unlock hint', 'error');
       }
@@ -612,12 +619,16 @@ const App = {
       this.switchOutputTab('submission-res', subTabBtn);
 
       if (isAccepted) {
-        this.showToast(`Accepted! Earned ${scoreEarned} points.`, 'success');
-        if (scoreEarned > 0) {
+        if (typeof data.participant_score === 'number' && this.participant) {
+          this.participant.score = data.participant_score;
+        } else if (scoreEarned > 0 && this.participant) {
           this.participant.score = (this.participant.score || 0) + scoreEarned;
+        }
+        if (this.participant) {
           localStorage.setItem('cc_participant', JSON.stringify(this.participant));
           this.updateUserBadge();
         }
+        this.showToast(`Accepted! +${scoreEarned} pts added. Total Score: ${this.participant ? this.participant.score : scoreEarned} pts!`, 'success');
         this.loadProblems();
       } else {
         this.showToast(`Submission Verdict: ${status}`, 'error');

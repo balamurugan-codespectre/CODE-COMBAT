@@ -255,38 +255,30 @@ class Storage:
                             ON CONFLICT(participant_id, problem_id) DO UPDATE SET
                             score = MAX(score, excluded.score);
                         """, (participant_id, problem_id, score, now))
-
-                        # Recalculate participant total score
-                        conn.execute("""
-                            UPDATE participants
-                            SET score = (
-                                SELECT COALESCE(SUM(score), 0)
-                                FROM solved_problems
-                                WHERE participant_id = ?
-                            )
-                            WHERE id = ?;
-                        """, (participant_id, participant_id))
-
-                sub = {
-                    "id": submission_id,
-                    "participant_id": participant_id,
-                    "participant_name": participant_name,
-                    "problem_id": problem_id,
-                    "problem_title": problem_title,
-                    "difficulty": difficulty,
-                    "language": language,
-                    "code": code,
-                    "status": status,
-                    "passed_count": passed_count,
-                    "total_count": total_count,
-                    "score": score,
-                    "runtime": runtime,
-                    "timestamp": now
-                }
-                self._sync_json_mirrors()
-                return sub
             finally:
                 conn.close()
+
+            new_score = self.recalculate_participant_score(participant_id)
+
+            sub = {
+                "id": submission_id,
+                "participant_id": participant_id,
+                "participant_name": participant_name,
+                "problem_id": problem_id,
+                "problem_title": problem_title,
+                "difficulty": difficulty,
+                "language": language,
+                "code": code,
+                "status": status,
+                "passed_count": passed_count,
+                "total_count": total_count,
+                "score": score,
+                "participant_score": new_score,
+                "runtime": runtime,
+                "timestamp": now
+            }
+            self._sync_json_mirrors()
+            return sub
 
     def get_solved_problems(self, participant_id: str) -> Set[str]:
         conn = self._get_connection()
@@ -361,26 +353,73 @@ class Storage:
 
     # ------------------- Hint Management & Penalties -------------------
 
+    def recalculate_participant_score(self, participant_id: str) -> int:
+        """
+        Recalculates and updates participant's live score:
+        Sum of earned scores on solved problems minus hint penalties on unsolved problems.
+        Ensures score is bounded to >= 0 and synchronizes JSON mirrors.
+        """
+        with self.lock:
+            conn = self._get_connection()
+            try:
+                cursor = conn.cursor()
+                cursor.execute("""
+                    SELECT COALESCE(SUM(score), 0) FROM solved_problems
+                    WHERE participant_id = ?;
+                """, (participant_id,))
+                solved_sum = int(cursor.fetchone()[0])
+
+                cursor.execute("""
+                    SELECT COALESCE(SUM(h.penalty), 0)
+                    FROM hint_unlocks h
+                    LEFT JOIN solved_problems sp
+                        ON h.participant_id = sp.participant_id AND h.problem_id = sp.problem_id
+                    WHERE h.participant_id = ? AND sp.problem_id IS NULL;
+                """, (participant_id,))
+                unsolved_penalty = int(cursor.fetchone()[0])
+
+                total_score = max(0, solved_sum - unsolved_penalty)
+
+                with conn:
+                    conn.execute("""
+                        UPDATE participants
+                        SET score = ?
+                        WHERE id = ?;
+                    """, (total_score, participant_id))
+
+                return total_score
+            finally:
+                conn.close()
+
     def unlock_hint(self, participant_id: str, problem_id: str, hint_index: int, penalty: int) -> Dict[str, Any]:
-        """Records that a participant unlocked a hint and stores the penalty."""
+        """Records that a participant unlocked a hint and stores the penalty, recalculating score."""
         with self.lock:
             conn = self._get_connection()
             try:
                 now = datetime.datetime.now().isoformat()
                 with conn:
+                    # Guarantee participant existence
+                    conn.execute("""
+                        INSERT OR IGNORE INTO participants (id, name, college, reg_no, score, registered_at)
+                        VALUES (?, 'Anonymous', 'N/A', 'N/A', 0, ?);
+                    """, (participant_id, now))
                     conn.execute("""
                         INSERT OR IGNORE INTO hint_unlocks (participant_id, problem_id, hint_index, penalty, unlocked_at)
                         VALUES (?, ?, ?, ?, ?);
                     """, (participant_id, problem_id, int(hint_index), int(penalty), now))
-                return {
-                    "participant_id": participant_id,
-                    "problem_id": problem_id,
-                    "hint_index": hint_index,
-                    "penalty": penalty,
-                    "unlocked": True
-                }
             finally:
                 conn.close()
+
+            new_score = self.recalculate_participant_score(participant_id)
+            self._sync_json_mirrors()
+            return {
+                "participant_id": participant_id,
+                "problem_id": problem_id,
+                "hint_index": hint_index,
+                "penalty": penalty,
+                "participant_score": new_score,
+                "unlocked": True
+            }
 
     def get_unlocked_hints(self, participant_id: str, problem_id: str) -> List[int]:
         """Returns the list of unlocked hint indices (e.g. [1, 2]) for a participant on a problem."""
