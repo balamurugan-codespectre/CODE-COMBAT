@@ -676,7 +676,7 @@ const App = {
       if (data.success && data.solution) {
         this.closeSolutionModal();
         this.editor.setValue(data.solution);
-        const langDisplay = this.currentLanguage === 'python' ? 'Python 3' : (this.currentLanguage === 'java' ? 'Java' : 'C');
+        const langDisplay = this.getLanguageDisplayName(this.currentLanguage);
         this.showToast(`✨ ${langDisplay} solution unlocked & inserted into editor!`, 'success');
       } else {
         const errMsg = data.error || 'Incorrect password. Access denied.';
@@ -701,6 +701,14 @@ const App = {
     }
   },
 
+  getLanguageDisplayName(lang) {
+    if (lang === 'python') return 'Python 3 (Normal)';
+    if (lang === 'python_class') return 'Python 3 (Class)';
+    if (lang === 'java') return 'Java';
+    if (lang === 'c') return 'C';
+    return (lang || 'Code').toUpperCase();
+  },
+
   async fetchAndInsertSolution(token) {
     if (!this.activeProblem) return;
     try {
@@ -720,7 +728,7 @@ const App = {
       const data = await res.json();
       if (data.success && data.solution) {
         this.editor.setValue(data.solution);
-        const langDisplay = this.currentLanguage === 'python' ? 'Python 3' : (this.currentLanguage === 'java' ? 'Java' : 'C');
+        const langDisplay = this.getLanguageDisplayName(this.currentLanguage);
         this.showToast(`🔓 ${langDisplay} solution inserted into editor!`, 'success');
       } else {
         sessionStorage.removeItem('cc_admin_token');

@@ -246,9 +246,10 @@ class CodeCombatHandler(BaseHTTPRequestHandler):
                 "description": self.config.get("description", "An offline competitive programming platform."),
                 "competition_duration_minutes": self.config.get("competition_duration_minutes", 60),
                 "supported_languages": self.config.get("supported_languages", [
-                    {"id": "python", "name": "Python 3", "extension": "py"},
-                    {"id": "java", "name": "Java (OpenJDK)", "extension": "java"},
-                    {"id": "c", "name": "C (Clang/GCC)", "extension": "c"}
+                    {"id": "python", "name": "Python 3 (Normal / Script)", "extension": "py"},
+                    {"id": "python_class", "name": "Python 3 (Class / LeetCode)", "extension": "py"},
+                    {"id": "java", "name": "Java (Solution.java)", "extension": "java"},
+                    {"id": "c", "name": "C (solution.c)", "extension": "c"}
                 ])
             }
             self.send_json(public_config)

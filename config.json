@@ -12,17 +12,22 @@
   "supported_languages": [
     {
       "id": "python",
-      "name": "Python 3",
+      "name": "Python 3 (Normal / Script)",
+      "extension": "py"
+    },
+    {
+      "id": "python_class",
+      "name": "Python 3 (Class / LeetCode)",
       "extension": "py"
     },
     {
       "id": "java",
-      "name": "Java (OpenJDK)",
+      "name": "Java (Solution.java)",
       "extension": "java"
     },
     {
       "id": "c",
-      "name": "C (GCC/Clang)",
+      "name": "C (solution.c)",
       "extension": "c"
     }
   ],

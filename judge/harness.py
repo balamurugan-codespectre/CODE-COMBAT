@@ -58,7 +58,18 @@ class Harness:
                            '    # Print each level on a new line with space-separated values\n'
                            '\n'
                            "if __name__ == '__main__':\n"
-                           '    solve()\n'},
+                           '    solve()\n',
+                 'python_class': '# Definition for a binary tree node.\n'
+                                 '# class TreeNode:\n'
+                                 '#     def __init__(self, val=0, left=None, right=None):\n'
+                                 '#         self.val = val\n'
+                                 '#         self.left = left\n'
+                                 '#         self.right = right\n'
+                                 '\n'
+                                 'class Solution:\n'
+                                 '    def levelOrder(self, nodes: List[int]) -> List[List[int]]:\n'
+                                 '        # Write your code here\n'
+                                 '        pass\n'},
  'climbing_stairs': {'c': '// Climbing Stairs\n'
                           '#include <stdio.h>\n'
                           '\n'
@@ -91,7 +102,11 @@ class Harness:
                                'n = int(input())\n'
                                '\n'
                                '# --- WRITE YOUR CODE HERE ---\n'
-                               '# Print the total number of distinct ways\n'},
+                               '# Print the total number of distinct ways\n',
+                     'python_class': 'class Solution:\n'
+                                     '    def climbStairs(self, n: int) -> int:\n'
+                                     '        # Write your code here\n'
+                                     '        pass\n'},
  'coin_change': {'c': '// Coin Change\n'
                       '#include <stdio.h>\n'
                       '\n'
@@ -132,7 +147,11 @@ class Harness:
                            'coins = list(map(int, input().split()))\n'
                            '\n'
                            '# --- WRITE YOUR CODE HERE ---\n'
-                           '# Print minimum coins needed (or -1)\n'},
+                           '# Print minimum coins needed (or -1)\n',
+                 'python_class': 'class Solution:\n'
+                                 '    def coinChange(self, coins: List[int], amount: int) -> int:\n'
+                                 '        # Write your code here\n'
+                                 '        pass\n'},
  'container_with_most_water': {'c': '// Container With Most Water\n'
                                     '#include <stdio.h>\n'
                                     '\n'
@@ -171,7 +190,11 @@ class Harness:
                                          'height = list(map(int, input().split()))\n'
                                          '\n'
                                          '# --- WRITE YOUR CODE HERE ---\n'
-                                         '# Print maximum water area\n'},
+                                         '# Print maximum water area\n',
+                               'python_class': 'class Solution:\n'
+                                               '    def maxArea(self, height: List[int]) -> int:\n'
+                                               '        # Write your code here\n'
+                                               '        pass\n'},
  'count_vowels': {'c': '// Count Vowels\n'
                        '#include <stdio.h>\n'
                        '#include <string.h>\n'
@@ -206,7 +229,11 @@ class Harness:
                             's = input().strip()\n'
                             '\n'
                             '# --- WRITE YOUR CODE HERE ---\n'
-                            '# Count total vowels and print the count\n'},
+                            '# Count total vowels and print the count\n',
+                  'python_class': 'class Solution:\n'
+                                  '    def countVowels(self, s: str) -> int:\n'
+                                  '        # Write your code here\n'
+                                  '        pass\n'},
  'dijkstra_algorithm': {'c': "// Dijkstra's Shortest Path\n"
                              '#include <stdio.h>\n'
                              '#include <stdlib.h>\n'
@@ -269,7 +296,12 @@ class Harness:
                                   'unreachable)\n'
                                   '\n'
                                   "if __name__ == '__main__':\n"
-                                  '    solve()\n'},
+                                  '    solve()\n',
+                        'python_class': 'class Solution:\n'
+                                        '    def dijkstra(self, v: int, edges: List[List[int]], src: int) -> '
+                                        'List[int]:\n'
+                                        '        # Write your code here\n'
+                                        '        pass\n'},
  'find_maximum': {'c': '// Find Maximum Element\n'
                        '#include <stdio.h>\n'
                        '\n'
@@ -307,7 +339,11 @@ class Harness:
                             'nums = list(map(int, input().split()))\n'
                             '\n'
                             '# --- WRITE YOUR CODE HERE ---\n'
-                            '# Print the maximum element\n'},
+                            '# Print the maximum element\n',
+                  'python_class': 'class Solution:\n'
+                                  '    def findMax(self, nums: List[int]) -> int:\n'
+                                  '        # Write your code here\n'
+                                  '        pass\n'},
  'group_anagrams': {'c': '// Group Anagrams Count\n'
                          '#include <stdio.h>\n'
                          '#include <string.h>\n'
@@ -346,7 +382,11 @@ class Harness:
                               'words = input().split()\n'
                               '\n'
                               '# --- WRITE YOUR CODE HERE ---\n'
-                              '# Print total count of distinct anagram groups\n'},
+                              '# Print total count of distinct anagram groups\n',
+                    'python_class': 'class Solution:\n'
+                                    '    def groupAnagrams(self, strs: List[str]) -> int:\n'
+                                    '        # Write your code here (return number of distinct anagram groups)\n'
+                                    '        pass\n'},
  'longest_substring': {'c': '// Longest Substring Without Repeating Characters\n'
                             '#include <stdio.h>\n'
                             '#include <string.h>\n'
@@ -379,7 +419,11 @@ class Harness:
                                  's = input().strip()\n'
                                  '\n'
                                  '# --- WRITE YOUR CODE HERE ---\n'
-                                 '# Print the length of the longest non-repeating substring\n'},
+                                 '# Print the length of the longest non-repeating substring\n',
+                       'python_class': 'class Solution:\n'
+                                       '    def lengthOfLongestSubstring(self, s: str) -> int:\n'
+                                       '        # Write your code here\n'
+                                       '        pass\n'},
  'longest_valid_parentheses': {'c': '// Longest Valid Parentheses\n'
                                     '#include <stdio.h>\n'
                                     '#include <string.h>\n'
@@ -420,7 +464,11 @@ class Harness:
                                          '    # Print maximum valid length\n'
                                          '\n'
                                          "if __name__ == '__main__':\n"
-                                         '    solve()\n'},
+                                         '    solve()\n',
+                               'python_class': 'class Solution:\n'
+                                               '    def longestValidParentheses(self, s: str) -> int:\n'
+                                               '        # Write your code here\n'
+                                               '        pass\n'},
  'majority_element': {'c': '// Majority Element\n'
                            '#include <stdio.h>\n'
                            '\n'
@@ -458,7 +506,11 @@ class Harness:
                                 'nums = list(map(int, input().split()))\n'
                                 '\n'
                                 '# --- WRITE YOUR CODE HERE ---\n'
-                                '# Print the majority element\n'},
+                                '# Print the majority element\n',
+                      'python_class': 'class Solution:\n'
+                                      '    def majorityElement(self, nums: List[int]) -> int:\n'
+                                      '        # Write your code here\n'
+                                      '        pass\n'},
  'maximum_subarray': {'c': '// Maximum Subarray\n'
                            '#include <stdio.h>\n'
                            '\n'
@@ -496,7 +548,11 @@ class Harness:
                                 'nums = list(map(int, input().split()))\n'
                                 '\n'
                                 '# --- WRITE YOUR CODE HERE ---\n'
-                                '# Print the maximum subarray sum\n'},
+                                '# Print the maximum subarray sum\n',
+                      'python_class': 'class Solution:\n'
+                                      '    def maxSubArray(self, nums: List[int]) -> int:\n'
+                                      '        # Write your code here\n'
+                                      '        pass\n'},
  'median_two_sorted_arrays': {'c': '// Median of Two Sorted Arrays\n'
                                    '#include <stdio.h>\n'
                                    '\n'
@@ -550,7 +606,12 @@ class Harness:
                                         '    # Print the median value\n'
                                         '\n'
                                         "if __name__ == '__main__':\n"
-                                        '    solve()\n'},
+                                        '    solve()\n',
+                              'python_class': 'class Solution:\n'
+                                              '    def findMedianSortedArrays(self, nums1: List[int], nums2: '
+                                              'List[int]) -> float:\n'
+                                              '        # Write your code here\n'
+                                              '        pass\n'},
  'merge_intervals': {'c': '// Merge Overlapping Intervals\n'
                           '#include <stdio.h>\n'
                           '#include <stdlib.h>\n'
@@ -597,7 +658,11 @@ class Harness:
                                '    intervals.append(list(map(int, input().split())))\n'
                                '\n'
                                '# --- WRITE YOUR CODE HERE ---\n'
-                               '# Print each merged interval on a new line: print(start, end)\n'},
+                               '# Print each merged interval on a new line: print(start, end)\n',
+                     'python_class': 'class Solution:\n'
+                                     '    def merge(self, intervals: List[List[int]]) -> List[List[int]]:\n'
+                                     '        # Write your code here\n'
+                                     '        pass\n'},
  'merge_k_sorted_lists': {'c': '// Merge K Sorted Lists\n'
                                '#include <stdio.h>\n'
                                '#include <stdlib.h>\n'
@@ -653,7 +718,11 @@ class Harness:
                                     '    # Print merged sorted elements separated by spaces\n'
                                     '\n'
                                     "if __name__ == '__main__':\n"
-                                    '    solve()\n'},
+                                    '    solve()\n',
+                          'python_class': 'class Solution:\n'
+                                          '    def mergeKLists(self, lists: List[List[int]]) -> List[int]:\n'
+                                          '        # Write your code here\n'
+                                          '        pass\n'},
  'n_queens': {'c': '// N-Queens Solutions Count\n'
                    '#include <stdio.h>\n'
                    '\n'
@@ -695,7 +764,11 @@ class Harness:
                         '    # Print total count of valid board configurations\n'
                         '\n'
                         "if __name__ == '__main__':\n"
-                        '    solve()\n'},
+                        '    solve()\n',
+              'python_class': 'class Solution:\n'
+                              '    def totalNQueens(self, n: int) -> int:\n'
+                              '        # Write your code here\n'
+                              '        pass\n'},
  'palindrome_number': {'c': '// Palindrome Number\n'
                             '#include <stdio.h>\n'
                             '#include <stdbool.h>\n'
@@ -730,7 +803,11 @@ class Harness:
                                  'x = int(input())\n'
                                  '\n'
                                  '# --- WRITE YOUR CODE HERE ---\n'
-                                 "# Print 'true' if x is a palindrome, else 'false'\n"},
+                                 "# Print 'true' if x is a palindrome, else 'false'\n",
+                       'python_class': 'class Solution:\n'
+                                       '    def isPalindrome(self, x: int) -> bool:\n'
+                                       '        # Write your code here\n'
+                                       '        pass\n'},
  'reverse_string': {'c': '// Reverse String\n'
                          '#include <stdio.h>\n'
                          '#include <string.h>\n'
@@ -763,7 +840,11 @@ class Harness:
                               's = input().strip()\n'
                               '\n'
                               '# --- WRITE YOUR CODE HERE ---\n'
-                              '# Print the reversed string\n'},
+                              '# Print the reversed string\n',
+                    'python_class': 'class Solution:\n'
+                                    '    def reverseString(self, s: str) -> str:\n'
+                                    '        # Write your code here\n'
+                                    '        pass\n'},
  'reverse_words': {'c': '// Reverse Words in a String\n'
                         '#include <stdio.h>\n'
                         '#include <string.h>\n'
@@ -797,7 +878,11 @@ class Harness:
                              's = input().strip()\n'
                              '\n'
                              '# --- WRITE YOUR CODE HERE ---\n'
-                             '# Print words reversed separated by single space\n'},
+                             '# Print words reversed separated by single space\n',
+                   'python_class': 'class Solution:\n'
+                                   '    def reverseWords(self, s: str) -> str:\n'
+                                   '        # Write your code here\n'
+                                   '        pass\n'},
  'rotate_array': {'c': '// Rotate Array\n'
                        '#include <stdio.h>\n'
                        '\n'
@@ -836,7 +921,11 @@ class Harness:
                             'nums = list(map(int, input().split()))\n'
                             '\n'
                             '# --- WRITE YOUR CODE HERE ---\n'
-                            "# Print rotated array space-separated: print(' '.join(map(str, nums)))\n"},
+                            "# Print rotated array space-separated: print(' '.join(map(str, nums)))\n",
+                  'python_class': 'class Solution:\n'
+                                  '    def rotate(self, nums: List[int], k: int) -> None:\n'
+                                  '        # Write your code here (modify nums in-place)\n'
+                                  '        pass\n'},
  'rotate_matrix': {'c': '// Rotate Matrix 90 Degrees\n'
                         '#include <stdio.h>\n'
                         '\n'
@@ -882,7 +971,11 @@ class Harness:
                              '    matrix.append(list(map(int, input().split())))\n'
                              '\n'
                              '# --- WRITE YOUR CODE HERE ---\n'
-                             '# Print rotated matrix line by line with space-separated integers\n'},
+                             '# Print rotated matrix line by line with space-separated integers\n',
+                   'python_class': 'class Solution:\n'
+                                   '    def rotate(self, matrix: List[List[int]]) -> None:\n'
+                                   '        # Write your code here (rotate 90 degrees clockwise in-place)\n'
+                                   '        pass\n'},
  'shortest_path': {'c': '// Shortest Path in Unweighted Graph\n'
                         '#include <stdio.h>\n'
                         '#include <stdlib.h>\n'
@@ -943,7 +1036,12 @@ class Harness:
                              '    # Print shortest path distance or -1\n'
                              '\n'
                              "if __name__ == '__main__':\n"
-                             '    solve()\n'},
+                             '    solve()\n',
+                   'python_class': 'class Solution:\n'
+                                   '    def shortestPath(self, v: int, edges: List[List[int]], start: int, end: int) '
+                                   '-> int:\n'
+                                   '        # Write your code here\n'
+                                   '        pass\n'},
  'single_number': {'c': '// Single Number\n'
                         '#include <stdio.h>\n'
                         '\n'
@@ -981,7 +1079,11 @@ class Harness:
                              'nums = list(map(int, input().split()))\n'
                              '\n'
                              '# --- WRITE YOUR CODE HERE ---\n'
-                             '# Print the single unique number\n'},
+                             '# Print the single unique number\n',
+                   'python_class': 'class Solution:\n'
+                                   '    def singleNumber(self, nums: List[int]) -> int:\n'
+                                   '        # Write your code here\n'
+                                   '        pass\n'},
  'trapping_rain_water': {'c': '// Trapping Rain Water\n'
                               '#include <stdio.h>\n'
                               '\n'
@@ -1028,7 +1130,11 @@ class Harness:
                                    '    # Print total water trapped\n'
                                    '\n'
                                    "if __name__ == '__main__':\n"
-                                   '    solve()\n'},
+                                   '    solve()\n',
+                         'python_class': 'class Solution:\n'
+                                         '    def trap(self, height: List[int]) -> int:\n'
+                                         '        # Write your code here\n'
+                                         '        pass\n'},
  'two_sum': {'c': '// Two Sum\n'
                   '#include <stdio.h>\n'
                   '#include <stdlib.h>\n'
@@ -1082,7 +1188,11 @@ class Harness:
                        '\n'
                        '# --- WRITE YOUR CODE HERE ---\n'
                        '# Find indices i and j such that nums[i] + nums[j] == target\n'
-                       '# Example: print(i, j)\n'},
+                       '# Example: print(i, j)\n',
+             'python_class': 'class Solution:\n'
+                             '    def twoSum(self, nums: List[int], target: int) -> List[int]:\n'
+                             '        # Write your code here\n'
+                             '        pass\n'},
  'valid_parentheses': {'c': '// Valid Parentheses\n'
                             '#include <stdio.h>\n'
                             '#include <string.h>\n'
@@ -1116,7 +1226,11 @@ class Harness:
                                  's = input().strip()\n'
                                  '\n'
                                  '# --- WRITE YOUR CODE HERE ---\n'
-                                 "# Print 'true' if valid, else 'false'\n"},
+                                 "# Print 'true' if valid, else 'false'\n",
+                       'python_class': 'class Solution:\n'
+                                       '    def isValid(self, s: str) -> bool:\n'
+                                       '        # Write your code here\n'
+                                       '        pass\n'},
  'word_break': {'c': '// Word Break\n'
                      '#include <stdio.h>\n'
                      '#include <string.h>\n'
@@ -1170,7 +1284,11 @@ class Harness:
                           "    # Print 'true' if possible, else 'false'\n"
                           '\n'
                           "if __name__ == '__main__':\n"
-                          '    solve()\n'},
+                          '    solve()\n',
+                'python_class': 'class Solution:\n'
+                                '    def wordBreak(self, s: str, wordDict: List[str]) -> bool:\n'
+                                '        # Write your code here\n'
+                                '        pass\n'},
  'word_ladder': {'c': '// Word Ladder\n'
                       '#include <stdio.h>\n'
                       '#include <string.h>\n'
@@ -1227,7 +1345,12 @@ class Harness:
                            '    # Print sequence length or 0\n'
                            '\n'
                            "if __name__ == '__main__':\n"
-                           '    solve()\n'}}
+                           '    solve()\n',
+                 'python_class': 'class Solution:\n'
+                                 '    def ladderLength(self, beginWord: str, endWord: str, wordList: List[str]) -> '
+                                 'int:\n'
+                                 '        # Write your code here\n'
+                                 '        pass\n'}}
 
     @classmethod
     def get_starter_code(cls, problem_id: str) -> Dict[str, str]:
@@ -1246,7 +1369,7 @@ class Harness:
         lang = language.lower()
         if lang in ["java"]:
             return bool(re.search(r'public\s+static\s+void\s+main', code) or re.search(r'static\s+void\s+main', code))
-        elif lang in ["python", "python3", "py"]:
+        elif lang in ["python", "python3", "py", "python_class", "python_leetcode", "python_normal", "python_script"]:
             return bool("__main__" in code or "sys.stdin" in code or re.search(r'\binput\s*\(', code))
         elif lang in ["c", "c99", "c11"]:
             return bool(re.search(r'\bint\s+main\s*\(', code) or re.search(r'\bvoid\s+main\s*\(', code))
@@ -1266,7 +1389,7 @@ class Harness:
 
         if lang == "java":
             return cls._wrap_java(clean_id, user_code)
-        elif lang in ["python", "python3", "py"]:
+        elif lang in ["python", "python3", "py", "python_class", "python_leetcode", "python_normal", "python_script"]:
             return cls._wrap_python(clean_id, user_code)
         elif lang in ["c", "c99", "c11"]:
             return cls._wrap_c(clean_id, user_code)

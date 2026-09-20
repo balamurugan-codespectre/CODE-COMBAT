@@ -121,14 +121,14 @@ class Compiler:
 
         lang = language.lower().strip()
 
-        if lang in ["python", "python3", "py"]:
+        if lang in ["python", "python3", "py", "python_class", "python_leetcode", "python_normal", "python_script"]:
             return self._prepare_python(source_code, work_dir)
         elif lang == "java":
             return self._compile_java(source_code, work_dir)
         elif lang in ["c", "c99", "c11"]:
             return self._compile_c(source_code, work_dir)
         else:
-            return False, f"Unsupported language: '{language}'. Supported: Python, Java, C.", None
+            return False, f"Unsupported language: '{language}'. Supported: Python (Normal & Class), Java, C.", None
 
     def _prepare_python(self, source_code: str, work_dir: str) -> Tuple[bool, Optional[str], Optional[Dict[str, Any]]]:
         """Validates Python syntax via AST and writes solution.py."""

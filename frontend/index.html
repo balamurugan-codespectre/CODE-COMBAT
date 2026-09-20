@@ -156,7 +156,7 @@
           <p style="color: var(--text-primary); font-size: 0.95rem; margin-bottom: 1rem;">
             Participants can solve the problems using any one of the following programming languages. Participants may choose the language they are most comfortable with:
           </p>
-          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1rem;">
             <div style="background: var(--bg-primary); padding: 1rem; border-radius: var(--radius-sm); text-align: center; border: 1px solid var(--border-color);">
               <div style="font-size: 1.5rem; margin-bottom: 0.3rem;">⚡</div>
               <div style="font-weight: 700; color: #fff; font-size: 1.1rem;">C</div>
@@ -167,10 +167,15 @@
               <div style="font-weight: 700; color: #fff; font-size: 1.1rem;">Java</div>
               <div style="font-size: 0.8rem; color: var(--text-muted); font-family: var(--font-mono);">OpenJDK / javac</div>
             </div>
-            <div style="background: var(--bg-primary); padding: 1rem; border-radius: var(--radius-sm); text-align: center; border: 1px solid var(--border-color);">
+            <div style="background: var(--bg-primary); padding: 1rem; border-radius: var(--radius-sm); text-align: center; border: 1px solid var(--accent-green);">
               <div style="font-size: 1.5rem; margin-bottom: 0.3rem;">🐍</div>
-              <div style="font-weight: 700; color: #fff; font-size: 1.1rem;">Python</div>
-              <div style="font-size: 0.8rem; color: var(--text-muted); font-family: var(--font-mono);">Python 3.x Engine</div>
+              <div style="font-weight: 700; color: var(--accent-green); font-size: 1.05rem;">Python 3 (Normal)</div>
+              <div style="font-size: 0.8rem; color: var(--text-muted); font-family: var(--font-mono);">Standard input() / print()</div>
+            </div>
+            <div style="background: var(--bg-primary); padding: 1rem; border-radius: var(--radius-sm); text-align: center; border: 1px solid var(--accent-cyan);">
+              <div style="font-size: 1.5rem; margin-bottom: 0.3rem;">🧩</div>
+              <div style="font-weight: 700; color: var(--accent-cyan); font-size: 1.05rem;">Python 3 (Class)</div>
+              <div style="font-size: 0.8rem; color: var(--text-muted); font-family: var(--font-mono);">LeetCode class Solution</div>
             </div>
           </div>
         </div>
@@ -407,7 +412,8 @@
             <div class="panel-header">
               <div class="editor-controls">
                 <select id="ide-lang-select" class="form-control" style="padding:0.3rem 0.6rem; width:auto; font-size:0.85rem;" onchange="App.handleLanguageChange()">
-                  <option value="python">Python 3 (Normal / Standard)</option>
+                  <option value="python">Python 3 (Normal / Script)</option>
+                  <option value="python_class">Python 3 (Class / LeetCode)</option>
                   <option value="java">Java (Solution.java)</option>
                   <option value="c">C (solution.c)</option>
                 </select>
