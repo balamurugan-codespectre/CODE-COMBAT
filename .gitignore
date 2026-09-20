@@ -32,3 +32,8 @@ Thumbs.db
 .idea/
 *.swp
 *.swo
+
+build/
+dist/
+*.pyc
+__pycache__/
