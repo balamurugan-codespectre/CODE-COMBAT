@@ -58,6 +58,8 @@ class CodeCombatHandler(BaseHTTPRequestHandler):
     frontend_dir: str = ""
     start_time: float = time.time()
     rate_limiter = RateLimiter(max_requests=240, window_seconds=60)
+    broadcast_message: Dict[str, Any] = {"text": "", "severity": "info", "timestamp": "", "id": 0}
+    is_frozen: bool = False
 
     def log_message(self, format, *args):
         """Silent concise logging."""
@@ -235,6 +237,37 @@ class CodeCombatHandler(BaseHTTPRequestHandler):
                 "active_problem_set": self.problems_manager.active_set,
                 "total_problems": len(self.problems_manager.problems),
                 "timestamp": datetime.datetime.now().isoformat()
+            })
+            return
+
+        # GET /api/events/poll (Real-Time Live Event Sync Hub)
+        if path == "/api/events/poll":
+            now = time.time()
+            duration = int(self.config.get("competition_duration_minutes", 60) * 60)
+            elapsed = int(now - self.start_time)
+            remaining = max(0, duration - elapsed)
+            tier_locks = self.config.get("tier_locks", {"easy": True, "medium": True, "hard": True})
+
+            self.send_json({
+                "success": True,
+                "server_time": now,
+                "elapsed_seconds": elapsed,
+                "remaining_seconds": remaining,
+                "duration_seconds": duration,
+                "is_frozen": self.is_frozen,
+                "tier_locks": tier_locks,
+                "broadcast": self.broadcast_message,
+                "recent_activity": self.storage.get_recent_activity(10),
+                "leaderboard": self.storage.get_leaderboard() if not self.is_frozen else []
+            })
+            return
+
+        # GET /api/admin/proctor-logs
+        if path in ["/api/admin/proctor-logs", "/api/proctor-logs"]:
+            self.send_json({
+                "success": True,
+                "tab_switches": self.storage.get_tab_switches(limit=200),
+                "tab_counts": self.storage.get_tab_switch_counts()
             })
             return
 
@@ -775,6 +808,78 @@ class CodeCombatHandler(BaseHTTPRequestHandler):
             })
             return
 
+        # POST /api/admin/broadcast
+        if path == "/api/admin/broadcast":
+            if not self.is_admin_authenticated(body):
+                self.send_error_json("Unauthorized. Admin credentials or active session required.", 401)
+                return
+
+            clear = body.get("clear", False)
+            if clear:
+                CodeCombatHandler.broadcast_message = {"text": "", "severity": "info", "timestamp": "", "id": 0}
+                self.send_json({"success": True, "broadcast": CodeCombatHandler.broadcast_message, "message": "Broadcast cleared."})
+                return
+
+            text = body.get("text") or body.get("message") or ""
+            severity = body.get("severity", "info").lower()
+            if severity not in ["info", "warning", "critical", "success"]:
+                severity = "info"
+
+            if not text.strip():
+                self.send_error_json("Broadcast message cannot be empty.", 400)
+                return
+
+            CodeCombatHandler.broadcast_message = {
+                "text": text.strip(),
+                "severity": severity,
+                "timestamp": datetime.datetime.now().isoformat(),
+                "id": int(time.time() * 1000)
+            }
+            self.send_json({
+                "success": True,
+                "broadcast": CodeCombatHandler.broadcast_message,
+                "message": "Broadcast announcement dispatched."
+            })
+            return
+
+        # POST /api/admin/freeze-leaderboard
+        if path in ["/api/admin/freeze-leaderboard", "/api/admin/freeze"]:
+            if not self.is_admin_authenticated(body):
+                self.send_error_json("Unauthorized. Admin credentials or active session required.", 401)
+                return
+
+            freeze_val = body.get("freeze")
+            if freeze_val is not None:
+                CodeCombatHandler.is_frozen = bool(freeze_val)
+            else:
+                CodeCombatHandler.is_frozen = not CodeCombatHandler.is_frozen
+
+            status_str = "FROZEN ❄️" if CodeCombatHandler.is_frozen else "LIVE 🟢"
+            self.send_json({
+                "success": True,
+                "is_frozen": CodeCombatHandler.is_frozen,
+                "message": f"Leaderboard status is now {status_str}."
+            })
+            return
+
+        # POST /api/proctor/tab-switch
+        if path in ["/api/proctor/tab-switch", "/api/tab-switch"]:
+            participant_id = (body.get("participant_id") or "").strip()
+            participant_name = (body.get("participant_name") or "Anonymous").strip()
+
+            if not participant_id:
+                self.send_error_json("Participant ID is required.", 400)
+                return
+
+            count = self.storage.log_tab_switch(participant_id, participant_name)
+            self.send_json({
+                "success": True,
+                "participant_id": participant_id,
+                "switch_count": count,
+                "message": f"Tab switch recorded for {participant_name} (Total: {count})."
+            })
+            return
+
         self.send_error_json("API route not found", 404)
 
     def handle_api_delete(self, path: str):
@@ -783,3 +888,4 @@ class CodeCombatHandler(BaseHTTPRequestHandler):
             self.send_json({"success": True, "message": "Competition data reset."})
             return
         self.send_error_json("Invalid DELETE route", 404)
+

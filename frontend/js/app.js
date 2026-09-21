@@ -14,7 +14,13 @@ const App = {
     // 1. Initialize custom editor
     this.editor = new CodeEditor('editor-code', 'editor-lines');
 
-    // 2. Restore participant session
+    // 2. Setup Code Autosave & Crash Recovery
+    this.initAutosave();
+
+    // 3. Setup Anti-Cheat Tab-Switch Proctoring Telemetry
+    this.initProctoring();
+
+    // 4. Restore participant session
     const saved = localStorage.getItem('cc_participant');
     if (saved) {
       try {
@@ -28,14 +34,17 @@ const App = {
       }
     }
 
-    // 3. Ensure Admin is locked on startup
+    // 5. Ensure Admin is locked on startup
     if (window.Admin && typeof window.Admin.lock === 'function') {
       window.Admin.lock();
     }
 
-    // 4. Fetch initial configuration & problems
+    // 6. Fetch initial configuration & problems
     this.loadProblems();
     this.loadLeaderboard();
+
+    // 7. Start Real-Time Event Sync Engine (2.5s Polling)
+    this.startRealtimeSync();
   },
 
   async syncParticipant() {
@@ -819,12 +828,24 @@ const App = {
     if (!this.activeProblem) return;
     this.currentLanguage = document.getElementById('ide-lang-select').value;
     const starter = (this.activeProblem.starter_code && this.activeProblem.starter_code[this.currentLanguage]) || '';
-    this.editor.setValue(starter);
+    
+    // Check if participant has an autosaved draft for this problem & language
+    const savedDraft = localStorage.getItem(`cc_autosave_${this.activeProblem.id}_${this.currentLanguage}`);
+    if (savedDraft && savedDraft.trim().length > 0) {
+      this.editor.setValue(savedDraft);
+    } else {
+      this.editor.setValue(starter);
+    }
   },
 
   resetCode() {
-    if (confirm('Reset code to starter template?')) {
-      this.handleLanguageChange();
+    if (confirm('Reset code to original starter template? (This will clear your draft for this problem and language)')) {
+      if (this.activeProblem) {
+        localStorage.removeItem(`cc_autosave_${this.activeProblem.id}_${this.currentLanguage}`);
+      }
+      const starter = (this.activeProblem && this.activeProblem.starter_code && this.activeProblem.starter_code[this.currentLanguage]) || '';
+      this.editor.setValue(starter);
+      this.showToast('Code reset to starter template.', 'info');
     }
   },
 
@@ -1498,6 +1519,17 @@ const App = {
     const tbody = document.getElementById('leaderboard-table-body');
     if (!tbody) return;
 
+    if (!rows || rows.length === 0) {
+      tbody.innerHTML = `
+        <tr>
+          <td colspan="8" style="text-align:center; color:var(--text-muted); padding:2rem;">
+            No participant standings recorded yet. Register to enter the leaderboard!
+          </td>
+        </tr>
+      `;
+      return;
+    }
+
     tbody.innerHTML = rows.map(r => `
       <tr>
         <td style="font-weight:800; color:${r.rank === 1 ? 'gold' : (r.rank === 2 ? 'silver' : (r.rank === 3 ? '#cd7f32' : 'var(--text-muted)'))};">#${r.rank}</td>
@@ -1522,8 +1554,332 @@ const App = {
 
   exportLeaderboardCSV() {
     window.open('/api/admin/export/csv', '_blank');
+  },
+
+  // =========================================================================
+  // Real-Time Event Sync Engine & Anti-Cheat Proctoring
+  // =========================================================================
+
+  initAutosave() {
+    const textarea = document.getElementById('editor-code');
+    if (!textarea) return;
+
+    let debounceTimer = null;
+    textarea.addEventListener('input', () => {
+      if (!this.activeProblem || !this.currentLanguage) return;
+      clearTimeout(debounceTimer);
+      debounceTimer = setTimeout(() => {
+        const code = this.editor.getValue();
+        const key = `cc_autosave_${this.activeProblem.id}_${this.currentLanguage}`;
+        localStorage.setItem(key, code);
+      }, 350);
+    });
+  },
+
+  lastProctorLogTime: 0,
+
+  initProctoring() {
+    const logTabSwitch = async () => {
+      if (!this.participant || !this.participant.id) return;
+      const now = Date.now();
+      if (now - this.lastProctorLogTime < 1500) return; // Prevent double logging on simultaneous blur/visibilitychange
+      this.lastProctorLogTime = now;
+
+      try {
+        const res = await fetch('/api/proctor/tab-switch', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            participant_id: this.participant.id,
+            participant_name: this.participant.name || 'Anonymous'
+          })
+        });
+
+        const data = await res.json();
+        if (data.success) {
+          const modal = document.getElementById('modal-proctor-warning');
+          const countEl = document.getElementById('proctor-warning-count');
+          if (countEl) countEl.textContent = data.switch_count || 1;
+          if (modal) modal.style.display = 'flex';
+        }
+      } catch (e) {
+        console.warn('Tab switch log error:', e);
+      }
+    };
+
+    document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'hidden') {
+        logTabSwitch();
+      }
+    });
+
+    window.addEventListener('blur', () => {
+      logTabSwitch();
+    });
+  },
+
+  dismissProctorWarning() {
+    const modal = document.getElementById('modal-proctor-warning');
+    if (modal) modal.style.display = 'none';
+  },
+
+  lastBroadcastId: 0,
+  syncInterval: null,
+
+  startRealtimeSync() {
+    if (this.syncInterval) clearInterval(this.syncInterval);
+
+    const poll = async () => {
+      try {
+        const res = await fetch('/api/events/poll');
+        if (!res.ok) return;
+        const data = await res.json();
+        if (!data.success) return;
+
+        // 1. Sync Timer
+        this.updateGlobalTimer(data.remaining_seconds, data.is_frozen);
+
+        // 2. Sync Broadcast Announcement
+        this.updateBroadcast(data.broadcast);
+
+        // 3. Sync Tier Locks
+        if (data.tier_locks) {
+          const locksChanged = JSON.stringify(data.tier_locks) !== JSON.stringify(this.tierLocks);
+          if (locksChanged) {
+            this.tierLocks = data.tier_locks;
+            const lockEasyEl = document.getElementById('chip-lock-easy');
+            const lockMedEl = document.getElementById('chip-lock-medium');
+            const lockHardEl = document.getElementById('chip-lock-hard');
+            if (lockEasyEl) lockEasyEl.textContent = this.tierLocks.easy ? '🔒' : '🔓';
+            if (lockMedEl) lockMedEl.textContent = this.tierLocks.medium ? '🔒' : '🔓';
+            if (lockHardEl) lockHardEl.textContent = this.tierLocks.hard ? '🔒' : '🔓';
+
+            if (this.currentView === 'problems') {
+              this.renderProblemsFolders(this.problems);
+            }
+          }
+        }
+
+        // 4. Sync Leaderboard & Activity Feed
+        const freezeBadge = document.getElementById('leaderboard-freeze-badge');
+        if (freezeBadge) {
+          freezeBadge.style.display = data.is_frozen ? 'inline-block' : 'none';
+        }
+
+        if (!data.is_frozen && Array.isArray(data.leaderboard)) {
+          this.leaderboardData = data.leaderboard;
+          if (this.currentView === 'leaderboard') {
+            this.renderLeaderboard(this.leaderboardData);
+          }
+        }
+
+        // Always update Activity Feed
+        this.renderActivityFeed(data.recent_activity || []);
+
+        // Always update Projector View if current
+        this.renderProjectorView(this.leaderboardData || [], data.remaining_seconds, data.is_frozen);
+
+      } catch (err) {
+        // Silent offline resilience
+      }
+    };
+
+    poll();
+    this.syncInterval = setInterval(poll, 2500);
+  },
+
+  formatTime(seconds) {
+    if (seconds <= 0) return '00:00';
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+  },
+
+  updateGlobalTimer(remainingSec, isFrozen) {
+    const formatted = this.formatTime(remainingSec);
+    const navTimerText = document.getElementById('nav-timer-text');
+    const navTimerLabel = document.getElementById('nav-timer-label');
+    const navCapsule = document.getElementById('nav-timer-capsule');
+    const projectorTimer = document.getElementById('projector-timer');
+    const projectorStatus = document.getElementById('projector-timer-status');
+
+    if (navTimerText) navTimerText.textContent = formatted;
+    if (projectorTimer) projectorTimer.textContent = formatted;
+
+    if (navCapsule) {
+      navCapsule.className = 'timer-capsule';
+      if (isFrozen) {
+        navCapsule.classList.add('timer-frozen');
+        if (navTimerLabel) navTimerLabel.textContent = '❄️ FROZEN';
+        if (projectorStatus) projectorStatus.textContent = '❄️ LEADERBOARD FROZEN';
+      } else if (remainingSec <= 0) {
+        navCapsule.classList.add('timer-expired');
+        if (navTimerLabel) navTimerLabel.textContent = 'TIME OVER';
+        if (projectorStatus) projectorStatus.textContent = '⏹️ TIME COMPLETED';
+      } else if (remainingSec <= 300) {
+        navCapsule.classList.add('timer-danger-pulsing');
+        if (navTimerLabel) navTimerLabel.textContent = 'FINAL 5M';
+        if (projectorStatus) projectorStatus.textContent = '🔴 FINAL 5 MINUTES';
+      } else if (remainingSec <= 900) {
+        navCapsule.classList.add('timer-amber');
+        if (navTimerLabel) navTimerLabel.textContent = '15M LEFT';
+        if (projectorStatus) projectorStatus.textContent = '🟡 15 MINUTES REMAINING';
+      } else {
+        if (navTimerLabel) navTimerLabel.textContent = 'LIVE';
+        if (projectorStatus) projectorStatus.textContent = '🟢 COMPETITION ACTIVE';
+      }
+    }
+  },
+
+  updateBroadcast(broadcast) {
+    const banner = document.getElementById('live-broadcast-banner');
+    if (!banner) return;
+
+    if (!broadcast || !broadcast.text || !broadcast.text.trim()) {
+      banner.style.display = 'none';
+      return;
+    }
+
+    const badgeEl = document.getElementById('broadcast-badge');
+    const textEl = document.getElementById('broadcast-text');
+    const timeEl = document.getElementById('broadcast-time');
+
+    const severity = broadcast.severity || 'info';
+    banner.className = `broadcast-banner severity-${severity}`;
+
+    if (badgeEl) {
+      badgeEl.textContent = severity.toUpperCase() === 'CRITICAL' ? '🚨 URGENT' : '📢 ANNOUNCEMENT';
+    }
+    if (textEl) textEl.textContent = broadcast.text;
+    if (timeEl && broadcast.timestamp) {
+      timeEl.textContent = broadcast.timestamp.slice(11, 16);
+    }
+
+    banner.style.display = 'flex';
+
+    if (broadcast.id && broadcast.id !== this.lastBroadcastId) {
+      this.lastBroadcastId = broadcast.id;
+      this.showToast(`📢 Announcement: ${broadcast.text}`, severity === 'critical' ? 'error' : 'info');
+    }
+  },
+
+  dismissBroadcast() {
+    const banner = document.getElementById('live-broadcast-banner');
+    if (banner) banner.style.display = 'none';
+  },
+
+  renderActivityFeed(activities) {
+    const container = document.getElementById('activity-feed-list');
+    if (!container) return;
+
+    if (!activities || activities.length === 0) {
+      container.innerHTML = `
+        <div style="padding:1rem; text-align:center; color:var(--text-muted); font-size:0.85rem;">
+          Waiting for live submissions...
+        </div>
+      `;
+      return;
+    }
+
+    container.innerHTML = activities.map(a => {
+      const isAccepted = a.status === 'ACCEPTED';
+      const timeStr = a.timestamp ? a.timestamp.slice(11, 19) : '--:--';
+      const verdictClass = isAccepted ? 'accepted' : 'wrong';
+      const itemStatusClass = isAccepted ? 'status-accepted' : 'status-wrong';
+
+      return `
+        <div class="activity-item ${itemStatusClass}">
+          <div class="activity-item-top">
+            <span class="activity-user-name">${a.participant_name || 'Anonymous'}</span>
+            <span class="activity-time-stamp">${timeStr}</span>
+          </div>
+          <div class="activity-item-desc">
+            <span class="activity-prob-title" title="${a.problem_title || a.problem_id}">${a.problem_title || a.problem_id}</span>
+            <span class="activity-verdict-pill ${verdictClass}">
+              ${isAccepted ? `✓ +${a.score} pts` : (a.status || 'FAILED')}
+            </span>
+          </div>
+        </div>
+      `;
+    }).join('');
+  },
+
+  renderProjectorView(rows, remainingSec, isFrozen) {
+    const tableBody = document.getElementById('projector-table-body');
+    if (!tableBody) return;
+
+    // 1. Update Podium (Top 3)
+    const p1 = rows[0] || null;
+    const p2 = rows[1] || null;
+    const p3 = rows[2] || null;
+
+    // 1st Place
+    const name1 = document.getElementById('podium-name-1');
+    const col1 = document.getElementById('podium-college-1');
+    const score1 = document.getElementById('podium-score-1');
+    const solv1 = document.getElementById('podium-solved-1');
+    if (name1) name1.textContent = p1 ? p1.name : '-';
+    if (col1) col1.textContent = p1 ? (p1.college || p1.reg_no) : '-';
+    if (score1) score1.textContent = p1 ? `${p1.score} pts` : '0 pts';
+    if (solv1) solv1.textContent = p1 ? `${p1.solved_count}/15 Solved (${p1.easy_solved}E·${p1.medium_solved}M·${p1.hard_solved}H)` : '0/15 Solved';
+
+    // 2nd Place
+    const name2 = document.getElementById('podium-name-2');
+    const col2 = document.getElementById('podium-college-2');
+    const score2 = document.getElementById('podium-score-2');
+    const solv2 = document.getElementById('podium-solved-2');
+    if (name2) name2.textContent = p2 ? p2.name : '-';
+    if (col2) col2.textContent = p2 ? (p2.college || p2.reg_no) : '-';
+    if (score2) score2.textContent = p2 ? `${p2.score} pts` : '0 pts';
+    if (solv2) solv2.textContent = p2 ? `${p2.solved_count}/15 Solved (${p2.easy_solved}E·${p2.medium_solved}M·${p2.hard_solved}H)` : '0/15 Solved';
+
+    // 3rd Place
+    const name3 = document.getElementById('podium-name-3');
+    const col3 = document.getElementById('podium-college-3');
+    const score3 = document.getElementById('podium-score-3');
+    const solv3 = document.getElementById('podium-solved-3');
+    if (name3) name3.textContent = p3 ? p3.name : '-';
+    if (col3) col3.textContent = p3 ? (p3.college || p3.reg_no) : '-';
+    if (score3) score3.textContent = p3 ? `${p3.score} pts` : '0 pts';
+    if (solv3) solv3.textContent = p3 ? `${p3.solved_count}/15 Solved (${p3.easy_solved}E·${p3.medium_solved}M·${p3.hard_solved}H)` : '0/15 Solved';
+
+    // 2. Update Table Standings (Top 15)
+    if (!rows || rows.length === 0) {
+      tableBody.innerHTML = `
+        <tr>
+          <td colspan="8" style="text-align:center; padding:2rem; color:var(--text-muted);">
+            No participants on the board yet. Contestants will appear here upon submission.
+          </td>
+        </tr>
+      `;
+      return;
+    }
+
+    tableBody.innerHTML = rows.slice(0, 15).map(r => {
+      const isTop3 = r.rank <= 3;
+      const rankColor = r.rank === 1 ? '#fbbf24' : (r.rank === 2 ? '#94a3b8' : (r.rank === 3 ? '#cd7f32' : 'var(--text-muted)'));
+      const rankBadge = r.rank === 1 ? '🥇 #1' : (r.rank === 2 ? '🥈 #2' : (r.rank === 3 ? '🥉 #3' : `#${r.rank}`));
+
+      return `
+        <tr style="background:${isTop3 ? 'rgba(255,255,255,0.02)' : 'transparent'};">
+          <td style="font-weight:900; color:${rankColor}; font-size:1.15rem;">${rankBadge}</td>
+          <td style="font-weight:700; color:#fff; font-size:1.1rem;">${r.name}</td>
+          <td style="color:var(--text-secondary); font-size:0.95rem;">${r.college}</td>
+          <td style="font-family:var(--font-mono); color:var(--text-muted); font-size:0.9rem;">${r.reg_no}</td>
+          <td style="font-family:var(--font-mono); font-weight:900; color:var(--accent-green); font-size:1.2rem;">${r.score}</td>
+          <td style="font-weight:800; font-size:1.05rem;">${r.solved_count} / 15</td>
+          <td style="font-size:0.9rem;">
+            <span style="color:#10b981; font-weight:700;">${r.easy_solved}E</span> · 
+            <span style="color:#f59e0b; font-weight:700;">${r.medium_solved}M</span> · 
+            <span style="color:#ef4444; font-weight:700;">${r.hard_solved}H</span>
+          </td>
+          <td style="font-family:var(--font-mono); color:var(--text-secondary); font-size:0.9rem;">${r.total_runtime}s</td>
+        </tr>
+      `;
+    }).join('');
   }
 };
 
 document.addEventListener('DOMContentLoaded', () => App.init());
 window.App = App;
+

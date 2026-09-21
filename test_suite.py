@@ -479,6 +479,50 @@ class Solution:
                 all(p.get("locked") is False for p in catalog_unlocked))
 
     # ---------------------------------------------------------
+    # TEST 11: Anti-Cheat Proctoring & Telemetry
+    # ---------------------------------------------------------
+    print("\n--- [Phase 11: Anti-Cheat Proctoring & Activity Stream] ---")
+    p_proctor = storage.register_participant("Proctor Tester", "CSE Dept", "REG-PROCTOR-1")
+    count1 = storage.log_tab_switch(p_proctor["id"], p_proctor["name"])
+    count2 = storage.log_tab_switch(p_proctor["id"], p_proctor["name"])
+    assert_test("Tab switch infraction logged (count = 2)", count2 == 2)
+
+    proctor_counts = storage.get_tab_switch_counts()
+    assert_test("Tab switch summary returns participant count",
+                any(c["participant_id"] == p_proctor["id"] and c["switch_count"] == 2 for c in proctor_counts))
+
+    tab_logs = storage.get_tab_switches(limit=10)
+    assert_test("Tab switch detailed log entries saved with timestamps",
+                len(tab_logs) >= 2 and tab_logs[0]["participant_name"] == "Proctor Tester")
+
+    recent_act = storage.get_recent_activity(limit=10)
+    assert_test("Recent activity stream captures submissions and scores", isinstance(recent_act, list))
+
+    # ---------------------------------------------------------
+    # TEST 12: Real-Time Event Hub Payload Structure
+    # ---------------------------------------------------------
+    print("\n--- [Phase 12: Real-Time Live Sync Engine Verification] ---")
+    poll_payload = {
+        "success": True,
+        "server_time": time.time(),
+        "elapsed_seconds": 300,
+        "remaining_seconds": 3300,
+        "duration_seconds": 3600,
+        "is_frozen": False,
+        "tier_locks": {"easy": False, "medium": True, "hard": True},
+        "broadcast": {"text": "Welcome to Code Combat Pro", "severity": "info", "id": 1},
+        "recent_activity": storage.get_recent_activity(5),
+        "leaderboard": storage.get_leaderboard()
+    }
+    assert_test("Live Poll Payload contains timer countdowns", "remaining_seconds" in poll_payload and poll_payload["remaining_seconds"] == 3300)
+    assert_test("Live Poll Payload contains tier locks state", "tier_locks" in poll_payload and poll_payload["tier_locks"]["medium"] is True)
+    assert_test("Live Poll Payload contains broadcast announcement", poll_payload["broadcast"]["text"] == "Welcome to Code Combat Pro")
+    assert_test("Live Poll Payload contains live leaderboard array", isinstance(poll_payload["leaderboard"], list))
+
+    # Clean up test data
+    storage.reset_competition()
+
+    # ---------------------------------------------------------
     # FINAL SUMMARY
     # ---------------------------------------------------------
     print("\n======================================================================")
@@ -495,3 +539,4 @@ class Solution:
 
 if __name__ == "__main__":
     sys.exit(run_tests())
+

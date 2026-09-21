@@ -66,6 +66,7 @@ const Admin = {
       if (displayIdEl) displayIdEl.textContent = this.getAdminId();
       this.loadSets();
       this.loadTierLocks();
+      this.loadProctorLogs();
       this.checkHealth();
     } else {
       if (gateEl) gateEl.style.display = 'block';
@@ -452,9 +453,143 @@ const Admin = {
     } catch (e) {
       el.innerHTML = `<span style="color:var(--accent-red)">Health check failed: ${e.message}</span>`;
     }
+  },
+
+  // ---------------- Real-Time Broadcast & Freeze Controls ----------------
+
+  async sendBroadcast() {
+    const textInput = document.getElementById('admin-broadcast-text');
+    const severityInput = document.getElementById('admin-broadcast-severity');
+    const text = textInput ? textInput.value.trim() : '';
+    const severity = severityInput ? severityInput.value : 'info';
+
+    if (!text) {
+      App.showToast('Please enter an announcement message.', 'warning');
+      return;
+    }
+
+    try {
+      const res = await fetch('/api/admin/broadcast', {
+        method: 'POST',
+        headers: this.getAuthHeaders(),
+        body: JSON.stringify({
+          token: this.getToken(),
+          message: text,
+          severity: severity
+        })
+      });
+
+      const data = await res.json();
+      if (data.success) {
+        App.showToast('Broadcast announcement dispatched to all screens!', 'success');
+        if (textInput) textInput.value = '';
+      } else {
+        App.showToast(data.error || 'Failed to dispatch broadcast.', 'error');
+      }
+    } catch (e) {
+      App.showToast('Network error dispatching broadcast: ' + e.message, 'error');
+    }
+  },
+
+  async clearBroadcast() {
+    try {
+      const res = await fetch('/api/admin/broadcast', {
+        method: 'POST',
+        headers: this.getAuthHeaders(),
+        body: JSON.stringify({
+          token: this.getToken(),
+          clear: true
+        })
+      });
+
+      const data = await res.json();
+      if (data.success) {
+        App.showToast('Active broadcast cleared.', 'info');
+      }
+    } catch (e) {
+      App.showToast('Error clearing broadcast: ' + e.message, 'error');
+    }
+  },
+
+  async toggleFreezeLeaderboard() {
+    try {
+      const res = await fetch('/api/admin/freeze-leaderboard', {
+        method: 'POST',
+        headers: this.getAuthHeaders(),
+        body: JSON.stringify({
+          token: this.getToken()
+        })
+      });
+
+      const data = await res.json();
+      if (data.success) {
+        const isFrozen = Boolean(data.is_frozen);
+        const badge = document.getElementById('admin-freeze-status-badge');
+        const btn = document.getElementById('btn-toggle-freeze');
+        if (badge) {
+          badge.textContent = isFrozen ? '❄️ FROZEN' : '🟢 LIVE';
+          badge.style.background = isFrozen ? 'rgba(0, 242, 254, 0.15)' : 'rgba(16, 185, 129, 0.15)';
+          badge.style.borderColor = isFrozen ? 'var(--accent-cyan)' : 'var(--accent-green)';
+          badge.style.color = isFrozen ? 'var(--accent-cyan)' : 'var(--accent-green)';
+        }
+        if (btn) {
+          btn.textContent = isFrozen ? '🟢 Unfreeze Leaderboard' : '❄️ Freeze Leaderboard';
+          btn.className = isFrozen ? 'btn btn-primary' : 'btn btn-secondary';
+        }
+        App.showToast(data.message || `Leaderboard ${isFrozen ? 'Frozen' : 'Live'}!`, 'info');
+      }
+    } catch (e) {
+      App.showToast('Error toggling freeze: ' + e.message, 'error');
+    }
+  },
+
+  async loadProctorLogs() {
+    try {
+      const res = await fetch('/api/admin/proctor-logs', {
+        headers: this.getAuthHeaders()
+      });
+      if (!res.ok) return;
+      const data = await res.json();
+
+      const countsEl = document.getElementById('admin-proctor-counts-list');
+      const eventsEl = document.getElementById('admin-proctor-events-list');
+
+      if (countsEl) {
+        const counts = data.tab_counts || [];
+        if (counts.length === 0) {
+          countsEl.innerHTML = '<span style="color:var(--text-muted);">No tab switch infractions recorded.</span>';
+        } else {
+          countsEl.innerHTML = counts.map(c => `
+            <div style="display:flex; justify-content:space-between; padding:0.35rem 0; border-bottom:1px solid rgba(255,255,255,0.05);">
+              <span style="font-weight:700; color:#fff;">${c.participant_name}</span>
+              <span class="badge" style="background:rgba(239,68,68,0.2); color:#fca5a5; border:1px solid var(--accent-red); font-size:0.75rem;">
+                ${c.switch_count} switches
+              </span>
+            </div>
+          `).join('');
+        }
+      }
+
+      if (eventsEl) {
+        const events = (data.tab_switches || []).slice(0, 20);
+        if (events.length === 0) {
+          eventsEl.innerHTML = '<span style="color:var(--text-muted);">No tab blur events logged yet.</span>';
+        } else {
+          eventsEl.innerHTML = events.map(e => `
+            <div style="padding:0.25rem 0; border-bottom:1px solid rgba(255,255,255,0.03);">
+              <span style="color:#ef4444;">[${e.timestamp ? e.timestamp.slice(11,19) : '--:--'}]</span>
+              <strong style="color:#fff;">${e.participant_name}</strong> switched tab
+            </div>
+          `).join('');
+        }
+      }
+    } catch (e) {
+      console.warn('Error loading proctor logs:', e);
+    }
   }
 };
 
 window.Admin = Admin;
+
 
 

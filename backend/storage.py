@@ -92,6 +92,15 @@ class Storage:
                         );
                     """)
                     conn.execute("""
+                        CREATE TABLE IF NOT EXISTS tab_switches (
+                            id INTEGER PRIMARY KEY AUTOINCREMENT,
+                            participant_id TEXT NOT NULL,
+                            participant_name TEXT NOT NULL,
+                            timestamp TEXT NOT NULL,
+                            FOREIGN KEY (participant_id) REFERENCES participants(id) ON DELETE CASCADE
+                        );
+                    """)
+                    conn.execute("""
                         CREATE TABLE IF NOT EXISTS audit_logs (
                             id INTEGER PRIMARY KEY AUTOINCREMENT,
                             action TEXT NOT NULL,
@@ -450,10 +459,94 @@ class Storage:
         finally:
             conn.close()
 
+    # ------------------- Anti-Cheat Tab Proctoring -------------------
+
+    def log_tab_switch(self, participant_id: str, participant_name: str = "") -> int:
+        """Records a tab switch infraction and returns the participant's total count."""
+        with self.lock:
+            now = datetime.datetime.now().isoformat()
+            if not participant_name:
+                p = self.get_participant(participant_id)
+                participant_name = p["name"] if p else "Unknown"
+
+            conn = self._get_connection()
+            try:
+                with conn:
+                    conn.execute("""
+                        INSERT INTO tab_switches (participant_id, participant_name, timestamp)
+                        VALUES (?, ?, ?);
+                    """, (participant_id, participant_name, now))
+                    cursor = conn.cursor()
+                    cursor.execute("SELECT COUNT(*) FROM tab_switches WHERE participant_id = ?;", (participant_id,))
+                    count = cursor.fetchone()[0]
+                    return int(count)
+            finally:
+                conn.close()
+
+    def get_tab_switches(self, participant_id: str = None, limit: int = 200) -> List[Dict[str, Any]]:
+        """Returns recent tab switch events."""
+        conn = self._get_connection()
+        try:
+            cursor = conn.cursor()
+            if participant_id:
+                cursor.execute("""
+                    SELECT * FROM tab_switches
+                    WHERE participant_id = ?
+                    ORDER BY timestamp DESC LIMIT ?;
+                """, (participant_id, limit))
+            else:
+                cursor.execute("""
+                    SELECT * FROM tab_switches
+                    ORDER BY timestamp DESC LIMIT ?;
+                """, (limit,))
+            return [dict(r) for r in cursor.fetchall()]
+        finally:
+            conn.close()
+
+    def get_tab_switch_counts(self) -> List[Dict[str, Any]]:
+        """Returns a list of participant infraction summaries."""
+        conn = self._get_connection()
+        try:
+            cursor = conn.cursor()
+            cursor.execute("""
+                SELECT participant_id, participant_name, COUNT(*) as switch_count
+                FROM tab_switches
+                GROUP BY participant_id, participant_name
+                ORDER BY switch_count DESC;
+            """)
+            return [dict(r) for r in cursor.fetchall()]
+        finally:
+            conn.close()
+
+    # ------------------- Live Activity Stream -------------------
+
+    def get_recent_activity(self, limit: int = 15) -> List[Dict[str, Any]]:
+        """Returns recent public events (accepted solutions, hint unlocks, registrations)."""
+        conn = self._get_connection()
+        try:
+            cursor = conn.cursor()
+            cursor.execute("""
+                SELECT 
+                    'solved' as type,
+                    participant_name,
+                    problem_title,
+                    difficulty,
+                    score,
+                    runtime,
+                    timestamp
+                FROM submissions
+                WHERE status = 'ACCEPTED'
+                ORDER BY timestamp DESC LIMIT ?;
+            """, (limit,))
+            rows = [dict(r) for r in cursor.fetchall()]
+            return rows
+        finally:
+            conn.close()
+
     # ------------------- Administration -------------------
 
     def reset_competition(self):
-        """Wipes participants, submissions, solved problems, hint unlocks, and audit logs."""
+        """Wipes participants, submissions, solved problems, hint unlocks, tab switches, and audit logs."""
         with self.lock:
             conn = self._get_connection()
             try:
@@ -461,6 +554,7 @@ class Storage:
                     conn.execute("DELETE FROM submissions;")
                     conn.execute("DELETE FROM solved_problems;")
                     conn.execute("DELETE FROM hint_unlocks;")
+                    conn.execute("DELETE FROM tab_switches;")
                     conn.execute("DELETE FROM participants;")
                     conn.execute("DELETE FROM audit_logs;")
                 self._sync_json_mirrors()
@@ -473,7 +567,8 @@ class Storage:
                 "exported_at": datetime.datetime.now().isoformat(),
                 "participants": self.get_participants(),
                 "submissions": self.get_submissions(limit=5000),
-                "leaderboard": self.get_leaderboard()
+                "leaderboard": self.get_leaderboard(),
+                "tab_switches": self.get_tab_switches(limit=5000)
             }
 
     def get_audit_logs(self, limit: int = 100) -> List[Dict[str, Any]]:

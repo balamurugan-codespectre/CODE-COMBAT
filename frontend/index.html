@@ -21,10 +21,17 @@
       <li><a class="nav-item" onclick="App.navigate('intro')" id="nav-intro">Rules & Guidelines</a></li>
       <li><a class="nav-item" onclick="App.navigate('problems')" id="nav-problems">Challenges</a></li>
       <li><a class="nav-item" onclick="App.navigate('leaderboard')" id="nav-leaderboard">Leaderboard</a></li>
+      <li><a class="nav-item" onclick="App.navigate('projector')" id="nav-projector">📺 Big Screen</a></li>
       <li><a class="nav-item" onclick="App.navigate('admin')" id="nav-admin">Admin</a></li>
     </ul>
 
     <div style="display:flex; align-items:center; gap:1rem;">
+      <div id="nav-timer-capsule" class="timer-capsule" title="Competition Time Remaining">
+        <span class="timer-icon">⏱️</span>
+        <span id="nav-timer-text">60:00</span>
+        <span id="nav-timer-label" class="timer-status-badge">LIVE</span>
+      </div>
+
       <div class="user-badge" id="user-badge" style="display:none; align-items:center;">
         <span id="user-name-display">Participant</span>
         <span class="user-score" id="user-score-display">0 pts</span>
@@ -35,6 +42,16 @@
 
   <!-- Main Container -->
   <main class="main-container">
+
+    <!-- Live Broadcast Announcement Banner -->
+    <div id="live-broadcast-banner" class="broadcast-banner" style="display:none;">
+      <div class="broadcast-content">
+        <span class="broadcast-badge" id="broadcast-badge">📢 ANNOUNCEMENT</span>
+        <span class="broadcast-text" id="broadcast-text"></span>
+        <span class="broadcast-time" id="broadcast-time"></span>
+      </div>
+      <button class="broadcast-dismiss" onclick="App.dismissBroadcast()" title="Dismiss">✕</button>
+    </div>
 
     <!-- VIEW 1: HOME -->
     <section id="view-home" class="view-section active">
@@ -476,33 +493,145 @@
     <section id="view-leaderboard" class="view-section">
       <div class="filter-bar">
         <div>
-          <h2>Live Competition Leaderboard</h2>
-          <p style="color:var(--text-secondary); font-size:0.85rem;">Rankings sorted by Score (DESC), Solved (DESC), Runtime (ASC).</p>
+          <div style="display:flex; align-items:center; gap:0.6rem;">
+            <h2 style="margin:0;">Live Competition Leaderboard</h2>
+            <span id="leaderboard-freeze-badge" class="badge" style="display:none; background:rgba(0,242,254,0.15); color:var(--accent-cyan); border:1px solid var(--accent-cyan); font-size:0.75rem;">❄️ FROZEN</span>
+          </div>
+          <p style="color:var(--text-secondary); font-size:0.85rem; margin:0.25rem 0 0 0;">Real-time synchronized rankings &bull; Tie-break: Solved (DESC) ➔ Runtime (ASC).</p>
         </div>
         <div style="display:flex; gap:0.75rem; align-items:center;">
-          <input type="text" id="leaderboard-search" class="form-control" placeholder="Search participant or college..." style="width:260px;" oninput="App.filterLeaderboard()">
+          <input type="text" id="leaderboard-search" class="form-control" placeholder="Search participant or college..." style="width:240px;" oninput="App.filterLeaderboard()">
           <button class="btn btn-secondary" onclick="App.exportLeaderboardCSV()">📥 Export CSV</button>
         </div>
       </div>
 
-      <table class="problems-table">
-        <thead>
-          <tr>
-            <th>Rank</th>
-            <th>Participant</th>
-            <th>College</th>
-            <th>Reg No</th>
-            <th>Score</th>
-            <th>Solved</th>
-            <th>Easy/Med/Hard</th>
-            <th>Runtime</th>
-          </tr>
-        </thead>
-        <tbody id="leaderboard-table-body">
-          <!-- Loaded dynamically -->
-        </tbody>
-      </table>
+      <div class="leaderboard-realtime-layout">
+        <!-- Main Standings Table -->
+        <div style="overflow-x:auto;">
+          <table class="problems-table">
+            <thead>
+              <tr>
+                <th>Rank</th>
+                <th>Participant</th>
+                <th>College</th>
+                <th>Reg No</th>
+                <th>Score</th>
+                <th>Solved</th>
+                <th>Easy/Med/Hard</th>
+                <th>Runtime</th>
+              </tr>
+            </thead>
+            <tbody id="leaderboard-table-body">
+              <!-- Loaded dynamically -->
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Live Activity Ticker Feed -->
+        <div class="activity-feed-panel">
+          <div class="activity-feed-header">
+            <span>⚡ Live Submissions</span>
+            <div class="live-dot-pulse" title="Live real-time event sync active"></div>
+          </div>
+          <div id="activity-feed-list" class="activity-feed-list">
+            <div style="padding:1rem; text-align:center; color:var(--text-muted); font-size:0.85rem;">
+              Waiting for live submissions...
+            </div>
+          </div>
+        </div>
+      </div>
     </section>
+
+    <!-- VIEW: BIG SCREEN / AUDITORIUM PROJECTOR MODE -->
+    <section id="view-projector" class="view-section">
+      <div class="projector-container">
+        
+        <!-- Big Screen Header -->
+        <div class="projector-header">
+          <div class="projector-title-group">
+            <img src="assets/logo.jpg" alt="CODE COMBAT" style="height:60px; width:60px; border-radius:12px; object-fit:cover; border:2px solid var(--border-color); box-shadow:0 0 20px rgba(0,242,254,0.4);">
+            <div>
+              <span class="badge badge-easy" style="margin-bottom:0.25rem; display:inline-block; font-size:0.75rem;">Live Tournament Arena</span>
+              <h1 style="color:#fff; font-size:1.9rem; margin:0; letter-spacing:0.02em;">CODE COMBAT PRO</h1>
+              <p style="color:var(--text-secondary); font-size:0.9rem; margin:0.2rem 0 0 0;">Official College Competitive Programming Championship</p>
+            </div>
+          </div>
+
+          <div style="display:flex; align-items:center; gap:1.25rem;">
+            <div style="text-align:right;">
+              <div style="font-size:0.8rem; color:var(--text-muted); font-weight:700; text-transform:uppercase; letter-spacing:0.05em;">Time Remaining</div>
+              <div id="projector-timer-status" style="font-size:0.75rem; color:var(--accent-green); font-weight:700;">🟢 COMPETITION ACTIVE</div>
+            </div>
+            <div class="projector-timer-box" id="projector-timer">
+              60:00
+            </div>
+          </div>
+        </div>
+
+        <!-- Top 3 Podium Cards (Gold, Silver, Bronze) -->
+        <div class="projector-podium" id="projector-podium-container">
+          <!-- Rendered dynamically -->
+          <div class="podium-card podium-silver" id="podium-rank-2">
+            <span class="podium-rank-icon">🥈</span>
+            <div style="font-size:0.85rem; font-weight:800; color:#94a3b8; text-transform:uppercase;">2nd Place</div>
+            <div class="podium-name" id="podium-name-2">-</div>
+            <div class="podium-college" id="podium-college-2">-</div>
+            <div class="podium-score-capsule" id="podium-score-2">0 pts</div>
+            <div class="podium-breakdown" id="podium-solved-2">0/15 Solved</div>
+          </div>
+
+          <div class="podium-card podium-gold" id="podium-rank-1">
+            <span class="podium-rank-icon" style="font-size:3.2rem;">👑 🥇</span>
+            <div style="font-size:0.9rem; font-weight:800; color:#fbbf24; text-transform:uppercase;">1st Place - Champion</div>
+            <div class="podium-name" id="podium-name-1" style="font-size:1.55rem;">-</div>
+            <div class="podium-college" id="podium-college-1">-</div>
+            <div class="podium-score-capsule" id="podium-score-1" style="font-size:1.4rem; border-color:#fbbf24; color:#fbbf24;">0 pts</div>
+            <div class="podium-breakdown" id="podium-solved-1">0/15 Solved</div>
+          </div>
+
+          <div class="podium-card podium-bronze" id="podium-rank-3">
+            <span class="podium-rank-icon">🥉</span>
+            <div style="font-size:0.85rem; font-weight:800; color:#cd7f32; text-transform:uppercase;">3rd Place</div>
+            <div class="podium-name" id="podium-name-3">-</div>
+            <div class="podium-college" id="podium-college-3">-</div>
+            <div class="podium-score-capsule" id="podium-score-3">0 pts</div>
+            <div class="podium-breakdown" id="podium-solved-3">0/15 Solved</div>
+          </div>
+        </div>
+
+        <!-- Big Screen High Contrast Rankings Table -->
+        <div class="panel" style="padding:1.5rem;">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem;">
+            <h2 style="color:#fff; font-size:1.3rem; margin:0; display:flex; align-items:center; gap:0.5rem;">
+              <span>📊</span> Official Standings
+            </h2>
+            <span style="font-family:var(--font-mono); font-size:0.8rem; color:var(--text-muted);" id="projector-last-sync">Live Auto-Sync: 2.5s</span>
+          </div>
+
+          <div style="overflow-x:auto;">
+            <table class="problems-table" style="font-size:1.05rem;">
+              <thead>
+                <tr>
+                  <th style="padding:0.9rem 1.2rem; font-size:0.9rem;">Rank</th>
+                  <th style="padding:0.9rem 1.2rem; font-size:0.9rem;">Participant</th>
+                  <th style="padding:0.9rem 1.2rem; font-size:0.9rem;">College</th>
+                  <th style="padding:0.9rem 1.2rem; font-size:0.9rem;">Reg No</th>
+                  <th style="padding:0.9rem 1.2rem; font-size:0.9rem;">Total Score</th>
+                  <th style="padding:0.9rem 1.2rem; font-size:0.9rem;">Solved</th>
+                  <th style="padding:0.9rem 1.2rem; font-size:0.9rem;">Tier Breakdown</th>
+                  <th style="padding:0.9rem 1.2rem; font-size:0.9rem;">Runtime</th>
+                </tr>
+              </thead>
+              <tbody id="projector-table-body">
+                <!-- Loaded dynamically -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
 
     <!-- VIEW 6: ADMIN PANEL -->
     <section id="view-admin" class="view-section">
@@ -702,7 +831,84 @@
           </form>
         </div>
 
-        <!-- 3. Full Competition Reset -->
+        <!-- 4. Real-Time Broadcast & Event Controls -->
+        <div class="panel" style="padding:1.5rem; border-left:4px solid var(--accent-amber);">
+          <h3 style="color:var(--accent-amber); font-size:1.1rem; margin-bottom:0.5rem; display:flex; align-items:center; gap:0.5rem;">
+            <span>📢</span> Real-Time Broadcast & Leaderboard Freeze
+          </h3>
+          <p style="color:var(--text-secondary); font-size:0.85rem; margin-bottom:1.25rem;">
+            Dispatch real-time announcements to all active participants and projector screens instantly without refreshing. Freeze or unfreeze the public leaderboard.
+          </p>
+
+          <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(280px, 1fr)); gap:1.25rem;">
+            <!-- Broadcast Form -->
+            <div>
+              <label style="display:block; font-size:0.85rem; color:var(--text-secondary); margin-bottom:0.35rem; font-weight:600;">Broadcast Announcement:</label>
+              <div style="display:flex; gap:0.5rem; margin-bottom:0.5rem;">
+                <input type="text" id="admin-broadcast-text" class="form-control" placeholder="e.g. 15 minutes remaining! Complete Round 2." style="flex:1;">
+                <select id="admin-broadcast-severity" class="form-control" style="width:110px;">
+                  <option value="info">Info</option>
+                  <option value="warning">Warning</option>
+                  <option value="critical">Critical</option>
+                  <option value="success">Success</option>
+                </select>
+              </div>
+              <div style="display:flex; gap:0.5rem;">
+                <button class="btn btn-primary" onclick="Admin.sendBroadcast()" style="font-size:0.82rem; padding:0.4rem 0.85rem;">📢 Dispatch Broadcast</button>
+                <button class="btn btn-secondary" onclick="Admin.clearBroadcast()" style="font-size:0.82rem; padding:0.4rem 0.85rem;">✕ Clear</button>
+              </div>
+            </div>
+
+            <!-- Leaderboard Freeze Card -->
+            <div style="background:var(--bg-primary); border:1px solid var(--border-color); border-radius:var(--radius-sm); padding:1rem; display:flex; flex-direction:column; justify-content:space-between; gap:0.75rem;">
+              <div>
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                  <span style="font-weight:700; color:#fff; font-size:0.95rem;">Leaderboard Freeze</span>
+                  <span id="admin-freeze-status-badge" class="badge" style="background:rgba(16,185,129,0.15); color:var(--accent-green); border:1px solid var(--accent-green); font-size:0.75rem;">🟢 LIVE</span>
+                </div>
+                <div style="font-size:0.8rem; color:var(--text-secondary); margin-top:0.35rem;">
+                  Freezing hides rankings from participants & projector for final mystery.
+                </div>
+              </div>
+              <button id="btn-toggle-freeze" class="btn btn-secondary" onclick="Admin.toggleFreezeLeaderboard()" style="font-size:0.82rem; padding:0.4rem 0.85rem;">
+                ❄️ Freeze Leaderboard
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- 5. Anti-Cheat Proctoring Telemetry -->
+        <div class="panel" style="padding:1.5rem; border-left:4px solid var(--accent-red);">
+          <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.5rem; margin-bottom:0.5rem;">
+            <h3 style="color:var(--accent-red); font-size:1.1rem; margin:0; display:flex; align-items:center; gap:0.5rem;">
+              <span>🛡️</span> Anti-Cheat Proctoring &amp; Tab-Switch Logs
+            </h3>
+            <button class="btn btn-secondary" onclick="Admin.loadProctorLogs()" style="font-size:0.78rem; padding:0.25rem 0.65rem;">🔄 Refresh Telemetry</button>
+          </div>
+          <p style="color:var(--text-secondary); font-size:0.85rem; margin-bottom:1rem;">
+            Real-time proctoring tracker detects when participants switch tabs, blur focus, or open developer consoles.
+          </p>
+
+          <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(280px, 1fr)); gap:1rem;">
+            <!-- Tab Switch Counts -->
+            <div style="background:var(--bg-primary); border:1px solid var(--border-color); border-radius:var(--radius-sm); padding:0.75rem; max-height:220px; overflow-y:auto;">
+              <div style="font-size:0.82rem; font-weight:700; color:#fff; margin-bottom:0.5rem;">Infraction Summary:</div>
+              <div id="admin-proctor-counts-list" style="font-size:0.82rem; color:var(--text-secondary);">
+                No tab switch infractions recorded.
+              </div>
+            </div>
+
+            <!-- Recent Tab Switch Events -->
+            <div style="background:var(--bg-primary); border:1px solid var(--border-color); border-radius:var(--radius-sm); padding:0.75rem; max-height:220px; overflow-y:auto;">
+              <div style="font-size:0.82rem; font-weight:700; color:#fff; margin-bottom:0.5rem;">Recent Telemetry Stream:</div>
+              <div id="admin-proctor-events-list" style="font-size:0.8rem; color:var(--text-muted); font-family:var(--font-mono);">
+                Waiting for proctoring events...
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 6. Full Competition Reset -->
         <div class="panel" style="padding:1.5rem; border-left:4px solid var(--accent-red); background:rgba(239,68,68,0.04);">
           <h3 style="color:var(--accent-red); font-size:1.1rem; margin-bottom:0.5rem; display:flex; align-items:center; gap:0.5rem;">
             <span>⚠️</span> Danger Zone: Wipe Competition Data
@@ -713,7 +919,7 @@
           <button class="btn btn-danger" onclick="Admin.resetCompetition()">⚠️ Reset All Competition Data (Wipe Points & Submissions)</button>
         </div>
 
-        <!-- 4. System Diagnostics -->
+        <!-- 7. System Diagnostics -->
         <div class="panel" style="padding:1.5rem;">
           <h3 style="margin-bottom:0.75rem; font-size:1rem; color:#fff;">System Diagnostic Status</h3>
           <div id="admin-health-status" style="font-family:var(--font-mono); font-size:0.9rem; color:var(--accent-cyan);">
@@ -725,6 +931,27 @@
     </section>
 
   </main>
+
+  <!-- Proctor Warning Modal for Tab Switches -->
+  <div id="modal-proctor-warning" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.85); backdrop-filter:blur(8px); -webkit-backdrop-filter:blur(8px); z-index:2500; align-items:center; justify-content:center;">
+    <div class="proctor-warning-card">
+      <div class="proctor-warning-icon">⚠️</div>
+      <h2 class="proctor-warning-title">Proctoring Alert: Tab Switch Detected</h2>
+      <p class="proctor-warning-desc">
+        You have navigated away from the competition tab or minimized the window. 
+        All tab switches and blur events are logged in the proctoring database and monitored live by administrators.
+      </p>
+      <div class="proctor-count-badge">
+        Recorded Infraction Count: <span id="proctor-warning-count" style="color:#ef4444; font-weight:800;">1</span>
+      </div>
+      <p style="font-size:0.8rem; color:var(--accent-red); margin-top:0.75rem; font-weight:600;">
+        Note: Repeated tab switching may lead to immediate disqualification per competition rules.
+      </p>
+      <button class="btn btn-primary" onclick="App.dismissProctorWarning()" style="margin-top:1.25rem; width:100%; justify-content:center;">
+        I Understand &amp; Return to Challenge ⚔️
+      </button>
+    </div>
+  </div>
 
   <!-- Round Lock Modal for Sequential Rounds -->
   <div id="modal-round-lock" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.85); backdrop-filter:blur(8px); -webkit-backdrop-filter:blur(8px); z-index:2000; align-items:center; justify-content:center;">
