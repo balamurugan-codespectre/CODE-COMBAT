@@ -361,35 +361,25 @@
       </div>
     </section>
 
-    <!-- VIEW 3: PROBLEMS LIST -->
+    <!-- VIEW 3: PROBLEMS & CATEGORY FOLDERS LIST -->
     <section id="view-problems" class="view-section">
       <div class="filter-bar">
         <div>
-          <h2 style="margin:0 0 0.25rem 0;">Coding Challenges (15)</h2>
-          <span style="font-size:0.82rem; color:var(--text-secondary);">3 Difficulty Categories &bull; Round-Wise Event Format</span>
+          <h2 style="margin:0 0 0.25rem 0;">📁 Category Challenge Folders (15)</h2>
+          <span style="font-size:0.82rem; color:var(--text-secondary);">3 Sequential Round Folders &bull; Admin Password Protection</span>
         </div>
         <div class="filter-chips">
-          <button class="chip active" id="chip-filter-all" onclick="App.filterProblems('all', this)">All (15)</button>
-          <button class="chip" id="chip-filter-easy" onclick="App.filterProblems('Easy', this)">🟢 Round 1: Easy (100 pts) <span id="chip-lock-easy"></span></button>
-          <button class="chip" id="chip-filter-medium" onclick="App.filterProblems('Medium', this)">🟡 Round 2: Medium (200 pts) <span id="chip-lock-medium"></span></button>
-          <button class="chip" id="chip-filter-hard" onclick="App.filterProblems('Hard', this)">🔴 Round 3: Hard (300 pts) <span id="chip-lock-hard"></span></button>
+          <button class="chip active" id="chip-filter-all" onclick="App.filterProblems('all', this)">All Categories (15)</button>
+          <button class="chip" id="chip-filter-easy" onclick="App.filterProblems('Easy', this)">📁 Category 1: Easy (100 pts) <span id="chip-lock-easy"></span></button>
+          <button class="chip" id="chip-filter-medium" onclick="App.filterProblems('Medium', this)">📁 Category 2: Medium (200 pts) <span id="chip-lock-medium"></span></button>
+          <button class="chip" id="chip-filter-hard" onclick="App.filterProblems('Hard', this)">📁 Category 3: Hard (300 pts) <span id="chip-lock-hard"></span></button>
         </div>
       </div>
 
-      <table class="problems-table">
-        <thead>
-          <tr>
-            <th style="width:110px;">Status</th>
-            <th>Challenge Title</th>
-            <th style="width:170px;">Category / Round</th>
-            <th style="width:110px;">Points</th>
-            <th style="width:130px; text-align:center;">Action</th>
-          </tr>
-        </thead>
-        <tbody id="problems-table-body">
-          <!-- Loaded dynamically -->
-        </tbody>
-      </table>
+      <!-- Dynamic Category Folders Container -->
+      <div id="category-folders-container" class="category-folders-container">
+        <!-- Loaded dynamically via App.renderProblemsFolders() -->
+      </div>
     </section>
 
     <!-- VIEW 4: 3-PANEL CODING STUDIO -->

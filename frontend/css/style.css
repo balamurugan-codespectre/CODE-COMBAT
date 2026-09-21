@@ -1156,5 +1156,171 @@ body {
   box-shadow: 0 0 10px rgba(245, 158, 11, 0.4);
 }
 
+/* ==========================================================================
+   Category Folders & Sequential Round Module Styles
+   ========================================================================== */
+
+.category-folders-container {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  margin-top: 1rem;
+}
+
+.category-folder-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  transition: var(--transition);
+  position: relative;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
+}
+
+.category-folder-card.folder-easy {
+  border-left: 4px solid var(--accent-green);
+}
+.category-folder-card.folder-medium {
+  border-left: 4px solid var(--accent-amber);
+}
+.category-folder-card.folder-hard {
+  border-left: 4px solid var(--accent-red);
+}
+
+.category-folder-card.is-locked {
+  border-color: rgba(239, 68, 68, 0.35);
+  background: linear-gradient(180deg, rgba(24, 29, 41, 0.95), rgba(15, 17, 26, 0.98));
+}
+
+.category-folder-header {
+  padding: 1.25rem 1.5rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 1rem;
+  background: rgba(255, 255, 255, 0.02);
+  border-bottom: 1px solid var(--border-color);
+  cursor: pointer;
+  user-select: none;
+}
+
+.category-folder-header:hover {
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.folder-title-group {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+}
+
+.folder-icon {
+  font-size: 1.6rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border-radius: var(--radius-sm);
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--border-color);
+}
+
+.folder-name {
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.folder-meta {
+  font-size: 0.82rem;
+  color: var(--text-secondary);
+  margin-top: 0.2rem;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.folder-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.folder-progress-bar-bg {
+  width: 120px;
+  height: 6px;
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 3px;
+  overflow: hidden;
+  display: inline-block;
+  vertical-align: middle;
+  margin-left: 0.4rem;
+}
+
+.folder-progress-bar-fill {
+  height: 100%;
+  border-radius: 3px;
+  transition: width 0.3s ease;
+}
+
+.folder-body {
+  padding: 0;
+  transition: var(--transition);
+}
+
+.folder-locked-banner {
+  padding: 1.5rem;
+  background: rgba(239, 68, 68, 0.05);
+  border-top: 1px solid rgba(239, 68, 68, 0.2);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.folder-locked-info {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.folder-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.folder-table th {
+  background: rgba(10, 12, 16, 0.6);
+  padding: 0.75rem 1.25rem;
+  text-align: left;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.folder-table td {
+  padding: 0.85rem 1.25rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+  font-size: 0.9rem;
+}
+
+.folder-table tr:last-child td {
+  border-bottom: none;
+}
+
+.folder-table tr:hover {
+  background: rgba(0, 242, 254, 0.02);
+}
+
+
 
 

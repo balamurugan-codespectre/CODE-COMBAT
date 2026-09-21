@@ -151,6 +151,8 @@ const App = {
   },
 
   tierLocks: { easy: false, medium: false, hard: false },
+  currentFilter: 'all',
+  folderCollapsed: { easy: false, medium: false, hard: false },
 
   async loadProblems() {
     try {
@@ -167,62 +169,192 @@ const App = {
       const lockEasyEl = document.getElementById('chip-lock-easy');
       const lockMedEl = document.getElementById('chip-lock-medium');
       const lockHardEl = document.getElementById('chip-lock-hard');
-      if (lockEasyEl) lockEasyEl.textContent = easyLocked ? '🔒' : '';
-      if (lockMedEl) lockMedEl.textContent = medLocked ? '🔒' : '';
-      if (lockHardEl) lockHardEl.textContent = hardLocked ? '🔒' : '';
+      if (lockEasyEl) lockEasyEl.textContent = easyLocked ? '🔒' : '🔓';
+      if (lockMedEl) lockMedEl.textContent = medLocked ? '🔒' : '🔓';
+      if (lockHardEl) lockHardEl.textContent = hardLocked ? '🔒' : '🔓';
 
-      this.renderProblemsTable(this.problems);
+      this.renderProblemsFolders(this.problems);
     } catch (e) {
       this.showToast('Failed to load problems: ' + e.message, 'error');
     }
   },
 
-  renderProblemsTable(probs) {
-    const tbody = document.getElementById('problems-table-body');
-    if (!tbody) return;
+  toggleFolder(tier) {
+    this.folderCollapsed[tier] = !this.folderCollapsed[tier];
+    const bodyEl = document.getElementById(`folder-body-${tier}`);
+    const iconEl = document.getElementById(`folder-arrow-${tier}`);
+    if (bodyEl) {
+      bodyEl.style.display = this.folderCollapsed[tier] ? 'none' : 'block';
+    }
+    if (iconEl) {
+      iconEl.textContent = this.folderCollapsed[tier] ? '▶' : '▼';
+    }
+  },
 
-    tbody.innerHTML = probs.map(p => {
-      const isLocked = Boolean(p.locked);
-      const isSolved = Boolean(p.solved || p.status === 'Solved');
-      const roundNum = p.round_num || (p.difficulty === 'Easy' ? 1 : (p.difficulty === 'Medium' ? 2 : 3));
-      const roundName = p.round_name || `Round ${roundNum} (${p.difficulty})`;
+  renderProblemsFolders(probs) {
+    const container = document.getElementById('category-folders-container');
+    if (!container) return;
 
-      let statusBadge = '';
+    const categories = [
+      {
+        id: 'easy',
+        num: 1,
+        name: 'Easy Challenges',
+        diff: 'Easy',
+        points: 100,
+        color: 'var(--accent-green)',
+        colorRgb: '16, 185, 129',
+        badgeBg: 'rgba(16, 185, 129, 0.15)',
+        badgeBorder: 'var(--accent-green)'
+      },
+      {
+        id: 'medium',
+        num: 2,
+        name: 'Medium Challenges',
+        diff: 'Medium',
+        points: 200,
+        color: 'var(--accent-amber)',
+        colorRgb: '245, 158, 11',
+        badgeBg: 'rgba(245, 158, 11, 0.15)',
+        badgeBorder: 'var(--accent-amber)'
+      },
+      {
+        id: 'hard',
+        num: 3,
+        name: 'Hard Challenges',
+        diff: 'Hard',
+        points: 300,
+        color: 'var(--accent-red)',
+        colorRgb: '239, 68, 68',
+        badgeBg: 'rgba(239, 68, 68, 0.15)',
+        badgeBorder: 'var(--accent-red)'
+      }
+    ];
+
+    const filter = this.currentFilter || 'all';
+    const visibleCategories = categories.filter(c => filter === 'all' || c.diff.toLowerCase() === filter.toLowerCase());
+
+    container.innerHTML = visibleCategories.map(cat => {
+      const catProbs = probs.filter(p => p.difficulty.toLowerCase() === cat.diff.toLowerCase());
+      const isLocked = Boolean(this.tierLocks[cat.id]);
+      const solvedCount = catProbs.filter(p => p.solved || p.status === 'Solved').length;
+      const totalCount = catProbs.length || 5;
+      const pct = Math.round((solvedCount / totalCount) * 100);
+      const isCollapsed = Boolean(this.folderCollapsed[cat.id]);
+
+      let folderStatusBadge = '';
       if (isLocked) {
-        statusBadge = '<span class="badge" style="background:rgba(239,68,68,0.15); color:var(--accent-red); border:1px solid var(--accent-red); font-weight:700;">🔒 Locked</span>';
-      } else if (isSolved) {
-        statusBadge = '<span class="badge badge-solved" style="background:rgba(16,185,129,0.2); color:var(--accent-green); border:1px solid var(--accent-green); font-weight:700;">✓ Solved</span>';
+        folderStatusBadge = `<span class="badge" style="background:rgba(239,68,68,0.18); color:var(--accent-red); border:1px solid var(--accent-red); font-weight:700;">🔒 LOCKED (Admin Password Required)</span>`;
+      } else if (solvedCount === totalCount && totalCount > 0) {
+        folderStatusBadge = `<span class="badge badge-solved" style="background:rgba(16,185,129,0.2); color:var(--accent-green); border:1px solid var(--accent-green); font-weight:700;">✓ ALL ${totalCount} SOLVED</span>`;
       } else {
-        statusBadge = '<span class="badge" style="background:rgba(148,163,184,0.1); color:var(--text-muted); border:1px solid var(--border-color);">Todo</span>';
+        folderStatusBadge = `<span class="badge" style="background:${cat.badgeBg}; color:${cat.color}; border:1px solid ${cat.badgeBorder}; font-weight:700;">🔓 UNLOCKED &bull; ROUND ${cat.num}</span>`;
       }
 
-      let actionButton = '';
+      let bodyContent = '';
       if (isLocked) {
-        actionButton = `<button class="btn btn-secondary" style="padding:0.35rem 0.85rem; font-size:0.8rem; font-weight:600; cursor:pointer; border-color:var(--accent-amber); color:var(--accent-amber);" onclick="event.stopPropagation(); App.openRoundLockModal('${p.id}', ${roundNum}, '${p.difficulty}')">🔒 Unlock Round</button>`;
-      } else if (isSolved) {
-        actionButton = `<button class="btn btn-solved" style="padding:0.35rem 0.85rem; font-size:0.8rem; cursor:pointer;" onclick="event.stopPropagation(); App.openProblem('${p.id}')">Solved ✓</button>`;
+        bodyContent = `
+          <div class="folder-locked-banner">
+            <div class="folder-locked-info">
+              <div style="font-size:2rem;">🔒</div>
+              <div>
+                <h4 style="color:#fff; margin:0 0 0.25rem 0; font-size:1.05rem;">Folder Locked: Category ${cat.num} (${cat.diff})</h4>
+                <p style="color:var(--text-secondary); margin:0; font-size:0.85rem;">
+                  This category folder is locked for sequential round progression. Unlock it once with Administrator credentials to grant access for all participants without asking again.
+                </p>
+              </div>
+            </div>
+            <button class="btn btn-primary" style="background:linear-gradient(135deg, var(--accent-amber), #d97706); border-color:var(--accent-amber); color:#000; font-weight:700; padding:0.6rem 1.25rem; font-size:0.9rem; white-space:nowrap;" onclick="event.stopPropagation(); App.openRoundLockModal('', ${cat.num}, '${cat.diff}')">
+              🔓 Unlock Category ${cat.num} (Admin Password)
+            </button>
+          </div>
+        `;
       } else {
-        actionButton = `<button class="btn btn-primary" style="padding:0.35rem 0.85rem; font-size:0.8rem; font-weight:600; cursor:pointer;" onclick="event.stopPropagation(); App.openProblem('${p.id}')">Solve ➔</button>`;
+        bodyContent = `
+          <div class="folder-body" id="folder-body-${cat.id}" style="display:${isCollapsed ? 'none' : 'block'};">
+            <table class="folder-table">
+              <thead>
+                <tr>
+                  <th style="width:100px;">Status</th>
+                  <th>Problem Title</th>
+                  <th style="width:140px;">Difficulty</th>
+                  <th style="width:110px;">Points</th>
+                  <th style="width:130px; text-align:center;">Action</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${catProbs.map(p => {
+                  const isProbSolved = Boolean(p.solved || p.status === 'Solved');
+                  const probNum = p.number ? `${p.number}. ` : '';
+                  return `
+                    <tr onclick="App.openProblem('${p.id}')" style="cursor:pointer;">
+                      <td>
+                        ${isProbSolved 
+                          ? '<span class="badge badge-solved" style="background:rgba(16,185,129,0.2); color:var(--accent-green); border:1px solid var(--accent-green); font-weight:700;">✓ Solved</span>' 
+                          : '<span class="badge" style="background:rgba(148,163,184,0.1); color:var(--text-muted); border:1px solid var(--border-color);">Todo</span>'}
+                      </td>
+                      <td style="font-weight:600; color:#fff;">
+                        ${probNum}${p.title}
+                        ${isProbSolved ? '<span style="color:var(--accent-green); font-size:0.85rem; margin-left:0.5rem;" title="Solved">✓</span>' : ''}
+                      </td>
+                      <td>
+                        <span class="badge badge-${p.difficulty.toLowerCase()}" style="font-size:0.75rem;">
+                          ${p.difficulty}
+                        </span>
+                      </td>
+                      <td style="font-family:var(--font-mono); font-weight:700; color:var(--accent-cyan);">${p.points} pts</td>
+                      <td style="text-align:center;">
+                        ${isProbSolved
+                          ? `<button class="btn btn-solved" style="padding:0.35rem 0.85rem; font-size:0.8rem; cursor:pointer;" onclick="event.stopPropagation(); App.openProblem('${p.id}')">Solved ✓</button>`
+                          : `<button class="btn btn-primary" style="padding:0.35rem 0.85rem; font-size:0.8rem; font-weight:600; cursor:pointer;" onclick="event.stopPropagation(); App.openProblem('${p.id}')">Solve ➔</button>`
+                        }
+                      </td>
+                    </tr>
+                  `;
+                }).join('')}
+              </tbody>
+            </table>
+          </div>
+        `;
       }
 
       return `
-        <tr onclick="App.openProblem('${p.id}')" style="${isLocked ? 'opacity:0.85; background:rgba(239,68,68,0.02);' : ''}">
-          <td>${statusBadge}</td>
-          <td style="font-weight:600; color:#fff;">
-            ${p.title}
-            ${isLocked ? '<span style="font-size:0.75rem; color:var(--accent-amber); margin-left:0.4rem;">(Round Locked)</span>' : ''}
-            ${isSolved ? '<span style="color:var(--accent-green); font-size:0.85rem; margin-left:0.5rem;" title="Solved">✓</span>' : ''}
-          </td>
-          <td>
-            <span class="badge badge-${p.difficulty.toLowerCase()}" style="font-size:0.75rem;">
-              Round ${roundNum}: ${p.difficulty}
-            </span>
-          </td>
-          <td style="font-family:var(--font-mono); font-weight:700; color:var(--accent-cyan);">${p.points} pts</td>
-          <td style="text-align:center;">
-            ${actionButton}
-          </td>
-        </tr>
+        <div class="category-folder-card folder-${cat.id} ${isLocked ? 'is-locked' : ''}" id="category-card-${cat.id}">
+          <div class="category-folder-header" onclick="${isLocked ? `App.openRoundLockModal('', ${cat.num}, '${cat.diff}')` : `App.toggleFolder('${cat.id}')`}">
+            <div class="folder-title-group">
+              <div class="folder-icon" style="color:${isLocked ? 'var(--accent-red)' : cat.color};">
+                ${isLocked ? '🔒' : (solvedCount === totalCount && totalCount > 0 ? '🏆' : '📁')}
+              </div>
+              <div>
+                <div class="folder-name">
+                  <span>Category ${cat.num}: ${cat.name}</span>
+                  ${folderStatusBadge}
+                </div>
+                <div class="folder-meta">
+                  <span>${totalCount} Challenges</span>
+                  <span>&bull;</span>
+                  <span>${cat.points} Points Each</span>
+                  <span>&bull;</span>
+                  <span>
+                    Solved: <strong style="color:${solvedCount > 0 ? 'var(--accent-green)' : '#fff'};">${solvedCount}/${totalCount}</strong>
+                    <span class="folder-progress-bar-bg">
+                      <span class="folder-progress-bar-fill" style="width:${pct}%; background:${cat.color};"></span>
+                    </span>
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            <div class="folder-actions">
+              ${isLocked 
+                ? `<button class="btn btn-secondary" style="font-size:0.8rem; padding:0.35rem 0.75rem; border-color:var(--accent-amber); color:var(--accent-amber);" onclick="event.stopPropagation(); App.openRoundLockModal('', ${cat.num}, '${cat.diff}')">🔑 Enter Password</button>`
+                : `<span id="folder-arrow-${cat.id}" style="color:var(--text-muted); font-size:0.9rem; font-weight:bold;">${isCollapsed ? '▶' : '▼'}</span>`
+              }
+            </div>
+          </div>
+
+          ${bodyContent}
+        </div>
       `;
     }).join('');
   },
@@ -230,12 +362,8 @@ const App = {
   filterProblems(difficulty, btn) {
     document.querySelectorAll('.filter-chips .chip').forEach(c => c.classList.remove('active'));
     if (btn) btn.classList.add('active');
-
-    if (difficulty === 'all') {
-      this.renderProblemsTable(this.problems);
-    } else {
-      this.renderProblemsTable(this.problems.filter(p => p.difficulty.toLowerCase() === difficulty.toLowerCase()));
-    }
+    this.currentFilter = difficulty;
+    this.renderProblemsFolders(this.problems);
   },
 
   toggleProblemSection(sectionId) {
