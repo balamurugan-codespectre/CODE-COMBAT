@@ -1400,3 +1400,132 @@ body {
   font-size: 0.9rem;
   padding: 0.5rem 0.75rem;
 }
+
+/* ==========================================================================
+   Audio Volume / Equalizer LED Progress Meter
+   ========================================================================== */
+
+.volume-meter-wrapper {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  background: rgba(10, 14, 23, 0.75);
+  padding: 0.3rem 0.75rem;
+  border-radius: 24px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: inset 0 1px 3px rgba(0,0,0,0.5), 0 2px 8px rgba(0,0,0,0.3);
+  vertical-align: middle;
+  transition: all 0.3s ease;
+}
+
+.volume-meter-wrapper:hover {
+  border-color: rgba(0, 242, 254, 0.3);
+  box-shadow: inset 0 1px 3px rgba(0,0,0,0.5), 0 0 12px rgba(0, 242, 254, 0.15);
+}
+
+.volume-meter-icon {
+  font-size: 0.95rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+}
+
+.volume-meter-count {
+  font-family: var(--font-mono);
+  font-size: 0.82rem;
+  font-weight: 800;
+  color: #fff;
+  letter-spacing: 0.02em;
+}
+
+.volume-meter-bars {
+  display: inline-flex;
+  align-items: flex-end;
+  gap: 3px;
+  height: 16px;
+  padding: 0 1px;
+}
+
+.volume-bar-seg {
+  width: 5px;
+  border-radius: 2px;
+  background: rgba(255, 255, 255, 0.12);
+  transition: all 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+  display: inline-block;
+}
+
+/* Progressive Heights for Stepped Equalizer / Volume Level */
+.volume-bar-seg.seg-1 { height: 6px; }
+.volume-bar-seg.seg-2 { height: 8px; }
+.volume-bar-seg.seg-3 { height: 11px; }
+.volume-bar-seg.seg-4 { height: 13px; }
+.volume-bar-seg.seg-5 { height: 16px; }
+
+/* Easy Tier (Neon Green Volume) */
+.volume-bar-seg.active-easy {
+  background: linear-gradient(180deg, #34d399, #059669);
+  box-shadow: 0 0 8px rgba(16, 185, 129, 0.9), 0 0 2px #fff;
+  transform: scaleY(1.05);
+  animation: pulseBar 1.8s infinite ease-in-out;
+}
+
+/* Medium Tier (Neon Amber Volume) */
+.volume-bar-seg.active-medium {
+  background: linear-gradient(180deg, #fbbf24, #d97706);
+  box-shadow: 0 0 8px rgba(245, 158, 11, 0.9), 0 0 2px #fff;
+  transform: scaleY(1.05);
+  animation: pulseBar 1.8s infinite ease-in-out;
+}
+
+/* Hard Tier (Neon Coral/Red Volume) */
+.volume-bar-seg.active-hard {
+  background: linear-gradient(180deg, #f87171, #dc2626);
+  box-shadow: 0 0 8px rgba(239, 68, 68, 0.9), 0 0 2px #fff;
+  transform: scaleY(1.05);
+  animation: pulseBar 1.8s infinite ease-in-out;
+}
+
+.volume-meter-badge {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  font-weight: 800;
+  padding: 0.1rem 0.45rem;
+  border-radius: 12px;
+  line-height: 1.2;
+}
+
+/* Master 15-Bar Equalizer in Filter Bar */
+.master-volume-box {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  background: rgba(15, 23, 42, 0.6);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  padding: 0.5rem 0.85rem;
+  margin-top: 0.5rem;
+}
+
+.master-volume-bars {
+  display: inline-flex;
+  align-items: flex-end;
+  gap: 2.5px;
+  height: 16px;
+}
+
+.master-seg {
+  width: 4px;
+  border-radius: 1px;
+  background: rgba(255, 255, 255, 0.1);
+  transition: all 0.3s ease;
+}
+
+.master-seg.active-easy { background: var(--accent-green); box-shadow: 0 0 6px rgba(16,185,129,0.8); }
+.master-seg.active-medium { background: var(--accent-amber); box-shadow: 0 0 6px rgba(245,158,11,0.8); }
+.master-seg.active-hard { background: var(--accent-red); box-shadow: 0 0 6px rgba(239,68,68,0.8); }
+
+@keyframes pulseBar {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.75; }
+}

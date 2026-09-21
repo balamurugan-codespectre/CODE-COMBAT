@@ -234,6 +234,35 @@ const App = {
     const filter = this.currentFilter || 'all';
     const visibleRounds = rounds.filter(r => filter === 'all' || r.diff.toLowerCase() === filter.toLowerCase());
 
+    // 1. Render Master 15-Bar Equalizer in Top Filter Header
+    const masterVolContainer = document.getElementById('master-volume-container');
+    if (masterVolContainer) {
+      const allSolved = probs.filter(p => p.solved || p.status === 'Solved').length;
+      const allTotal = probs.length || 15;
+      const allPct = Math.round((allSolved / allTotal) * 100);
+
+      masterVolContainer.innerHTML = `
+        <span class="volume-meter-icon" style="color:${allSolved > 0 ? 'var(--accent-cyan)' : 'var(--text-muted)'}; font-size:1.05rem;">
+          ${allSolved === 0 ? '🔈' : (allSolved < 8 ? '🔉' : (allSolved === allTotal ? '🔊⚡' : '🔊'))}
+        </span>
+        <div style="display:flex; flex-direction:column; gap:0.15rem;">
+          <div style="font-size:0.75rem; color:var(--text-secondary); display:flex; justify-content:space-between; gap:1rem;">
+            <span>Overall Progress: <strong>${allSolved}/${allTotal} Solved</strong></span>
+            <span style="font-family:var(--font-mono); color:var(--accent-cyan); font-weight:700;">${allPct}% Level</span>
+          </div>
+          <div class="master-volume-bars" title="${allSolved}/${allTotal} Solved (${allPct}%)">
+            ${probs.map((p, idx) => {
+              const isProbSolved = Boolean(p.solved || p.status === 'Solved');
+              const tierId = p.difficulty ? p.difficulty.toLowerCase() : 'easy';
+              const h = 6 + ((idx % 5) * 2.5);
+              const segClass = isProbSolved ? `active-${tierId}` : '';
+              return `<span class="master-seg ${segClass}" style="height:${h}px;" title="${idx + 1}. ${p.title} (${p.difficulty}): ${isProbSolved ? 'Solved ✓' : 'Unsolved'}"></span>`;
+            }).join('')}
+          </div>
+        </div>
+      `;
+    }
+
     container.innerHTML = visibleRounds.map(round => {
       const roundProbs = probs.filter(p => p.difficulty.toLowerCase() === round.diff.toLowerCase());
       const isLocked = Boolean(this.tierLocks[round.id]);
@@ -355,12 +384,24 @@ const App = {
                   <span>&bull;</span>
                   <span>${round.points} Points Each</span>
                   <span>&bull;</span>
-                  <span>
-                    Solved: <strong style="color:${solvedCount > 0 ? 'var(--accent-green)' : '#fff'};">${solvedCount}/${totalCount}</strong>
-                    <span class="folder-progress-bar-bg">
-                      <span class="folder-progress-bar-fill" style="width:${pct}%; background:${round.color};"></span>
+                  <div class="volume-meter-wrapper" title="Progress: ${solvedCount}/${totalCount} (${pct}% Volume Level)">
+                    <span class="volume-meter-icon" style="color:${solvedCount > 0 ? round.color : 'var(--text-muted)'};">
+                      ${solvedCount === 0 ? '🔈' : (solvedCount < 3 ? '🔉' : (solvedCount === 5 ? '🔊⚡' : '🔊'))}
                     </span>
-                  </span>
+                    <span class="volume-meter-count" style="color:${solvedCount > 0 ? '#fff' : 'var(--text-secondary)'};">
+                      ${solvedCount}/${totalCount}
+                    </span>
+                    <div class="volume-meter-bars">
+                      ${[0, 1, 2, 3, 4].map(i => {
+                        const isSolved = i < solvedCount;
+                        const segClass = isSolved ? `active-${round.id}` : '';
+                        return `<span class="volume-bar-seg seg-${i + 1} ${segClass}" title="Challenge ${i + 1}: ${isSolved ? 'Solved ✓' : 'Unsolved'}"></span>`;
+                      }).join('')}
+                    </div>
+                    <span class="volume-meter-badge" style="background:${solvedCount > 0 ? round.badgeBg : 'rgba(255,255,255,0.05)'}; color:${solvedCount > 0 ? round.color : 'var(--text-muted)'}; border:1px solid ${solvedCount > 0 ? round.badgeBorder : 'rgba(255,255,255,0.1)'};">
+                      ${pct}%
+                    </span>
+                  </div>
                 </div>
               </div>
             </div>
