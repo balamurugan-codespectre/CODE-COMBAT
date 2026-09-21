@@ -1,0 +1,4 @@
+INPUT:
+1 2 null null 3
+EXPECTED:
+1 2 3

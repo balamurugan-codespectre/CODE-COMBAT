@@ -1,4 +1,0 @@
-INPUT:
-tmmzuxt
-EXPECTED:
-5

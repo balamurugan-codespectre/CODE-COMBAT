@@ -1,5 +1,0 @@
-INPUT:
-1
-z
-EXPECTED:
-1

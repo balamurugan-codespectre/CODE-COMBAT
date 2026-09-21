@@ -1,0 +1,26 @@
+{
+  "id": "combination_sum",
+  "title": "Combination Sum",
+  "difficulty": "Medium",
+  "category": "Backtracking",
+  "points": 200,
+  "time_limit": 2.0,
+  "description": "Given an array of distinct integers candidates and a target integer target, return a list of all unique combinations of candidates where the chosen numbers sum to target. You may return the combinations in any order. The same number may be chosen from candidates an unlimited number of times.",
+  "input_format": "First line contains n and target. Second line contains n distinct candidate integers.",
+  "output_format": "Print each combination on a new line with space-separated elements (elements sorted).",
+  "constraints": "1 <= candidates.length <= 30, 2 <= candidates[i] <= 40, 1 <= target <= 40",
+  "sample_tests": [
+    {
+      "input": "4 7\n2 3 6 7",
+      "output": "2 2 3\n7"
+    },
+    {
+      "input": "3 8\n2 3 5",
+      "output": "2 2 2 2\n2 3 3\n3 5"
+    },
+    {
+      "input": "1 2\n2",
+      "output": "2"
+    }
+  ]
+}

@@ -1,4 +1,0 @@
-INPUT:
-abcdefghijklmnopqrstuvwxyz
-EXPECTED:
-26

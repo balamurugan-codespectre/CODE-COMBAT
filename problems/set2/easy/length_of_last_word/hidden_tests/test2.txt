@@ -1,0 +1,4 @@
+INPUT:
+fly me   to   the moon
+EXPECTED:
+4

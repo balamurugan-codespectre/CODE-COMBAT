@@ -1,0 +1,26 @@
+{
+  "id": "binary_tree",
+  "title": "Binary Tree Level Order Traversal",
+  "difficulty": "Medium",
+  "category": "BFS / Queue",
+  "points": 200,
+  "time_limit": 2.0,
+  "description": "Given the root of a binary tree, return the level order traversal of its nodes' values (i.e., from left to right, level by level).",
+  "input_format": "First line contains n (number of nodes). Second line contains n node values in complete binary tree order (-1 denotes null).",
+  "output_format": "Print each level on a new line with space-separated values.",
+  "constraints": "0 <= n <= 2000, -1000 <= Node.val <= 1000",
+  "sample_tests": [
+    {
+      "input": "5\n3 9 20 15 7",
+      "output": "3\n9 20\n15 7"
+    },
+    {
+      "input": "1\n1",
+      "output": "1"
+    },
+    {
+      "input": "0\n",
+      "output": ""
+    }
+  ]
+}

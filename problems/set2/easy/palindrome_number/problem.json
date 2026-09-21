@@ -1,0 +1,26 @@
+{
+  "id": "palindrome_number",
+  "title": "Palindrome Number",
+  "difficulty": "Easy",
+  "category": "Math",
+  "points": 100,
+  "time_limit": 2.0,
+  "description": "Given an integer x, return true if x is a palindrome, and false otherwise. An integer is a palindrome when it reads the same forward and backward.",
+  "input_format": "A single integer x.",
+  "output_format": "Print 'true' if x is a palindrome, else 'false'.",
+  "constraints": "-2^31 <= x <= 2^31 - 1",
+  "sample_tests": [
+    {
+      "input": "121",
+      "output": "true"
+    },
+    {
+      "input": "-121",
+      "output": "false"
+    },
+    {
+      "input": "10",
+      "output": "false"
+    }
+  ]
+}

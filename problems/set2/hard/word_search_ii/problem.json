@@ -1,0 +1,26 @@
+{
+  "id": "word_search_ii",
+  "title": "Word Search II",
+  "difficulty": "Hard",
+  "category": "Trie + Backtracking",
+  "points": 300,
+  "time_limit": 2.0,
+  "description": "Given an m x n board of characters and a list of strings words, return all words on the board. Each word must be constructed from letters of sequentially adjacent cells, where adjacent cells are horizontally or vertically neighboring. The same letter cell may not be used more than once in a word.",
+  "input_format": "First line contains m and n. Next m lines contain n space-separated characters. Next line contains k (number of words). Next line contains k space-separated words.",
+  "output_format": "Print the found words space-separated in alphabetical sorted order.",
+  "constraints": "m == board.length, n == board[i].length, 1 <= m, n <= 12, 1 <= words.length <= 300",
+  "sample_tests": [
+    {
+      "input": "4 4\no a a n\ne t a e\ni h k r\ni f l v\n4\noath pea eat rain",
+      "output": "eat oath"
+    },
+    {
+      "input": "2 2\na b\nc d\n1\nabcb",
+      "output": ""
+    },
+    {
+      "input": "1 1\na\n1\na",
+      "output": "a"
+    }
+  ]
+}

@@ -1,0 +1,26 @@
+{
+  "id": "add_two_numbers",
+  "title": "Add Two Numbers",
+  "difficulty": "Medium",
+  "category": "Linked List",
+  "points": 200,
+  "time_limit": 2.0,
+  "description": "You are given two non-empty linked lists representing two non-negative integers. The digits are stored in reverse order, and each of their nodes contains a single digit. Add the two numbers and return the sum as a linked list in reverse order.",
+  "input_format": "First line: len1. Second line: len1 space-separated digits of l1. Third line: len2. Fourth line: len2 space-separated digits of l2.",
+  "output_format": "Print the sum digits space-separated in reverse order.",
+  "constraints": "1 <= len1, len2 <= 100, 0 <= Node.val <= 9",
+  "sample_tests": [
+    {
+      "input": "3\n2 4 3\n3\n5 6 4",
+      "output": "7 0 8"
+    },
+    {
+      "input": "1\n0\n1\n0",
+      "output": "0"
+    },
+    {
+      "input": "7\n9 9 9 9 9 9 9\n4\n9 9 9 9",
+      "output": "8 9 9 9 0 0 0 1"
+    }
+  ]
+}

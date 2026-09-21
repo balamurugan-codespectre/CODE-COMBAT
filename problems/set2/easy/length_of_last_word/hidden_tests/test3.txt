@@ -1,0 +1,4 @@
+INPUT:
+luffy is still joyboy
+EXPECTED:
+6

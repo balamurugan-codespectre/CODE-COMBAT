@@ -1,5 +1,0 @@
-INPUT:
-4
-hello world python java
-EXPECTED:
-4

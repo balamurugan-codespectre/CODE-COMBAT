@@ -31,7 +31,7 @@ class ProblemsManager:
     """Manages problem metadata, starter templates, visible samples, hints, and hidden test suites."""
 
     METADATA_REGISTRY = {
-        # ============================== EASY (5) ==============================
+        # ============================== SET 1: EASY ==============================
         "two_sum": {
             "number": 1,
             "topics": ["Array", "Hash Table"],
@@ -99,25 +99,25 @@ class ProblemsManager:
             "topics": ["Linked List", "Recursion"],
             "companies": ["Amazon", "Microsoft", "Google", "Apple", "Meta"],
             "hints": [
-                "Maintain three pointers: prev (initially None), curr (initially head), and nxt.",
-                "At each step, store curr.next in nxt, point curr.next to prev, then advance prev = curr and curr = nxt.",
-                "When curr reaches null, prev is the new head of the reversed list."
+                "A linked list can be reversed either iteratively or recursively. Could you implement both?",
+                "For the iterative approach, maintain three pointers: prev (initially None), curr (head), and next_node.",
+                "In each step, save curr.next, set curr.next = prev, move prev = curr, and advance curr = next_node."
             ],
             "leetcode_examples": [
-                {"input": "head = [1,2,3,4,5]", "output": "[5,4,3,2,1]", "explanation": "Linked list reversed."},
-                {"input": "head = [1,2]", "output": "[2,1]", "explanation": "Reversed two-node list."}
+                {"input": "head = [1,2,3,4,5]", "output": "[5,4,3,2,1]", "explanation": "Reverses the linked list nodes."},
+                {"input": "head = [1,2]", "output": "[2,1]", "explanation": "Reverses a two-node list."}
             ]
         },
 
-        # ============================== MEDIUM (5) ==============================
+        # ============================== SET 1: MEDIUM ==============================
         "longest_substring": {
             "number": 3,
             "topics": ["Hash Table", "String", "Sliding Window"],
-            "companies": ["Amazon", "Google", "Bloomberg", "Meta", "Microsoft"],
+            "companies": ["Amazon", "Google", "Microsoft", "Meta", "Bloomberg", "Apple"],
             "hints": [
-                "Use a sliding window with two pointers [left, right] to represent the current substring without duplicates.",
-                "Store the last seen index of each character in a Hash Map.",
-                "When right sees duplicate char at last_pos >= left, jump left = last_pos + 1. Update max_len = max(max_len, right - left + 1)."
+                "Use a Sliding Window technique with two pointers (left and right) representing the current window.",
+                "Maintain a Hash Map or set of character positions to check if the current character has already appeared in the window.",
+                "When a duplicate character is found at right, advance left to max(left, last_seen[char] + 1) to restore substring uniqueness."
             ],
             "leetcode_examples": [
                 {"input": "s = \"abcabcbb\"", "output": "3", "explanation": "The answer is \"abc\", with the length of 3."},
@@ -129,26 +129,26 @@ class ProblemsManager:
         "three_sum": {
             "number": 15,
             "topics": ["Array", "Two Pointers", "Sorting"],
-            "companies": ["Amazon", "Meta", "Apple", "Google", "Microsoft"],
+            "companies": ["Amazon", "Meta", "Google", "Apple", "Microsoft"],
             "hints": [
-                "Sort the array in ascending order first. This makes duplicate elimination and two-pointer navigation easy.",
-                "Iterate i through the array. If nums[i] == nums[i-1], skip to avoid duplicate triplets.",
-                "For each i, use two pointers left = i + 1 and right = n - 1. If nums[i] + nums[left] + nums[right] == 0, record the triplet and skip identical adjacent values."
+                "Sorting the array first makes it easy to avoid duplicate triplets and enables the two-pointer technique.",
+                "Iterate through the array with index i. For each i, use two pointers: left = i + 1 and right = len(nums) - 1.",
+                "Calculate sum = nums[i] + nums[left] + nums[right]. If sum == 0, record triplet and skip duplicate values of left and right."
             ],
             "leetcode_examples": [
                 {"input": "nums = [-1,0,1,2,-1,-4]", "output": "[[-1,-1,2],[-1,0,1]]", "explanation": "The distinct triplets are [-1,0,1] and [-1,-1,2]."},
-                {"input": "nums = [0,1,1]", "output": "[]", "explanation": "No possible triplet sums to 0."}
+                {"input": "nums = [0,1,1]", "output": "[]", "explanation": "The only possible triplet does not sum up to 0."}
             ]
         },
 
         "merge_intervals": {
             "number": 56,
             "topics": ["Array", "Sorting"],
-            "companies": ["Amazon", "Google", "Meta", "Microsoft", "Bloomberg"],
+            "companies": ["Amazon", "Google", "Microsoft", "Meta", "Bloomberg", "Salesforce"],
             "hints": [
-                "Sort the intervals by their start time intervals[i][0] in ascending order.",
-                "Iterate through sorted intervals: maintain the current merged interval.",
-                "If the next interval's start <= current merged end, extend current end = max(current end, next end); otherwise append next interval as new merged entry."
+                "If we sort the intervals by their start values, overlapping intervals will always be contiguous in the sorted array.",
+                "Initialize merged list with the first interval.",
+                "For each subsequent interval, if current.start <= last_merged.end, merge them by setting last_merged.end = max(last_merged.end, current.end); otherwise append current interval."
             ],
             "leetcode_examples": [
                 {"input": "intervals = [[1,3],[2,6],[8,10],[15,18]]", "output": "[[1,6],[8,10],[15,18]]", "explanation": "Since intervals [1,3] and [2,6] overlap, merge them into [1,6]."},
@@ -159,57 +159,57 @@ class ProblemsManager:
         "number_of_islands": {
             "number": 200,
             "topics": ["Array", "Depth-First Search", "Breadth-First Search", "Union Find", "Matrix"],
-            "companies": ["Amazon", "Google", "Microsoft", "Meta", "Bloomberg"],
+            "companies": ["Amazon", "Google", "Microsoft", "Meta", "Bloomberg", "Uber"],
             "hints": [
-                "Treat the 2D grid as an undirected graph where adjacent '1' cells share an edge.",
-                "Iterate through all grid cells (r, c). When you encounter a '1', increment the island count.",
-                "Launch a DFS or BFS from (r, c) to visit and sink all connected land cells by changing '1' to '0'."
+                "Treat the 2D grid as an undirected graph where adjacent '1's share an edge.",
+                "Iterate over every cell in the grid. When you encounter a '1', increment the island count and trigger a traversal (DFS or BFS).",
+                "During the traversal, mark visited land cells by changing '1' to '0' to avoid visiting them again."
             ],
             "leetcode_examples": [
-                {"input": "grid = [[\"1\",\"1\",\"1\",\"1\",\"0\"],[\"1\",\"1\",\"0\",\"1\",\"0\"],[\"1\",\"1\",\"0\",\"0\",\"0\"],[\"0\",\"0\",\"0\",\"0\",\"0\"]", "output": "1", "explanation": "1 large island."},
-                {"input": "grid = [[\"1\",\"1\",\"0\",\"0\",\"0\"],[\"1\",\"1\",\"0\",\"0\",\"0\"],[\"0\",\"0\",\"1\",\"0\",\"0\"],[\"0\",\"0\",\"0\",\"1\",\"1\"]", "output": "3", "explanation": "3 distinct islands."}
+                {"input": "grid = [[\"1\",\"1\",\"1\",\"1\",\"0\"],[\"1\",\"1\",\"0\",\"1\",\"0\"],[\"1\",\"1\",\"0\",\"0\",\"0\"],[\"0\",\"0\",\"0\",\"0\",\"0\"]", "output": "1", "explanation": "All land cells are connected as 1 island."},
+                {"input": "grid = [[\"1\",\"1\",\"0\",\"0\",\"0\"],[\"1\",\"1\",\"0\",\"0\",\"0\"],[\"0\",\"0\",\"1\",\"0\",\"0\"],[\"0\",\"0\",\"0\",\"1\",\"1\"]", "output": "3", "explanation": "There are 3 separate connected land clusters."}
             ]
         },
 
         "top_k_frequent": {
             "number": 347,
-            "topics": ["Array", "Hash Table", "Divide and Conquer", "Sorting", "Heap", "Bucket Sort"],
-            "companies": ["Amazon", "Meta", "Google", "Microsoft", "Apple"],
+            "topics": ["Array", "Hash Table", "Divide and Conquer", "Sorting", "Heap (Priority Queue)", "Bucket Sort", "Counting", "Quickselect"],
+            "companies": ["Amazon", "Google", "Meta", "Microsoft", "Apple"],
             "hints": [
-                "Build a hash map / frequency counter of each unique element.",
-                "Use a min-heap of size k to retain only the k most frequent elements in O(n log k) time.",
-                "Alternatively, use Bucket Sort where the index represents frequency to achieve optimal O(n) linear time."
+                "Start by building a frequency map: count occurrences of each distinct integer in O(n) time.",
+                "Use a Min-Heap of size k to keep track of the top k frequent elements in O(n log k) time.",
+                "Alternatively, Bucket Sort achieves O(n) time by grouping numbers by frequency index."
             ],
             "leetcode_examples": [
                 {"input": "nums = [1,1,1,2,2,3], k = 2", "output": "[1,2]", "explanation": "1 appears 3 times, 2 appears 2 times."},
-                {"input": "nums = [1], k = 1", "output": "[1]", "explanation": "Only element."}
+                {"input": "nums = [1], k = 1", "output": "[1]", "explanation": "Only one distinct number."}
             ]
         },
 
-        # ============================== HARD (5) ==============================
+        # ============================== SET 1: HARD ==============================
         "trapping_rain_water": {
             "number": 42,
             "topics": ["Array", "Two Pointers", "Dynamic Programming", "Stack", "Monotonic Stack"],
-            "companies": ["Amazon", "Google", "Meta", "Microsoft", "Goldman Sachs"],
+            "companies": ["Amazon", "Google", "Goldman Sachs", "Meta", "Microsoft", "Apple"],
             "hints": [
-                "Water trapped above index i is max(0, min(max_left[i], max_right[i]) - height[i]).",
-                "Two-pointer approach: left = 0, right = n - 1, left_max = 0, right_max = 0.",
-                "If height[left] < height[right]: update left_max and add left_max - height[left] to water, left++; else update right_max and add right_max - height[right], right--."
+                "The water trapped above any bar i is determined by min(max_left, max_right) - height[i].",
+                "You can precompute max prefix heights and max suffix heights in O(n) time and O(n) space.",
+                "To achieve O(1) space, use Two Pointers (left, right) moving towards each other while maintaining left_max and right_max."
             ],
             "leetcode_examples": [
                 {"input": "height = [0,1,0,2,1,0,1,3,2,1,2,1]", "output": "6", "explanation": "6 units of rain water are being trapped."},
-                {"input": "height = [4,2,0,3,2,5]", "output": "9", "explanation": "9 units of rain water trapped."}
+                {"input": "height = [4,2,0,3,2,5]", "output": "9", "explanation": "9 units of rain water trapped between the elevation bars."}
             ]
         },
 
         "minimum_window_substring": {
             "number": 76,
             "topics": ["Hash Table", "String", "Sliding Window"],
-            "companies": ["Meta", "Amazon", "Google", "Microsoft", "LinkedIn"],
+            "companies": ["Amazon", "Meta", "Google", "Microsoft", "LinkedIn", "Airbnb"],
             "hints": [
-                "Use a two-pointer sliding window [left, right] along with character count hash maps.",
-                "Expand the right pointer until the current window contains all characters of t with the required frequencies.",
-                "Once valid, contract the left pointer as much as possible while maintaining validity to find the minimum length window."
+                "Use two pointers (left and right) to create a sliding window over string s.",
+                "Maintain frequency maps for target characters and current window characters, along with a match counter.",
+                "Expand right until all characters in t are satisfied, then contract left to minimize window length while preserving validity."
             ],
             "leetcode_examples": [
                 {"input": "s = \"ADOBECODEBANC\", t = \"ABC\"", "output": "\"BANC\"", "explanation": "The minimum window substring \"BANC\" includes 'A', 'B', and 'C' from string t."},
@@ -220,30 +220,30 @@ class ProblemsManager:
         "merge_k_sorted_lists": {
             "number": 23,
             "topics": ["Linked List", "Divide and Conquer", "Heap (Priority Queue)", "Merge Sort"],
-            "companies": ["Amazon", "Meta", "Google", "Microsoft", "Apple", "Uber"],
+            "companies": ["Amazon", "Meta", "Google", "Microsoft", "Apple", "ByteDance"],
             "hints": [
-                "You have k sorted linked lists. At each step, the next smallest node is the minimum among the heads of all active lists.",
-                "Use a Min-Heap (PriorityQueue) of size k storing the current head node of each list.",
-                "Pop the smallest node, attach it to the result list, and if that node has a next pointer, push node.next into the heap. Total time complexity: O(N log k)."
+                "Comparing the head of each list naively takes O(k) per step, resulting in O(N*k) overall.",
+                "Use a Min-Heap (Priority Queue) storing the current node of each of the k lists. Polling and inserting takes O(log k).",
+                "Alternatively, use Divide and Conquer: pair up k lists and merge each pair using 2-way merge in O(N log k) time."
             ],
             "leetcode_examples": [
-                {"input": "lists = [[1,4,5],[1,3,4],[2,6]]", "output": "[1,1,2,3,4,4,5,6]", "explanation": "The linked-lists are merged into one sorted list."},
-                {"input": "lists = []", "output": "[]", "explanation": "Empty list of lists."}
+                {"input": "lists = [[1,4,5],[1,3,4],[2,6]]", "output": "[1,1,2,3,4,4,5,6]", "explanation": "All linked-lists merged into one sorted list."},
+                {"input": "lists = []", "output": "[]", "explanation": "No lists provided."}
             ]
         },
 
         "word_ladder": {
             "number": 127,
             "topics": ["Hash Table", "String", "Breadth-First Search"],
-            "companies": ["Amazon", "Google", "Meta", "LinkedIn", "Microsoft"],
+            "companies": ["Amazon", "Google", "Meta", "Microsoft", "LinkedIn"],
             "hints": [
-                "Model this as an unweighted graph where words are vertices and an edge exists if two words differ by exactly 1 character.",
-                "BFS (Breadth-First Search) guarantees finding the shortest transformation path length.",
-                "Store wordList in a Hash Set. For the current word, try changing each character from 'a' to 'z'. If the new word is in the set, add to queue and remove from set to mark visited."
+                "Model the problem as an unweighted graph where each word is a vertex and an edge exists between words differing by 1 character.",
+                "Since all step weights are 1, Breadth-First Search (BFS) is guaranteed to find the shortest path.",
+                "For large dictionaries, Bidirectional BFS (searching simultaneously from beginWord and endWord) cuts exploration exponentially."
             ],
             "leetcode_examples": [
                 {"input": "beginWord = \"hit\", endWord = \"cog\", wordList = [\"hot\",\"dot\",\"dog\",\"lot\",\"log\",\"cog\"]", "output": "5", "explanation": "One shortest transformation sequence is \"hit\" -> \"hot\" -> \"dot\" -> \"dog\" -> \"cog\", which is 5 words long."},
-                {"input": "beginWord = \"hit\", endWord = \"cog\", wordList = [\"hot\",\"dot\",\"dog\",\"lot\",\"log\"]", "output": "0", "explanation": "The endWord \"cog\" is not in wordList, therefore there is no valid transformation sequence."}
+                {"input": "beginWord = \"hit\", endWord = \"cog\", wordList = [\"hot\",\"dot\",\"dog\",\"lot\",\"log\"]", "output": "0", "explanation": "The endWord \"cog\" is not in wordList."}
             ]
         },
 
@@ -252,23 +252,251 @@ class ProblemsManager:
             "topics": ["Array", "Binary Search", "Divide and Conquer"],
             "companies": ["Amazon", "Google", "Microsoft", "Meta", "Apple", "Goldman Sachs"],
             "hints": [
-                "A naive merge takes O(m + n) time, but binary search partition achieves the optimal O(log(min(m, n))) time.",
-                "Partition both arrays such that the left half has (m + n + 1) // 2 elements and max(left) <= min(right).",
-                "Binary search for the partition index i in the smaller array: compute j = (m + n + 1) // 2 - i. Check if nums1[i-1] <= nums2[j] and nums2[j-1] <= nums1[i]."
+                "The total runtime complexity should be O(log (m+n)). This strongly hints at Binary Search.",
+                "We want to partition both arrays such that left_part contains (m+n+1)//2 elements and all elements on left <= all elements on right.",
+                "Binary search on the partition index of the smaller array. Check if maxLeftA <= minRightB and maxLeftB <= minRightA."
             ],
             "leetcode_examples": [
-                {"input": "nums1 = [1,3], nums2 = [2]", "output": "2.00000", "explanation": "Merged array = [1,2,3] and median is 2.0."},
-                {"input": "nums1 = [1,2], nums2 = [3,4]", "output": "2.50000", "explanation": "Merged array = [1,2,3,4] and median is (2 + 3) / 2 = 2.5."}
+                {"input": "nums1 = [1,3], nums2 = [2]", "output": "2.00000", "explanation": "merged array = [1,2,3] and median is 2."},
+                {"input": "nums1 = [1,2], nums2 = [3,4]", "output": "2.50000", "explanation": "merged array = [1,2,3,4] and median is (2 + 3) / 2 = 2.5."}
+            ]
+        },
+
+        # ============================== SET 2: EASY ==============================
+        "palindrome_number": {
+            "number": 9,
+            "topics": ["Math"],
+            "companies": ["Amazon", "Google", "Microsoft", "Meta", "Apple", "Bloomberg"],
+            "hints": [
+                "Negative numbers can never be palindromes (e.g., -121 reversed is 121-).",
+                "Numbers ending in 0 (other than 0 itself) cannot be palindromes since leading zero is not allowed.",
+                "Revert half of the integer: while x > revertedNumber, take x % 10 and add to revertedNumber * 10. Check if x == revertedNumber or x == revertedNumber // 10."
+            ],
+            "leetcode_examples": [
+                {"input": "x = 121", "output": "true", "explanation": "121 reads as 121 from left to right and from right to left."},
+                {"input": "x = -121", "output": "false", "explanation": "From left to right, it reads -121. From right to left, it becomes 121-. Therefore it is not a palindrome."},
+                {"input": "x = 10", "output": "false", "explanation": "Reads 01 from right to left. Therefore it is not a palindrome."}
+            ]
+        },
+
+        "fizz_buzz": {
+            "number": 412,
+            "topics": ["Math", "String", "Simulation"],
+            "companies": ["Amazon", "Google", "Microsoft", "Apple", "Meta"],
+            "hints": [
+                "Loop from 1 to n inclusive.",
+                "Check divisibility by 15 (both 3 and 5) first, or check 3 and 5 separately using string concatenation.",
+                "If divisible by 3 append 'Fizz', if divisible by 5 append 'Buzz', otherwise use str(i)."
+            ],
+            "leetcode_examples": [
+                {"input": "n = 3", "output": "[\"1\",\"2\",\"Fizz\"]", "explanation": "1, 2, Fizz."},
+                {"input": "n = 5", "output": "[\"1\",\"2\",\"Fizz\",\"4\",\"Buzz\"]", "explanation": "1, 2, Fizz, 4, Buzz."},
+                {"input": "n = 15", "output": "[\"1\",\"2\",\"Fizz\",\"4\",\"Buzz\",\"Fizz\",\"7\",\"8\",\"Fizz\",\"Buzz\",\"11\",\"Fizz\",\"13\",\"14\",\"FizzBuzz\"]", "explanation": "Multiples of both 3 and 5 output FizzBuzz."}
+            ]
+        },
+
+        "length_of_last_word": {
+            "number": 58,
+            "topics": ["String"],
+            "companies": ["Amazon", "Google", "Apple", "Microsoft"],
+            "hints": [
+                "Trim any trailing spaces from the end of string s first.",
+                "Scan backwards from the end of the string counting characters until a space or the start of the string is encountered.",
+                "Return the length count."
+            ],
+            "leetcode_examples": [
+                {"input": "s = \"Hello World\"", "output": "5", "explanation": "The last word is \"World\" with length 5."},
+                {"input": "s = \"   fly me   to   the moon  \"", "output": "4", "explanation": "The last word is \"moon\" with length 4."},
+                {"input": "s = \"luffy is still joyboy\"", "output": "6", "explanation": "The last word is \"joyboy\" with length 6."}
+            ]
+        },
+
+        "move_zeroes": {
+            "number": 283,
+            "topics": ["Array", "Two Pointers"],
+            "companies": ["Amazon", "Meta", "Google", "Apple", "Microsoft", "Bloomberg"],
+            "hints": [
+                "You must do this in-place without making a copy of the array.",
+                "Maintain a pointer `insert_pos` starting at 0 for where the next non-zero element should go.",
+                "Iterate through nums. Whenever you encounter a non-zero, write it to `nums[insert_pos]` and increment `insert_pos`. Finally, fill the remaining elements up to len(nums) with 0."
+            ],
+            "leetcode_examples": [
+                {"input": "nums = [0,1,0,3,12]", "output": "[1,3,12,0,0]", "explanation": "Non-zero elements shifted to the left, maintaining relative order."},
+                {"input": "nums = [0]", "output": "[0]", "explanation": "Single zero stays at index 0."}
+            ]
+        },
+
+        "merge_sorted_array": {
+            "number": 88,
+            "topics": ["Array", "Two Pointers", "Sorting"],
+            "companies": ["Amazon", "Meta", "Google", "Microsoft", "Apple", "Bloomberg"],
+            "hints": [
+                "nums1 has enough buffer space at the end (size m + n) to accommodate nums2.",
+                "Filling from the beginning would overwrite elements. Try filling from the back (index m + n - 1) moving backwards!",
+                "Use three pointers: p1 = m - 1, p2 = n - 1, and p = m + n - 1. In each step, place the larger of nums1[p1] and nums2[p2] at nums1[p]."
+            ],
+            "leetcode_examples": [
+                {"input": "nums1 = [1,2,3,0,0,0], m = 3, nums2 = [2,5,6], n = 3", "output": "[1,2,2,3,5,6]", "explanation": "The arrays we are merging are [1,2,3] and [2,5,6]."},
+                {"input": "nums1 = [1], m = 1, nums2 = [], n = 0", "output": "[1]", "explanation": "The array to be merged is [1]."}
+            ]
+        },
+
+        # ============================== SET 2: MEDIUM ==============================
+        "add_two_numbers": {
+            "number": 2,
+            "topics": ["Linked List", "Math", "Recursion"],
+            "companies": ["Amazon", "Google", "Meta", "Microsoft", "Apple", "Bloomberg"],
+            "hints": [
+                "Digits are stored in reverse order, which means the head is the least significant digit (1s place). This makes addition straightforward from left to right.",
+                "Maintain a `carry` variable (initially 0). In each iteration, sum = val1 + val2 + carry, new_node = sum % 10, carry = sum // 10.",
+                "Don't forget to append an extra node at the end if carry > 0 after processing both lists."
+            ],
+            "leetcode_examples": [
+                {"input": "l1 = [2,4,3], l2 = [5,6,4]", "output": "[7,0,8]", "explanation": "342 + 465 = 807."},
+                {"input": "l1 = [0], l2 = [0]", "output": "[0]", "explanation": "0 + 0 = 0."},
+                {"input": "l1 = [9,9,9,9,9,9,9], l2 = [9,9,9,9]", "output": "[8,9,9,9,0,0,0,1]", "explanation": "9999999 + 9999 = 10009998."}
+            ]
+        },
+
+        "rotate_array": {
+            "number": 189,
+            "topics": ["Array", "Math", "Two Pointers"],
+            "companies": ["Amazon", "Microsoft", "Google", "Meta", "Apple"],
+            "hints": [
+                "First, reduce k using modulo: k = k % len(nums).",
+                "There is an elegant 3-step reversal algorithm: 1) Reverse the entire array. 2) Reverse the first k elements. 3) Reverse the remaining n - k elements.",
+                "This achieves O(n) time and O(1) extra space in-place."
+            ],
+            "leetcode_examples": [
+                {"input": "nums = [1,2,3,4,5,6,7], k = 3", "output": "[5,6,7,1,2,3,4]", "explanation": "rotate 1 step: [7,1,2,3,4,5,6], rotate 2 steps: [6,7,1,2,3,4,5], rotate 3 steps: [5,6,7,1,2,3,4]."},
+                {"input": "nums = [-1,-100,3,99], k = 2", "output": "[3,99,-1,-100]", "explanation": "rotate 2 steps to the right."}
+            ]
+        },
+
+        "coin_change": {
+            "number": 322,
+            "topics": ["Array", "Dynamic Programming", "Breadth-First Search"],
+            "companies": ["Amazon", "Google", "Microsoft", "Meta", "Apple", "Bloomberg"],
+            "hints": [
+                "This is the classic unbounded knapsack / shortest path problem.",
+                "Define dp[i] as the minimum coins needed to make amount i. Initialize dp[0] = 0 and all other dp[i] = infinity.",
+                "For each coin c, and each amount i from c to amount: dp[i] = min(dp[i], dp[i - c] + 1). If dp[amount] is still infinity, return -1."
+            ],
+            "leetcode_examples": [
+                {"input": "coins = [1,2,5], amount = 11", "output": "3", "explanation": "11 = 5 + 5 + 1 (3 coins)."},
+                {"input": "coins = [2], amount = 3", "output": "-1", "explanation": "Cannot make amount 3 with only coin 2."},
+                {"input": "coins = [1], amount = 0", "output": "0", "explanation": "0 coins needed for amount 0."}
+            ]
+        },
+
+        "binary_tree": {
+            "number": 102,
+            "topics": ["Tree", "Breadth-First Search", "Binary Tree"],
+            "companies": ["Amazon", "Google", "Meta", "Microsoft", "Bloomberg", "LinkedIn"],
+            "hints": [
+                "Use Breadth-First Search (BFS) with a FIFO queue to traverse the tree level by level.",
+                "At the start of each level loop, capture the current queue length `level_size = len(queue)`.",
+                "Pop `level_size` nodes from the queue, collect their values in a list, and push any non-null left and right children."
+            ],
+            "leetcode_examples": [
+                {"input": "root = [3,9,20,null,null,15,7]", "output": "[[3],[9,20],[15,7]]", "explanation": "Level order traversal grouped by depth."},
+                {"input": "root = [1]", "output": "[[1]]", "explanation": "Single node tree."},
+                {"input": "root = []", "output": "[]", "explanation": "Empty tree."}
+            ]
+        },
+
+        "combination_sum": {
+            "number": 39,
+            "topics": ["Array", "Backtracking"],
+            "companies": ["Amazon", "Google", "Meta", "Microsoft", "Apple", "Airbnb"],
+            "hints": [
+                "Use Backtracking / DFS exploration to build combinations incrementally.",
+                "To avoid duplicate combinations in different orders, pass a starting index `start` to recursive calls: only pick candidates[i] where i >= start.",
+                "Because elements can be reused indefinitely, recursive call stays at index `i` with reduced target `target - candidates[i]`."
+            ],
+            "leetcode_examples": [
+                {"input": "candidates = [2,3,6,7], target = 7", "output": "[[2,2,3],[7]]", "explanation": "2 and 3 are candidates, and 2 + 2 + 3 = 7. Note that 2 can be used multiple times. 7 is a candidate, and 7 = 7."},
+                {"input": "candidates = [2,3,5], target = 8", "output": "[[2,2,2,2],[2,3,3],[3,5]]", "explanation": "Three valid combinations sum to 8."}
+            ]
+        },
+
+        # ============================== SET 2: HARD ==============================
+        "largest_rectangle_histogram": {
+            "number": 84,
+            "topics": ["Array", "Stack", "Monotonic Stack"],
+            "companies": ["Amazon", "Google", "Meta", "Microsoft", "Apple"],
+            "hints": [
+                "For each bar i, what is the widest rectangle with height = heights[i]? It extends from the nearest smaller bar on the left to the nearest smaller bar on the right.",
+                "A Monotonic Increasing Stack of indices allows finding the left and right boundaries in O(n) total time.",
+                "When popping index `top` because heights[i] < heights[top], the height is heights[top], right index is i, and left index is the new stack top."
+            ],
+            "leetcode_examples": [
+                {"input": "heights = [2,1,5,6,2,3]", "output": "10", "explanation": "The largest rectangle is shown in the red area, which has an area = 10 units (height 5 * width 2)."},
+                {"input": "heights = [2,4]", "output": "4", "explanation": "Rectangle of area 4 formed by height 2 * width 2 or height 4 * width 1."}
+            ]
+        },
+
+        "serialize_deserialize_tree": {
+            "number": 297,
+            "topics": ["String", "Tree", "Depth-First Search", "Breadth-First Search", "Design", "Binary Tree"],
+            "companies": ["Amazon", "Google", "Meta", "Microsoft", "LinkedIn", "Uber"],
+            "hints": [
+                "You can use Preorder DFS traversal or Level-order BFS traversal.",
+                "For Preorder serialization: append node.val, followed by serialize(node.left), followed by serialize(node.right). Use a sentinel token like 'null' or '#' for None nodes.",
+                "For deserialization: iterate over tokens using an iterator/queue. If token == 'null', return None; otherwise construct TreeNode(int(token)) and recursively build left and right subtrees."
+            ],
+            "leetcode_examples": [
+                {"input": "root = [1,2,3,null,null,4,5]", "output": "[1,2,3,null,null,4,5]", "explanation": "Binary tree serialized to string and reconstructed identically."},
+                {"input": "root = []", "output": "[]", "explanation": "Empty tree serializes to empty / null representation."}
+            ]
+        },
+
+        "edit_distance": {
+            "number": 72,
+            "topics": ["String", "Dynamic Programming"],
+            "companies": ["Amazon", "Google", "Microsoft", "Meta", "Bloomberg"],
+            "hints": [
+                "Define dp[i][j] as the minimum edit distance between prefix word1[0...i-1] and word2[0...j-1].",
+                "Base cases: dp[i][0] = i (deleting i characters) and dp[0][j] = j (inserting j characters).",
+                "If word1[i-1] == word2[j-1], dp[i][j] = dp[i-1][j-1]. Otherwise dp[i][j] = 1 + min(dp[i-1][j] (delete), dp[i][j-1] (insert), dp[i-1][j-1] (replace))."
+            ],
+            "leetcode_examples": [
+                {"input": "word1 = \"horse\", word2 = \"ros\"", "output": "3", "explanation": "horse -> rorse (replace 'h' with 'r') -> rose (remove 'r') -> ros (remove 'e')."},
+                {"input": "word1 = \"intention\", word2 = \"execution\"", "output": "5", "explanation": "5 edit operations."}
+            ]
+        },
+
+        "word_search_ii": {
+            "number": 212,
+            "topics": ["Array", "String", "Backtracking", "Trie", "Matrix"],
+            "companies": ["Amazon", "Google", "Microsoft", "Meta", "Uber", "Apple"],
+            "hints": [
+                "Searching every word individually with DFS leads to Time Limit Exceeded. Instead, search all words simultaneously using a Trie (Prefix Tree).",
+                "Build a Trie from the word list, storing full words at terminal leaf nodes.",
+                "From each cell on the board, perform DFS backtracking matching adjacent characters against the Trie nodes. When a terminal node is reached, add word to results."
+            ],
+            "leetcode_examples": [
+                {"input": "board = [[\"o\",\"a\",\"a\",\"n\"],[\"e\",\"t\",\"a\",\"e\"],[\"i\",\"h\",\"k\",\"r\"],[\"i\",\"f\",\"l\",\"v\"]], words = [\"oath\",\"pea\",\"eat\",\"rain\"]", "output": "[\"eat\",\"oath\"]", "explanation": "Words 'eat' and 'oath' exist on the board."},
+                {"input": "board = [[\"a\",\"b\"],[\"c\",\"d\"]], words = [\"abcb\"]", "output": "[]", "explanation": "Word 'abcb' cannot be formed without revisiting cells."}
+            ]
+        },
+
+        "regular_expression_matching": {
+            "number": 10,
+            "topics": ["String", "Dynamic Programming", "Recursion"],
+            "companies": ["Amazon", "Google", "Meta", "Microsoft", "Apple", "Bloomberg"],
+            "hints": [
+                "Use 2D Dynamic Programming: dp[i][j] is True if prefix s[0...i-1] matches prefix p[0...j-1].",
+                "dp[0][0] = True (empty matches empty). For patterns with '*' like 'a*', dp[0][j] = dp[0][j-2].",
+                "When p[j-1] == '*', check zero occurrences (dp[i][j-2]) or one/more occurrences if char matches (dp[i-1][j] and (s[i-1] == p[j-2] or p[j-2] == '.')). "
+            ],
+            "leetcode_examples": [
+                {"input": "s = \"aa\", p = \"a\"", "output": "false", "explanation": "\"a\" does not match the entire string \"aa\"."},
+                {"input": "s = \"aa\", p = \"a*\"", "output": "true", "explanation": "'*' means zero or more of the preceding element, 'a'. Therefore, by repeating 'a' once, it becomes \"aa\"."},
+                {"input": "s = \"ab\", p = \".*\"", "output": "true", "explanation": "\".*\" means \"zero or more (*) of any character (.)\"."}
             ]
         }
     }
-
-    def __init__(self, problems_dir: str = "problems", active_set: str = "set1"):
-        self.problems_dir = os.path.abspath(problems_dir)
-        self.active_set = active_set.lower()
-        self.problems: Dict[str, Dict[str, Any]] = {}
-        self.hidden_dirs: Dict[str, str] = {}
-        self.reload_problems()
 
     @staticmethod
     def get_hint_penalty(difficulty: str, hint_index: int) -> int:
@@ -285,8 +513,8 @@ class ProblemsManager:
     def get_available_sets(self) -> List[Dict[str, Any]]:
         """Lists available problem sets."""
         set_titles = {
-            "set1": "Problem Set 1 (Classic Challenges - 15 Problems)",
-            "set2": "Problem Set 2 (Advanced Challenges - 15 Problems)"
+            "set1": "Problem Set 1 (Blind 15 Fundamentals)",
+            "set2": "Problem Set 2 (LeetCode 15 Core Challenges)"
         }
         sets = []
         for s in ["set1", "set2"]:
@@ -347,6 +575,13 @@ class ProblemsManager:
                             self.problems[prob_id] = data
                     except Exception as e:
                         print(f"[ProblemsManager] Error loading {json_file}: {e}")
+
+    def __init__(self, problems_dir: str = "problems"):
+        self.problems_dir = os.path.abspath(problems_dir)
+        self.active_set = "set1"
+        self.problems: Dict[str, Dict[str, Any]] = {}
+        self.hidden_dirs: Dict[str, str] = {}
+        self.reload_problems()
 
     def get_problem_list(self, solved_set: Optional[Set[str]] = None) -> List[Dict[str, Any]]:
         """Returns problem catalog list for dashboard."""

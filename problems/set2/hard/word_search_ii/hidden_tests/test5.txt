@@ -1,0 +1,9 @@
+INPUT:
+3 3
+a b c
+d e f
+g h i
+3
+abed ifi cfi
+EXPECTED:
+abed cfi

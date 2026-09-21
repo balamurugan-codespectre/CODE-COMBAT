@@ -50,16 +50,19 @@ class Compiler:
     @classmethod
     def get_c_compiler_config(cls) -> Optional[Dict[str, Any]]:
         """Detects, configures, and validates a working C compiler."""
-        # 1. Look for clang executable
-        clang_candidates = [
+        mingw_root = cls._find_mingw_root()
+        clang_candidates = []
+        if mingw_root:
+            mingw_gcc = os.path.join(mingw_root, "bin", "gcc.exe")
+            if os.path.exists(mingw_gcc):
+                clang_candidates.append(mingw_gcc)
+        clang_candidates.extend([
+            shutil.which("gcc.exe"),
+            shutil.which("gcc"),
             r"C:\Program Files\LLVM\bin\clang.exe",
             shutil.which("clang.exe"),
-            shutil.which("clang"),
-            shutil.which("gcc.exe"),
-            shutil.which("gcc")
-        ]
-
-        mingw_root = cls._find_mingw_root()
+            shutil.which("clang")
+        ])
 
         for c in [x for x in clang_candidates if x and os.path.exists(x)]:
             # Build smoke-test command
@@ -115,7 +118,7 @@ class Compiler:
         """
         if problem_id:
             try:
-                source_code = Harness.wrap_code(language, problem_id, source_code)
+                source_code = Harness.wrap_code(problem_id, language, source_code)
             except Exception as e:
                 return False, f"Harness preparation error: {str(e)}", None
 

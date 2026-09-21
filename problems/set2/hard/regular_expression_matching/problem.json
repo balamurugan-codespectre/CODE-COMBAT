@@ -1,0 +1,26 @@
+{
+  "id": "regular_expression_matching",
+  "title": "Regular Expression Matching",
+  "difficulty": "Hard",
+  "category": "Dynamic Programming",
+  "points": 300,
+  "time_limit": 2.0,
+  "description": "Given an input string s and a pattern p, implement regular expression matching with support for '.' and '*' where: '.' Matches any single character. '*' Matches zero or more of the preceding element. The matching should cover the entire input string (not partial).",
+  "input_format": "First line contains string s. Second line contains pattern p.",
+  "output_format": "Print 'true' if s matches p, else 'false'.",
+  "constraints": "1 <= s.length <= 20, 1 <= p.length <= 20, s contains only lowercase English letters, p contains lowercase English letters, '.', and '*'.",
+  "sample_tests": [
+    {
+      "input": "aa\na",
+      "output": "false"
+    },
+    {
+      "input": "aa\na*",
+      "output": "true"
+    },
+    {
+      "input": "ab\n.*",
+      "output": "true"
+    }
+  ]
+}

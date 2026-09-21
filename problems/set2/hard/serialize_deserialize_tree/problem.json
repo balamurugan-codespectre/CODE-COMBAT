@@ -1,0 +1,26 @@
+{
+  "id": "serialize_deserialize_tree",
+  "title": "Serialize and Deserialize Binary Tree",
+  "difficulty": "Hard",
+  "category": "Tree / DFS",
+  "points": 300,
+  "time_limit": 2.0,
+  "description": "Serialization is the process of converting a data structure or object into a sequence of bits so that it can be stored in a file or memory buffer, or transmitted across a network connection link to be reconstructed later in the same or another computer environment. Design an algorithm to serialize and deserialize a binary tree.",
+  "input_format": "A single line containing the serialized tree nodes space-separated ('null' or '#' represents empty node).",
+  "output_format": "Print the level-order traversal of the deserialized tree space-separated (omitting trailing nulls).",
+  "constraints": "The number of nodes in the tree is in the range [0, 10^4], -1000 <= Node.val <= 1000",
+  "sample_tests": [
+    {
+      "input": "1 2 3 null null 4 5",
+      "output": "1 2 3 4 5"
+    },
+    {
+      "input": "null",
+      "output": ""
+    },
+    {
+      "input": "1",
+      "output": "1"
+    }
+  ]
+}

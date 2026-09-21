@@ -1,4 +1,0 @@
-INPUT:
-win logic power speed
-EXPECTED:
-speed power logic win

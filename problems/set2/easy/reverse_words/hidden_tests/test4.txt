@@ -1,4 +1,0 @@
-INPUT:
-alpha beta gamma delta
-EXPECTED:
-delta gamma beta alpha

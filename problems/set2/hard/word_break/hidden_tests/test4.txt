@@ -1,6 +1,0 @@
-INPUT:
-programmers
-2
-program mers
-EXPECTED:
-true

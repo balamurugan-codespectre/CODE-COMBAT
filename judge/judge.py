@@ -21,7 +21,7 @@ class Judge:
         self.config = config or {}
         self.compiler = Compiler(self.config)
         self.executor = Executor(self.config)
-        self.temp_root = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "data", ".tmp_builds"))
+        self.temp_root = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "data", "builds"))
         os.makedirs(self.temp_root, exist_ok=True)
 
     @staticmethod

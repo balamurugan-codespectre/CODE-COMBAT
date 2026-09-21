@@ -1,0 +1,8 @@
+INPUT:
+2 3
+a b c
+d e f
+2
+abc cba
+EXPECTED:
+abc cba

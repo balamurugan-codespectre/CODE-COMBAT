@@ -1,0 +1,4 @@
+INPUT:
+day
+EXPECTED:
+3
