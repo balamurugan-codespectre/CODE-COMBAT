@@ -240,7 +240,7 @@ class CodeCombatHandler(BaseHTTPRequestHandler):
 
         # GET /api/config
         if path == "/api/config":
-            tier_locks = self.config.get("tier_locks", {"easy": False, "medium": False, "hard": False})
+            tier_locks = self.config.get("tier_locks", {"easy": True, "medium": True, "hard": True})
             public_config = {
                 "competition_name": self.config.get("competition_name", "CODE COMBAT Pro"),
                 "tagline": self.config.get("tagline", "Compete. Code. Conquer."),
@@ -261,7 +261,7 @@ class CodeCombatHandler(BaseHTTPRequestHandler):
         if path == "/api/problems":
             participant_id = query.get("participant_id", [None])[0]
             solved_set = self.storage.get_solved_problems(participant_id) if participant_id else set()
-            tier_locks = self.config.get("tier_locks", {"easy": False, "medium": False, "hard": False})
+            tier_locks = self.config.get("tier_locks", {"easy": True, "medium": True, "hard": True})
             problems = self.problems_manager.get_problem_list(solved_set, tier_locks=tier_locks)
             self.send_json({
                 "problems": problems,
@@ -273,7 +273,7 @@ class CodeCombatHandler(BaseHTTPRequestHandler):
         if path.startswith("/api/problems/"):
             prob_id = path.replace("/api/problems/", "").strip()
             participant_id = query.get("participant_id", [None])[0]
-            tier_locks = self.config.get("tier_locks", {"easy": False, "medium": False, "hard": False})
+            tier_locks = self.config.get("tier_locks", {"easy": True, "medium": True, "hard": True})
             detail = self.problems_manager.get_problem_detail(prob_id, participant_id=participant_id, storage=self.storage, tier_locks=tier_locks)
             if detail:
                 self.send_json(detail)
@@ -283,7 +283,7 @@ class CodeCombatHandler(BaseHTTPRequestHandler):
 
         # GET /api/admin/tier-locks or /api/tier-locks
         if path in ["/api/admin/tier-locks", "/api/tier-locks"]:
-            tier_locks = self.config.get("tier_locks", {"easy": False, "medium": False, "hard": False})
+            tier_locks = self.config.get("tier_locks", {"easy": True, "medium": True, "hard": True})
             self.send_json({
                 "success": True,
                 "tier_locks": tier_locks
