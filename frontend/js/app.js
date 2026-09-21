@@ -1636,13 +1636,10 @@ const App = {
         const data = await res.json();
         if (!data.success) return;
 
-        // 1. Sync Timer
-        this.updateGlobalTimer(data.remaining_seconds, data.is_frozen);
-
-        // 2. Sync Broadcast Announcement
+        // 1. Sync Broadcast Announcement
         this.updateBroadcast(data.broadcast);
 
-        // 3. Sync Tier Locks
+        // 2. Sync Tier Locks
         if (data.tier_locks) {
           const locksChanged = JSON.stringify(data.tier_locks) !== JSON.stringify(this.tierLocks);
           if (locksChanged) {
@@ -1660,7 +1657,7 @@ const App = {
           }
         }
 
-        // 4. Sync Leaderboard & Activity Feed
+        // 3. Sync Leaderboard & Activity Feed
         const freezeBadge = document.getElementById('leaderboard-freeze-badge');
         if (freezeBadge) {
           freezeBadge.style.display = data.is_frozen ? 'inline-block' : 'none';
@@ -1677,7 +1674,7 @@ const App = {
         this.renderActivityFeed(data.recent_activity || []);
 
         // Always update Projector View if current
-        this.renderProjectorView(this.leaderboardData || [], data.remaining_seconds, data.is_frozen);
+        this.renderProjectorView(this.leaderboardData || [], data.is_frozen);
 
       } catch (err) {
         // Silent offline resilience
@@ -1686,49 +1683,6 @@ const App = {
 
     poll();
     this.syncInterval = setInterval(poll, 2500);
-  },
-
-  formatTime(seconds) {
-    if (seconds <= 0) return '00:00';
-    const mins = Math.floor(seconds / 60);
-    const secs = seconds % 60;
-    return `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
-  },
-
-  updateGlobalTimer(remainingSec, isFrozen) {
-    const formatted = this.formatTime(remainingSec);
-    const navTimerText = document.getElementById('nav-timer-text');
-    const navTimerLabel = document.getElementById('nav-timer-label');
-    const navCapsule = document.getElementById('nav-timer-capsule');
-    const projectorTimer = document.getElementById('projector-timer');
-    const projectorStatus = document.getElementById('projector-timer-status');
-
-    if (navTimerText) navTimerText.textContent = formatted;
-    if (projectorTimer) projectorTimer.textContent = formatted;
-
-    if (navCapsule) {
-      navCapsule.className = 'timer-capsule';
-      if (isFrozen) {
-        navCapsule.classList.add('timer-frozen');
-        if (navTimerLabel) navTimerLabel.textContent = '❄️ FROZEN';
-        if (projectorStatus) projectorStatus.textContent = '❄️ LEADERBOARD FROZEN';
-      } else if (remainingSec <= 0) {
-        navCapsule.classList.add('timer-expired');
-        if (navTimerLabel) navTimerLabel.textContent = 'TIME OVER';
-        if (projectorStatus) projectorStatus.textContent = '⏹️ TIME COMPLETED';
-      } else if (remainingSec <= 300) {
-        navCapsule.classList.add('timer-danger-pulsing');
-        if (navTimerLabel) navTimerLabel.textContent = 'FINAL 5M';
-        if (projectorStatus) projectorStatus.textContent = '🔴 FINAL 5 MINUTES';
-      } else if (remainingSec <= 900) {
-        navCapsule.classList.add('timer-amber');
-        if (navTimerLabel) navTimerLabel.textContent = '15M LEFT';
-        if (projectorStatus) projectorStatus.textContent = '🟡 15 MINUTES REMAINING';
-      } else {
-        if (navTimerLabel) navTimerLabel.textContent = 'LIVE';
-        if (projectorStatus) projectorStatus.textContent = '🟢 COMPETITION ACTIVE';
-      }
-    }
   },
 
   updateBroadcast(broadcast) {
@@ -1804,7 +1758,7 @@ const App = {
     }).join('');
   },
 
-  renderProjectorView(rows, remainingSec, isFrozen) {
+  renderProjectorView(rows, isFrozen) {
     const tableBody = document.getElementById('projector-table-body');
     if (!tableBody) return;
 

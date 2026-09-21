@@ -1,17 +1,1 @@
-[
-  {
-    "participant_id": "user_baa390c8",
-    "name": "Realtime Test User",
-    "college": "CSE",
-    "reg_no": "RT-101",
-    "score": 0,
-    "registered_at": "2026-09-21T22:43:05.539981",
-    "solved_count": 0,
-    "easy_solved": 0,
-    "medium_solved": 0,
-    "hard_solved": 0,
-    "total_runtime": 0.0,
-    "last_submission_time": "2026-09-21T22:43:05.539981",
-    "rank": 1
-  }
-]
+[]
