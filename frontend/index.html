@@ -525,17 +525,15 @@
 
         <form onsubmit="Admin.handleLogin(event)" style="display: flex; flex-direction: column; gap: 1.15rem; text-align: left;">
           <div>
-            <label for="admin-login-id" style="display:flex; justify-content:space-between; font-size:0.85rem; color:var(--text-secondary); margin-bottom:0.35rem; font-weight:600;">
-              <span>Administrator ID</span>
-              <span style="font-size:0.75rem; color:var(--text-muted); font-weight:normal;">Default: admin</span>
+            <label for="admin-login-id" style="display:block; font-size:0.85rem; color:var(--text-secondary); margin-bottom:0.35rem; font-weight:600;">
+              Administrator ID
             </label>
             <input type="text" id="admin-login-id" class="form-control" placeholder="Enter Admin ID" required autocomplete="username" style="width:100%;">
           </div>
 
           <div>
-            <label for="admin-login-pass" style="display:flex; justify-content:space-between; font-size:0.85rem; color:var(--text-secondary); margin-bottom:0.35rem; font-weight:600;">
-              <span>Admin Password</span>
-              <span style="font-size:0.75rem; color:var(--text-muted); font-weight:normal;">Default: admin123</span>
+            <label for="admin-login-pass" style="display:block; font-size:0.85rem; color:var(--text-secondary); margin-bottom:0.35rem; font-weight:600;">
+              Admin Password
             </label>
             <input type="password" id="admin-login-pass" class="form-control" placeholder="Enter Admin Password" required autocomplete="current-password" style="width:100%;">
           </div>

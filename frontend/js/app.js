@@ -28,7 +28,12 @@ const App = {
       }
     }
 
-    // 3. Fetch initial configuration & problems
+    // 3. Ensure Admin is locked on startup
+    if (window.Admin && typeof window.Admin.lock === 'function') {
+      window.Admin.lock();
+    }
+
+    // 4. Fetch initial configuration & problems
     this.loadProblems();
     this.loadLeaderboard();
   },
@@ -62,6 +67,13 @@ const App = {
     if (protectedViews.includes(viewId) && !this.participant) {
       this.showToast('Please register first to enter the arena and view rules/challenges!', 'warning');
       viewId = 'register';
+    }
+
+    // Always lock Admin Panel whenever entering Admin or leaving Admin view
+    if (viewId === 'admin' || this.currentView === 'admin') {
+      if (window.Admin && typeof window.Admin.lock === 'function') {
+        window.Admin.lock();
+      }
     }
 
     document.querySelectorAll('.view-section').forEach(sec => sec.classList.remove('active'));

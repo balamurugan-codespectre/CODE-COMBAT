@@ -3,16 +3,43 @@
  */
 
 const Admin = {
+  token: '',
+  adminId: 'admincse',
+
   getToken() {
-    return sessionStorage.getItem('cc_admin_token') || localStorage.getItem('cc_admin_token') || '';
+    return this.token || '';
   },
 
   getAdminId() {
-    return sessionStorage.getItem('cc_admin_id') || localStorage.getItem('cc_admin_id') || 'admin';
+    return this.adminId || 'admincse';
   },
 
   isAuthenticated() {
-    return Boolean(this.getToken());
+    return Boolean(this.token);
+  },
+
+  lock() {
+    this.token = '';
+    this.adminId = 'admincse';
+    sessionStorage.removeItem('cc_admin_token');
+    sessionStorage.removeItem('cc_admin_id');
+    localStorage.removeItem('cc_admin_token');
+    localStorage.removeItem('cc_admin_id');
+
+    const idInput = document.getElementById('admin-login-id');
+    const passInput = document.getElementById('admin-login-pass');
+    const authErrorEl = document.getElementById('admin-auth-error');
+    if (idInput) idInput.value = '';
+    if (passInput) passInput.value = '';
+    if (authErrorEl) {
+      authErrorEl.textContent = '';
+      authErrorEl.style.display = 'none';
+    }
+
+    const gateEl = document.getElementById('admin-auth-gate');
+    const portalEl = document.getElementById('admin-portal-content');
+    if (gateEl) gateEl.style.display = 'block';
+    if (portalEl) portalEl.style.display = 'none';
   },
 
   getAuthHeaders() {
@@ -54,12 +81,12 @@ const Admin = {
     const passInput = document.getElementById('admin-login-pass');
     const errorEl = document.getElementById('admin-auth-error');
 
-    const adminId = idInput ? idInput.value.trim() : 'admin';
+    const adminId = idInput ? idInput.value.trim() : '';
     const password = passInput ? passInput.value.trim() : '';
 
-    if (!password) {
+    if (!adminId || !password) {
       if (errorEl) {
-        errorEl.textContent = 'Please enter admin password.';
+        errorEl.textContent = 'Please enter both Administrator ID and Password.';
         errorEl.style.display = 'block';
       }
       return;
@@ -77,8 +104,8 @@ const Admin = {
 
       const data = await res.json();
       if (data.authenticated && data.token) {
-        sessionStorage.setItem('cc_admin_token', data.token);
-        sessionStorage.setItem('cc_admin_id', data.admin_id || adminId);
+        this.token = data.token;
+        this.adminId = data.admin_id || adminId;
 
         if (idInput) idInput.value = '';
         if (passInput) passInput.value = '';
@@ -105,10 +132,7 @@ const Admin = {
   },
 
   logout() {
-    sessionStorage.removeItem('cc_admin_token');
-    sessionStorage.removeItem('cc_admin_id');
-    localStorage.removeItem('cc_admin_token');
-    localStorage.removeItem('cc_admin_id');
+    this.lock();
     this.checkAuthUI();
     App.showToast('Admin Portal locked successfully.', 'info');
   },
@@ -231,7 +255,7 @@ const Admin = {
       const data = await res.json();
       if (data.success) {
         if (newId) {
-          sessionStorage.setItem('cc_admin_id', newId);
+          this.adminId = newId;
           const displayIdEl = document.getElementById('admin-display-id');
           if (displayIdEl) displayIdEl.textContent = newId;
         }
