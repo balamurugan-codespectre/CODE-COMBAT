@@ -31,5 +31,10 @@
       "extension": "c"
     }
   ],
-  "active_problem_set": "set2"
+  "active_problem_set": "set2",
+  "tier_locks": {
+    "easy": false,
+    "medium": false,
+    "hard": false
+  }
 }

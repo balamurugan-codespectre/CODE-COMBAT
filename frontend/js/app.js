@@ -150,12 +150,27 @@ const App = {
     document.getElementById('user-score-display').textContent = `${this.participant.score || 0} pts`;
   },
 
+  tierLocks: { easy: false, medium: false, hard: false },
+
   async loadProblems() {
     try {
       const pid = this.participant ? `?participant_id=${this.participant.id}` : '';
       const res = await fetch(`/api/problems${pid}`);
       const data = await res.json();
       this.problems = data.problems || [];
+      this.tierLocks = data.tier_locks || { easy: false, medium: false, hard: false };
+
+      const easyLocked = Boolean(this.tierLocks.easy);
+      const medLocked = Boolean(this.tierLocks.medium);
+      const hardLocked = Boolean(this.tierLocks.hard);
+      
+      const lockEasyEl = document.getElementById('chip-lock-easy');
+      const lockMedEl = document.getElementById('chip-lock-medium');
+      const lockHardEl = document.getElementById('chip-lock-hard');
+      if (lockEasyEl) lockEasyEl.textContent = easyLocked ? '🔒' : '';
+      if (lockMedEl) lockMedEl.textContent = medLocked ? '🔒' : '';
+      if (lockHardEl) lockHardEl.textContent = hardLocked ? '🔒' : '';
+
       this.renderProblemsTable(this.problems);
     } catch (e) {
       this.showToast('Failed to load problems: ' + e.message, 'error');
@@ -167,25 +182,45 @@ const App = {
     if (!tbody) return;
 
     tbody.innerHTML = probs.map(p => {
+      const isLocked = Boolean(p.locked);
       const isSolved = Boolean(p.solved || p.status === 'Solved');
+      const roundNum = p.round_num || (p.difficulty === 'Easy' ? 1 : (p.difficulty === 'Medium' ? 2 : 3));
+      const roundName = p.round_name || `Round ${roundNum} (${p.difficulty})`;
+
+      let statusBadge = '';
+      if (isLocked) {
+        statusBadge = '<span class="badge" style="background:rgba(239,68,68,0.15); color:var(--accent-red); border:1px solid var(--accent-red); font-weight:700;">🔒 Locked</span>';
+      } else if (isSolved) {
+        statusBadge = '<span class="badge badge-solved" style="background:rgba(16,185,129,0.2); color:var(--accent-green); border:1px solid var(--accent-green); font-weight:700;">✓ Solved</span>';
+      } else {
+        statusBadge = '<span class="badge" style="background:rgba(148,163,184,0.1); color:var(--text-muted); border:1px solid var(--border-color);">Todo</span>';
+      }
+
+      let actionButton = '';
+      if (isLocked) {
+        actionButton = `<button class="btn btn-secondary" style="padding:0.35rem 0.85rem; font-size:0.8rem; font-weight:600; cursor:pointer; border-color:var(--accent-amber); color:var(--accent-amber);" onclick="event.stopPropagation(); App.openRoundLockModal('${p.id}', ${roundNum}, '${p.difficulty}')">🔒 Unlock Round</button>`;
+      } else if (isSolved) {
+        actionButton = `<button class="btn btn-solved" style="padding:0.35rem 0.85rem; font-size:0.8rem; cursor:pointer;" onclick="event.stopPropagation(); App.openProblem('${p.id}')">Solved ✓</button>`;
+      } else {
+        actionButton = `<button class="btn btn-primary" style="padding:0.35rem 0.85rem; font-size:0.8rem; font-weight:600; cursor:pointer;" onclick="event.stopPropagation(); App.openProblem('${p.id}')">Solve ➔</button>`;
+      }
+
       return `
-        <tr onclick="App.openProblem('${p.id}')">
-          <td>
-            ${isSolved 
-              ? '<span class="badge badge-solved" style="background:rgba(16,185,129,0.2); color:var(--accent-green); border:1px solid var(--accent-green); font-weight:700;">✓ Solved</span>' 
-              : '<span class="badge" style="background:rgba(148,163,184,0.1); color:var(--text-muted); border:1px solid var(--border-color);">Todo</span>'}
-          </td>
+        <tr onclick="App.openProblem('${p.id}')" style="${isLocked ? 'opacity:0.85; background:rgba(239,68,68,0.02);' : ''}">
+          <td>${statusBadge}</td>
           <td style="font-weight:600; color:#fff;">
             ${p.title}
+            ${isLocked ? '<span style="font-size:0.75rem; color:var(--accent-amber); margin-left:0.4rem;">(Round Locked)</span>' : ''}
             ${isSolved ? '<span style="color:var(--accent-green); font-size:0.85rem; margin-left:0.5rem;" title="Solved">✓</span>' : ''}
           </td>
-          <td><span class="badge badge-${p.difficulty.toLowerCase()}">${p.difficulty}</span></td>
-          <td style="font-family:var(--font-mono); font-weight:700; color:var(--accent-cyan);">${p.points} pts</td>
           <td>
-            ${isSolved
-              ? `<button class="btn btn-solved" style="padding:0.35rem 0.85rem; font-size:0.8rem; cursor:pointer;" onclick="event.stopPropagation(); App.openProblem('${p.id}')">Solved ✓</button>`
-              : `<button class="btn btn-primary" style="padding:0.35rem 0.85rem; font-size:0.8rem; font-weight:600; cursor:pointer;" onclick="event.stopPropagation(); App.openProblem('${p.id}')">Solve ➔</button>`
-            }
+            <span class="badge badge-${p.difficulty.toLowerCase()}" style="font-size:0.75rem;">
+              Round ${roundNum}: ${p.difficulty}
+            </span>
+          </td>
+          <td style="font-family:var(--font-mono); font-weight:700; color:var(--accent-cyan);">${p.points} pts</td>
+          <td style="text-align:center;">
+            ${actionButton}
           </td>
         </tr>
       `;
@@ -337,19 +372,40 @@ const App = {
       this.navigate('register');
       return;
     }
+
+    const probMeta = this.problems.find(p => p.id === problemId);
+    if (probMeta && probMeta.locked) {
+      const roundNum = probMeta.round_num || (probMeta.difficulty === 'Easy' ? 1 : (probMeta.difficulty === 'Medium' ? 2 : 3));
+      this.openRoundLockModal(problemId, roundNum, probMeta.difficulty || 'Easy');
+      return;
+    }
+
     try {
       const pidParam = this.participant ? `?participant_id=${this.participant.id}` : '';
       const res = await fetch(`/api/problems/${problemId}${pidParam}`);
+      if (!res.ok) {
+        if (res.status === 403) {
+          const errData = await res.json();
+          this.showToast(errData.error || 'This round is currently locked by the administrator.', 'warning');
+          const roundNum = probMeta ? probMeta.round_num : 1;
+          const diff = probMeta ? probMeta.difficulty : 'Easy';
+          this.openRoundLockModal(problemId, roundNum, diff);
+          return;
+        }
+      }
       const prob = await res.json();
+      if (prob.locked) {
+        this.openRoundLockModal(problemId, prob.round_num || 1, prob.difficulty || 'Easy');
+        return;
+      }
       this.activeProblem = prob;
 
-      const probMeta = this.problems.find(p => p.id === problemId);
       const isSolved = Boolean(probMeta && (probMeta.solved || probMeta.status === 'Solved'));
       const probNum = prob.number ? `${prob.number}. ` : '';
 
       document.getElementById('ide-prob-title').textContent = `${probNum}${prob.title}`;
       const badge = document.getElementById('ide-prob-badge');
-      badge.innerHTML = `${prob.difficulty}${isSolved ? ' &bull; &check; Solved' : ''}`;
+      badge.innerHTML = `Round ${prob.round_num || 1}: ${prob.difficulty}${isSolved ? ' &bull; &check; Solved' : ''}`;
       badge.className = `badge badge-${prob.difficulty.toLowerCase()}`;
 
       // 1. Interactive Chips (Topics, Companies, Hints)
@@ -606,6 +662,133 @@ const App = {
   resetCode() {
     if (confirm('Reset code to starter template?')) {
       this.handleLanguageChange();
+    }
+  },
+
+  openRoundLockModal(problemId, roundNum, difficulty) {
+    const modal = document.getElementById('modal-round-lock');
+    const titleEl = document.getElementById('round-lock-modal-title');
+    const descEl = document.getElementById('round-lock-modal-desc');
+    const tierInput = document.getElementById('round-lock-tier');
+    const targetInput = document.getElementById('round-lock-target-prob');
+    const idInput = document.getElementById('round-lock-id');
+    const passInput = document.getElementById('round-lock-pass');
+    const errorEl = document.getElementById('round-lock-error');
+
+    const diff = (difficulty || 'Easy').trim();
+    const diffLower = diff.toLowerCase();
+    const round = roundNum || (diffLower === 'easy' ? 1 : (diffLower === 'medium' ? 2 : 3));
+
+    if (titleEl) titleEl.innerHTML = `🔒 Category ${round}: ${diff} Tier Locked`;
+    if (descEl) descEl.innerHTML = `<strong>Round ${round} (${diff} Challenges)</strong> is currently locked by the event administrator for sequential round competition. Enter administrator credentials to unlock this entire round for all participants:`;
+    if (tierInput) tierInput.value = diffLower;
+    if (targetInput) targetInput.value = problemId || '';
+    if (errorEl) {
+      errorEl.textContent = '';
+      errorEl.style.display = 'none';
+    }
+
+    if (idInput) {
+      const savedAdminId = (typeof Admin !== 'undefined' && Admin.getAdminId && Admin.getAdminId()) || localStorage.getItem('cc_admin_id') || '';
+      idInput.value = savedAdminId;
+    }
+    if (passInput) passInput.value = '';
+
+    if (modal) {
+      modal.style.display = 'flex';
+      setTimeout(() => {
+        if (idInput && !idInput.value.trim()) {
+          idInput.focus();
+        } else if (passInput) {
+          passInput.focus();
+        }
+      }, 50);
+    }
+  },
+
+  closeRoundLockModal() {
+    const modal = document.getElementById('modal-round-lock');
+    if (modal) modal.style.display = 'none';
+  },
+
+  toggleRoundPassVisibility() {
+    const passInput = document.getElementById('round-lock-pass');
+    if (!passInput) return;
+    passInput.type = passInput.type === 'password' ? 'text' : 'password';
+  },
+
+  async submitRoundUnlock(e) {
+    if (e) e.preventDefault();
+    const tierInput = document.getElementById('round-lock-tier');
+    const targetInput = document.getElementById('round-lock-target-prob');
+    const idInput = document.getElementById('round-lock-id');
+    const passInput = document.getElementById('round-lock-pass');
+    const errorEl = document.getElementById('round-lock-error');
+    const submitBtn = document.getElementById('btn-round-lock-submit');
+
+    const tier = (tierInput ? tierInput.value : 'easy').toLowerCase();
+    const targetProb = targetInput ? targetInput.value : '';
+    const adminId = idInput ? idInput.value.trim() : '';
+    const password = passInput ? passInput.value.trim() : '';
+
+    if (!adminId || !password) {
+      if (errorEl) {
+        errorEl.textContent = 'Please enter both Administrator ID and Password.';
+        errorEl.style.display = 'block';
+      }
+      return;
+    }
+
+    if (submitBtn) {
+      submitBtn.disabled = true;
+      submitBtn.textContent = 'Unlocking Round...';
+    }
+
+    try {
+      const res = await fetch('/api/admin/toggle-tier-lock', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          tier: tier,
+          locked: false,
+          admin_id: adminId,
+          password: password
+        })
+      });
+
+      const data = await res.json();
+      if (data.success) {
+        localStorage.setItem('cc_admin_id', adminId);
+        this.closeRoundLockModal();
+        this.showToast(data.message || `🔓 Category ${tier.toUpperCase()} unlocked for all participants!`, 'success');
+        
+        // Refresh catalog
+        await this.loadProblems();
+
+        // If user was trying to open a specific problem in this round, open it!
+        if (targetProb) {
+          this.openProblem(targetProb);
+        }
+      } else {
+        const errMsg = data.error || 'Invalid Admin credentials. Unlock failed.';
+        if (errorEl) {
+          errorEl.textContent = errMsg;
+          errorEl.style.display = 'block';
+        }
+        this.showToast(errMsg, 'error');
+      }
+    } catch (err) {
+      const msg = 'Unlock request failed: ' + err.message;
+      if (errorEl) {
+        errorEl.textContent = msg;
+        errorEl.style.display = 'block';
+      }
+      this.showToast(msg, 'error');
+    } finally {
+      if (submitBtn) {
+        submitBtn.disabled = false;
+        submitBtn.textContent = '🔓 Unlock Category / Round';
+      }
     }
   },
 

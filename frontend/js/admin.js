@@ -5,6 +5,7 @@
 const Admin = {
   token: '',
   adminId: 'admincse',
+  tierLocks: { easy: false, medium: false, hard: false },
 
   getToken() {
     return this.token || '';
@@ -64,6 +65,7 @@ const Admin = {
       if (portalEl) portalEl.style.display = 'flex';
       if (displayIdEl) displayIdEl.textContent = this.getAdminId();
       this.loadSets();
+      this.loadTierLocks();
       this.checkHealth();
     } else {
       if (gateEl) gateEl.style.display = 'block';
@@ -217,6 +219,130 @@ const Admin = {
       }
     } catch (e) {
       App.showToast('Network error switching set: ' + e.message, 'error');
+    }
+  },
+
+  async loadTierLocks() {
+    try {
+      const res = await fetch('/api/admin/tier-locks', {
+        headers: this.getAuthHeaders()
+      });
+      if (!res.ok) return;
+      const data = await res.json();
+      if (data.tier_locks) {
+        this.tierLocks = data.tier_locks;
+        this.renderTierLocksUI();
+      }
+    } catch (e) {
+      console.warn('Error loading tier locks:', e);
+    }
+  },
+
+  renderTierLocksUI() {
+    const tiers = [
+      { id: 'easy', num: 1, name: 'Easy', color: 'var(--accent-green)', badgeBg: 'rgba(16,185,129,0.15)', badgeBorder: 'var(--accent-green)', badgeColor: 'var(--accent-green)' },
+      { id: 'medium', num: 2, name: 'Medium', color: 'var(--accent-amber)', badgeBg: 'rgba(245,158,11,0.15)', badgeBorder: 'var(--accent-amber)', badgeColor: 'var(--accent-amber)' },
+      { id: 'hard', num: 3, name: 'Hard', color: 'var(--accent-red)', badgeBg: 'rgba(239,68,68,0.15)', badgeBorder: 'var(--accent-red)', badgeColor: 'var(--accent-red)' }
+    ];
+
+    tiers.forEach(t => {
+      const isLocked = Boolean(this.tierLocks[t.id]);
+      const badge = document.getElementById(`badge-lock-${t.id}`);
+      const btn = document.getElementById(`btn-toggle-${t.id}`);
+      const card = document.getElementById(`admin-tier-card-${t.id}`);
+
+      if (badge) {
+        if (isLocked) {
+          badge.textContent = '🔒 LOCKED';
+          badge.style.background = 'rgba(239,68,68,0.15)';
+          badge.style.borderColor = 'var(--accent-red)';
+          badge.style.color = 'var(--accent-red)';
+        } else {
+          badge.textContent = '🔓 ACTIVE';
+          badge.style.background = t.badgeBg;
+          badge.style.borderColor = t.badgeBorder;
+          badge.style.color = t.badgeColor;
+        }
+      }
+
+      if (btn) {
+        if (isLocked) {
+          btn.innerHTML = `🔓 Unlock Round ${t.num} (${t.name})`;
+          btn.className = 'btn btn-primary';
+          btn.style.background = 'linear-gradient(135deg, var(--accent-cyan), #0070f3)';
+          btn.style.color = '#fff';
+        } else {
+          btn.innerHTML = `🔒 Lock Round ${t.num} (${t.name})`;
+          btn.className = 'btn btn-secondary';
+          btn.style.background = 'transparent';
+          btn.style.color = 'var(--accent-red)';
+          btn.style.borderColor = 'rgba(239,68,68,0.4)';
+        }
+      }
+
+      if (card) {
+        if (isLocked) {
+          card.style.borderColor = 'rgba(239,68,68,0.4)';
+          card.style.background = 'rgba(239,68,68,0.03)';
+        } else {
+          card.style.borderColor = `rgba(0, 242, 254, 0.25)`;
+          card.style.background = 'var(--bg-primary)';
+        }
+      }
+    });
+  },
+
+  async toggleTierLock(tier) {
+    const currentLocked = Boolean(this.tierLocks[tier]);
+    const nextLocked = !currentLocked;
+
+    try {
+      const res = await fetch('/api/admin/toggle-tier-lock', {
+        method: 'POST',
+        headers: this.getAuthHeaders(),
+        body: JSON.stringify({
+          token: this.getToken(),
+          tier: tier,
+          locked: nextLocked
+        })
+      });
+
+      const data = await res.json();
+      if (data.success && data.tier_locks) {
+        this.tierLocks = data.tier_locks;
+        this.renderTierLocksUI();
+        App.loadProblems();
+        App.showToast(data.message || `Round (${tier.toUpperCase()}) updated!`, 'success');
+      } else {
+        App.showToast(data.error || 'Failed to update round lock status.', 'error');
+      }
+    } catch (e) {
+      App.showToast('Network error updating round lock: ' + e.message, 'error');
+    }
+  },
+
+  async applyTierPreset(preset) {
+    try {
+      const res = await fetch('/api/admin/toggle-tier-lock', {
+        method: 'POST',
+        headers: this.getAuthHeaders(),
+        body: JSON.stringify({
+          token: this.getToken(),
+          preset: preset
+        })
+      });
+
+      const data = await res.json();
+      if (data.success && data.tier_locks) {
+        this.tierLocks = data.tier_locks;
+        this.renderTierLocksUI();
+        App.loadProblems();
+        App.showToast(data.message || 'Preset applied successfully!', 'success');
+      } else {
+        App.showToast(data.error || 'Failed to apply preset.', 'error');
+      }
+    } catch (e) {
+      App.showToast('Network error applying preset: ' + e.message, 'error');
     }
   },
 

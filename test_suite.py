@@ -459,6 +459,26 @@ class Solution:
     assert_test("Reset Competition wipes hint unlocks and scores", len(storage.get_unlocked_hints(p_player["id"], "two_sum")) == 0)
 
     # ---------------------------------------------------------
+    # TEST 10: Round-Wise Category Locks (Easy / Medium / Hard)
+    # ---------------------------------------------------------
+    print("\n--- [Phase 10: Round-Wise Category Locks & Admin Controls] ---")
+    tier_locks_sample = {"easy": False, "medium": True, "hard": True}
+    catalog_with_locks = problems_mgr.get_problem_list(tier_locks=tier_locks_sample)
+    assert_test("All 15 Problems annotated with Round Numbers (1, 2, 3)",
+                all(p.get("round_num") in [1, 2, 3] for p in catalog_with_locks))
+    assert_test("Category 1 (Easy) is Unlocked",
+                all(p.get("locked") is False for p in catalog_with_locks if p["difficulty"] == "Easy"))
+    assert_test("Category 2 (Medium) is Locked",
+                all(p.get("locked") is True for p in catalog_with_locks if p["difficulty"] == "Medium"))
+    assert_test("Category 3 (Hard) is Locked",
+                all(p.get("locked") is True for p in catalog_with_locks if p["difficulty"] == "Hard"))
+
+    all_unlocked_sample = {"easy": False, "medium": False, "hard": False}
+    catalog_unlocked = problems_mgr.get_problem_list(tier_locks=all_unlocked_sample)
+    assert_test("Unlock All Rounds opens all 15 problems",
+                all(p.get("locked") is False for p in catalog_unlocked))
+
+    # ---------------------------------------------------------
     # FINAL SUMMARY
     # ---------------------------------------------------------
     print("\n======================================================================")

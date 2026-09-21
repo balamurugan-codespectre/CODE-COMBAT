@@ -240,11 +240,13 @@ class CodeCombatHandler(BaseHTTPRequestHandler):
 
         # GET /api/config
         if path == "/api/config":
+            tier_locks = self.config.get("tier_locks", {"easy": False, "medium": False, "hard": False})
             public_config = {
                 "competition_name": self.config.get("competition_name", "CODE COMBAT Pro"),
                 "tagline": self.config.get("tagline", "Compete. Code. Conquer."),
                 "description": self.config.get("description", "An offline competitive programming platform."),
                 "competition_duration_minutes": self.config.get("competition_duration_minutes", 60),
+                "tier_locks": tier_locks,
                 "supported_languages": self.config.get("supported_languages", [
                     {"id": "python", "name": "Python 3 (Normal / Script)", "extension": "py"},
                     {"id": "python_class", "name": "Python 3 (Class / LeetCode)", "extension": "py"},
@@ -259,19 +261,33 @@ class CodeCombatHandler(BaseHTTPRequestHandler):
         if path == "/api/problems":
             participant_id = query.get("participant_id", [None])[0]
             solved_set = self.storage.get_solved_problems(participant_id) if participant_id else set()
-            problems = self.problems_manager.get_problem_list(solved_set)
-            self.send_json({"problems": problems})
+            tier_locks = self.config.get("tier_locks", {"easy": False, "medium": False, "hard": False})
+            problems = self.problems_manager.get_problem_list(solved_set, tier_locks=tier_locks)
+            self.send_json({
+                "problems": problems,
+                "tier_locks": tier_locks
+            })
             return
 
         # GET /api/problems/<id>
         if path.startswith("/api/problems/"):
             prob_id = path.replace("/api/problems/", "").strip()
             participant_id = query.get("participant_id", [None])[0]
-            detail = self.problems_manager.get_problem_detail(prob_id, participant_id=participant_id, storage=self.storage)
+            tier_locks = self.config.get("tier_locks", {"easy": False, "medium": False, "hard": False})
+            detail = self.problems_manager.get_problem_detail(prob_id, participant_id=participant_id, storage=self.storage, tier_locks=tier_locks)
             if detail:
                 self.send_json(detail)
             else:
                 self.send_error_json("Problem not found", 404)
+            return
+
+        # GET /api/admin/tier-locks or /api/tier-locks
+        if path in ["/api/admin/tier-locks", "/api/tier-locks"]:
+            tier_locks = self.config.get("tier_locks", {"easy": False, "medium": False, "hard": False})
+            self.send_json({
+                "success": True,
+                "tier_locks": tier_locks
+            })
             return
 
         # GET /api/leaderboard
@@ -396,6 +412,13 @@ class CodeCombatHandler(BaseHTTPRequestHandler):
                 self.send_error_json(f"Problem '{problem_id}' not found.", 404)
                 return
 
+            diff_key = prob_detail.get("difficulty", "Easy").lower()
+            tier_locks = self.config.get("tier_locks", {})
+            if tier_locks.get(diff_key, False) and not self.is_admin_authenticated(body):
+                round_name = prob_detail.get("round_name", f"Round ({diff_key.capitalize()})")
+                self.send_error_json(f"Access Denied: {round_name} is currently locked by the event administrator.", 403)
+                return
+
             pid = prob_detail.get("id", problem_id)
             sample_tests = prob_detail.get("sample_tests", [])
             timeout = float(prob_detail.get("time_limit", self.config.get("execution_timeout_seconds", 3.0)))
@@ -482,6 +505,13 @@ class CodeCombatHandler(BaseHTTPRequestHandler):
             prob_detail = self.problems_manager.get_problem_detail(problem_id)
             if not prob_detail:
                 self.send_error_json(f"Problem '{problem_id}' not found.", 404)
+                return
+
+            diff_key = prob_detail.get("difficulty", "Easy").lower()
+            tier_locks = self.config.get("tier_locks", {})
+            if tier_locks.get(diff_key, False) and not self.is_admin_authenticated(body):
+                round_name = prob_detail.get("round_name", f"Round ({diff_key.capitalize()})")
+                self.send_error_json(f"Submission Rejected: {round_name} is currently locked by the event administrator.", 403)
                 return
 
             hidden_dir = self.problems_manager.get_hidden_tests_dir(problem_id)
@@ -682,6 +712,65 @@ class CodeCombatHandler(BaseHTTPRequestHandler):
                 "success": True,
                 "admin_id": self.auth.admin_id,
                 "message": "Admin credentials updated successfully."
+            })
+            return
+
+        # POST /api/admin/toggle-tier-lock or /api/admin/tier-locks or /api/admin/unlock-round
+        if path in ["/api/admin/toggle-tier-lock", "/api/admin/tier-locks", "/api/admin/unlock-round"]:
+            if not self.is_admin_authenticated(body):
+                self.send_error_json("Unauthorized. Admin ID & Password or active session required.", 401)
+                return
+
+            tier_locks = dict(self.config.get("tier_locks", {"easy": False, "medium": False, "hard": False}))
+            preset = body.get("preset")
+            tier = (body.get("tier") or "").strip().lower()
+            locked = body.get("locked")
+            custom_locks = body.get("tier_locks")
+
+            msg = "Round locks updated successfully."
+            if preset:
+                preset = preset.lower().strip()
+                if preset in ["round1", "round1_only", "easy_only"]:
+                    tier_locks = {"easy": False, "medium": True, "hard": True}
+                    msg = "Preset applied: Round 1 Only (Easy Active, Medium & Hard Locked)."
+                elif preset in ["round1_2", "round2", "easy_medium"]:
+                    tier_locks = {"easy": False, "medium": False, "hard": True}
+                    msg = "Preset applied: Round 1 & 2 Active (Easy & Medium Active, Hard Locked)."
+                elif preset in ["all", "round1_2_3", "unlock_all", "all_unlocked"]:
+                    tier_locks = {"easy": False, "medium": False, "hard": False}
+                    msg = "Preset applied: All Rounds Active (Easy, Medium & Hard Unlocked)."
+                elif preset in ["lock_all", "all_locked"]:
+                    tier_locks = {"easy": True, "medium": True, "hard": True}
+                    msg = "Preset applied: All Rounds Locked."
+            elif tier in ["easy", "medium", "hard"] and locked is not None:
+                tier_locks[tier] = bool(locked)
+                status_str = "Locked 🔒" if bool(locked) else "Unlocked 🔓"
+                msg = f"Round ({tier.capitalize()}) has been {status_str}."
+            elif isinstance(custom_locks, dict):
+                for k in ["easy", "medium", "hard"]:
+                    if k in custom_locks:
+                        tier_locks[k] = bool(custom_locks[k])
+
+            self.config["tier_locks"] = tier_locks
+
+            # Persist to config.json
+            config_path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "config.json")
+            if os.path.exists(config_path):
+                try:
+                    with open(config_path, "w", encoding="utf-8") as f:
+                        json.dump(self.config, f, indent=2)
+                except Exception as e:
+                    print(f"[Server] Error saving config.json: {e}")
+
+            token = body.get("token")
+            if not token and (body.get("admin_id") or body.get("password")):
+                token = self.auth.create_session_token(self.auth.admin_id, "Administrator", expiry_hours=24)
+
+            self.send_json({
+                "success": True,
+                "tier_locks": tier_locks,
+                "token": token,
+                "message": msg
             })
             return
 

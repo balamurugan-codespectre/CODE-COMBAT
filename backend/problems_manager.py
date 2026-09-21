@@ -583,16 +583,25 @@ class ProblemsManager:
         self.hidden_dirs: Dict[str, str] = {}
         self.reload_problems()
 
-    def get_problem_list(self, solved_set: Optional[Set[str]] = None) -> List[Dict[str, Any]]:
-        """Returns problem catalog list for dashboard."""
+    def get_problem_list(self, solved_set: Optional[Set[str]] = None, tier_locks: Optional[Dict[str, bool]] = None) -> List[Dict[str, Any]]:
+        """Returns problem catalog list for dashboard with round info and lock status."""
         solved_set = solved_set or set()
+        tier_locks = tier_locks or {}
         problem_list = []
         difficulty_order = {"Easy": 1, "Medium": 2, "Hard": 3}
+        round_map = {
+            "easy": (1, "Round 1 (Easy)"),
+            "medium": (2, "Round 2 (Medium)"),
+            "hard": (3, "Round 3 (Hard)")
+        }
 
         for prob_id, data in self.problems.items():
             diff = data.get("difficulty", "Easy")
+            diff_lower = diff.lower()
             is_solved = prob_id in solved_set
             meta = self.METADATA_REGISTRY.get(prob_id, {})
+            round_num, round_name = round_map.get(diff_lower, (1, f"Round ({diff})"))
+            is_locked = bool(tier_locks.get(diff_lower, False))
 
             problem_list.append({
                 "id": prob_id,
@@ -600,6 +609,9 @@ class ProblemsManager:
                 "number": meta.get("number"),
                 "difficulty": diff,
                 "difficulty_rank": difficulty_order.get(diff, 1),
+                "round_num": round_num,
+                "round_name": round_name,
+                "locked": is_locked,
                 "points": data.get("points", 100),
                 "time_limit": data.get("time_limit", 2.0),
                 "category": data.get("category", "General"),
@@ -610,7 +622,7 @@ class ProblemsManager:
         problem_list.sort(key=lambda p: (p["difficulty_rank"], p["title"]))
         return problem_list
 
-    def get_problem_detail(self, problem_id: str, participant_id: Optional[str] = None, storage: Optional[Any] = None, is_admin: bool = False) -> Optional[Dict[str, Any]]:
+    def get_problem_detail(self, problem_id: str, participant_id: Optional[str] = None, storage: Optional[Any] = None, is_admin: bool = False, tier_locks: Optional[Dict[str, bool]] = None) -> Optional[Dict[str, Any]]:
         """Returns problem details with 3 progressive hints and unlock status."""
         clean_id = (problem_id or "").strip().lower()
         if clean_id in self.problems:
@@ -621,9 +633,18 @@ class ProblemsManager:
         if not raw:
             return None
 
+        tier_locks = tier_locks or {}
         pid = raw.get("id", clean_id)
         meta = self.METADATA_REGISTRY.get(pid, {})
         diff = raw.get("difficulty", "Easy")
+        diff_lower = diff.lower()
+        round_map = {
+            "easy": (1, "Round 1 (Easy)"),
+            "medium": (2, "Round 2 (Medium)"),
+            "hard": (3, "Round 3 (Hard)")
+        }
+        round_num, round_name = round_map.get(diff_lower, (1, f"Round ({diff})"))
+        is_locked = bool(tier_locks.get(diff_lower, False))
         base_points = int(raw.get("points", 100))
 
         raw_hints = meta.get("hints") or [
@@ -664,6 +685,9 @@ class ProblemsManager:
             "title": raw.get("title"),
             "number": meta.get("number"),
             "difficulty": diff,
+            "round_num": round_num,
+            "round_name": round_name,
+            "locked": is_locked,
             "points": base_points,
             "max_score": max_score,
             "total_hint_penalty": total_penalty,
