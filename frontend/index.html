@@ -361,22 +361,22 @@
       </div>
     </section>
 
-    <!-- VIEW 3: PROBLEMS & CATEGORY FOLDERS LIST -->
+    <!-- VIEW 3: PROBLEMS & ROUNDS LIST -->
     <section id="view-problems" class="view-section">
       <div class="filter-bar">
         <div>
-          <h2 style="margin:0 0 0.25rem 0;">📁 Category Challenge Folders (15)</h2>
-          <span style="font-size:0.82rem; color:var(--text-secondary);">3 Sequential Round Folders &bull; Admin Password Protection</span>
+          <h2 style="margin:0 0 0.25rem 0;">⚔️ Competition Rounds (15 Challenges)</h2>
+          <span style="font-size:0.82rem; color:var(--text-secondary);">Round 1, Round 2, Round 3 &bull; Admin Password Protection</span>
         </div>
         <div class="filter-chips">
-          <button class="chip active" id="chip-filter-all" onclick="App.filterProblems('all', this)">All Categories (15)</button>
-          <button class="chip" id="chip-filter-easy" onclick="App.filterProblems('Easy', this)">📁 Category 1: Easy (100 pts) <span id="chip-lock-easy"></span></button>
-          <button class="chip" id="chip-filter-medium" onclick="App.filterProblems('Medium', this)">📁 Category 2: Medium (200 pts) <span id="chip-lock-medium"></span></button>
-          <button class="chip" id="chip-filter-hard" onclick="App.filterProblems('Hard', this)">📁 Category 3: Hard (300 pts) <span id="chip-lock-hard"></span></button>
+          <button class="chip active" id="chip-filter-all" onclick="App.filterProblems('all', this)">All Rounds (15)</button>
+          <button class="chip" id="chip-filter-easy" onclick="App.filterProblems('Easy', this)">🟢 Round 1: Easy (100 pts) <span id="chip-lock-easy"></span></button>
+          <button class="chip" id="chip-filter-medium" onclick="App.filterProblems('Medium', this)">🟡 Round 2: Medium (200 pts) <span id="chip-lock-medium"></span></button>
+          <button class="chip" id="chip-filter-hard" onclick="App.filterProblems('Hard', this)">🔴 Round 3: Hard (300 pts) <span id="chip-lock-hard"></span></button>
         </div>
       </div>
 
-      <!-- Dynamic Category Folders Container -->
+      <!-- Dynamic Round Folders Container -->
       <div id="category-folders-container" class="category-folders-container">
         <!-- Loaded dynamically via App.renderProblemsFolders() -->
       </div>
@@ -592,26 +592,26 @@
           </div>
         </div>
 
-        <!-- 2. Round-Wise Competition Control (Category & Difficulty Locks) -->
+        <!-- 2. Round-Wise Competition Control (Round 1, Round 2, Round 3 Locks) -->
         <div class="panel" style="padding:1.5rem; border-left:4px solid var(--accent-amber);">
           <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.5rem; margin-bottom:0.5rem;">
             <h3 style="color:var(--accent-amber); font-size:1.1rem; margin:0; display:flex; align-items:center; gap:0.5rem;">
-              <span>⚔️</span> Round-Wise Category Locks (Easy / Medium / Hard)
+              <span>⚔️</span> Competition Round Locks (Round 1, Round 2, Round 3)
             </h3>
             <span style="font-size:0.75rem; color:var(--text-muted);">Admin Password Protected</span>
           </div>
           <p style="color:var(--text-secondary); font-size:0.85rem; margin-bottom:1.25rem;">
-            Control live access for sequential rounds. Locking a difficulty category prevents participants from accessing, coding, or submitting those problems until unlocked.
+            Control live access for sequential rounds. Locking a round prevents participants from accessing, coding, or submitting those problems until unlocked with the admin password.
           </p>
 
-          <!-- 3 Round Tier Status Cards -->
+          <!-- 3 Round Status Cards -->
           <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(240px, 1fr)); gap:1rem; margin-bottom:1.25rem;">
             
             <!-- Round 1: Easy -->
             <div id="admin-tier-card-easy" style="background:var(--bg-primary); border:1px solid rgba(16,185,129,0.3); border-radius:var(--radius-md); padding:1rem; display:flex; flex-direction:column; justify-content:space-between; gap:0.75rem;">
               <div>
                 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.4rem;">
-                  <span style="font-weight:700; color:var(--accent-green); font-size:0.95rem;">🟢 Category 1: Easy</span>
+                  <span style="font-weight:700; color:var(--accent-green); font-size:0.95rem;">🟢 Round 1: Easy</span>
                   <span id="badge-lock-easy" class="badge" style="background:rgba(16,185,129,0.15); color:var(--accent-green); border:1px solid var(--accent-green); font-size:0.75rem;">🔓 ACTIVE</span>
                 </div>
                 <div style="font-size:0.8rem; color:var(--text-secondary);">5 Problems &bull; 100 Points Each</div>
@@ -627,7 +627,7 @@
             <div id="admin-tier-card-medium" style="background:var(--bg-primary); border:1px solid rgba(245,158,11,0.3); border-radius:var(--radius-md); padding:1rem; display:flex; flex-direction:column; justify-content:space-between; gap:0.75rem;">
               <div>
                 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.4rem;">
-                  <span style="font-weight:700; color:var(--accent-amber); font-size:0.95rem;">🟡 Category 2: Medium</span>
+                  <span style="font-weight:700; color:var(--accent-amber); font-size:0.95rem;">🟡 Round 2: Medium</span>
                   <span id="badge-lock-medium" class="badge" style="background:rgba(245,158,11,0.15); color:var(--accent-amber); border:1px solid var(--accent-amber); font-size:0.75rem;">🔓 ACTIVE</span>
                 </div>
                 <div style="font-size:0.8rem; color:var(--text-secondary);">5 Problems &bull; 200 Points Each</div>
@@ -643,7 +643,7 @@
             <div id="admin-tier-card-hard" style="background:var(--bg-primary); border:1px solid rgba(239,68,68,0.3); border-radius:var(--radius-md); padding:1rem; display:flex; flex-direction:column; justify-content:space-between; gap:0.75rem;">
               <div>
                 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.4rem;">
-                  <span style="font-weight:700; color:var(--accent-red); font-size:0.95rem;">🔴 Category 3: Hard</span>
+                  <span style="font-weight:700; color:var(--accent-red); font-size:0.95rem;">🔴 Round 3: Hard</span>
                   <span id="badge-lock-hard" class="badge" style="background:rgba(239,68,68,0.15); color:var(--accent-red); border:1px solid var(--accent-red); font-size:0.75rem;">🔓 ACTIVE</span>
                 </div>
                 <div style="font-size:0.8rem; color:var(--text-secondary);">5 Problems &bull; 300 Points Each</div>
@@ -725,20 +725,20 @@
 
   </main>
 
-  <!-- Round / Category Lock Modal for Sequential Rounds -->
+  <!-- Round Lock Modal for Sequential Rounds -->
   <div id="modal-round-lock" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.85); backdrop-filter:blur(8px); -webkit-backdrop-filter:blur(8px); z-index:2000; align-items:center; justify-content:center;">
     <div style="background:var(--bg-card); border:1px solid var(--accent-amber); box-shadow:0 0 40px rgba(245,158,11,0.25); border-radius:var(--radius-md); max-width:440px; width:92%; padding:1.75rem; animation:fadeIn 0.2s ease-out;">
       <div style="display:flex; align-items:center; gap:0.6rem; margin-bottom:0.6rem;">
         <span style="font-size:1.6rem;">🔒</span>
-        <h3 id="round-lock-modal-title" style="color:#fff; font-size:1.2rem; font-weight:800; margin:0;">Category / Round Locked</h3>
+        <h3 id="round-lock-modal-title" style="color:#fff; font-size:1.2rem; font-weight:800; margin:0;">🔒 Round Locked</h3>
       </div>
       <p id="round-lock-modal-desc" style="color:var(--text-secondary); font-size:0.88rem; line-height:1.5; margin-bottom:1.15rem;">
-        This difficulty category is currently locked by the event administrator for sequential round competition.
+        This round is currently locked by the event administrator for sequential round competition.
       </p>
 
       <div style="background:rgba(245,158,11,0.08); border:1px solid rgba(245,158,11,0.25); border-radius:var(--radius-sm); padding:0.85rem; margin-bottom:1.15rem;">
         <div style="font-size:0.82rem; font-weight:700; color:var(--accent-amber); margin-bottom:0.25rem;">Administrator Unlock</div>
-        <div style="font-size:0.8rem; color:var(--text-secondary);">Event coordinators and admins can enter credentials below to unlock this entire round for all participants:</div>
+        <div style="font-size:0.8rem; color:var(--text-secondary);">Event coordinators and admins can enter credentials below to unlock this round for all participants:</div>
       </div>
 
       <form id="form-round-lock" onsubmit="App.submitRoundUnlock(event)">
@@ -765,7 +765,7 @@
         <div style="display:flex; justify-content:flex-end; gap:0.75rem; margin-top:1.25rem;">
           <button type="button" class="btn btn-secondary" onclick="App.closeRoundLockModal()" style="padding:0.45rem 1rem;">Cancel</button>
           <button type="submit" id="btn-round-lock-submit" class="btn btn-primary" style="padding:0.45rem 1.25rem; font-weight:700; background:linear-gradient(135deg, var(--accent-amber), #d97706); border-color:var(--accent-amber); color:#000;">
-            🔓 Unlock Category / Round
+            🔓 Unlock Round
           </button>
         </div>
       </form>

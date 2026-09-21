@@ -745,7 +745,8 @@ class CodeCombatHandler(BaseHTTPRequestHandler):
             elif tier in ["easy", "medium", "hard"] and locked is not None:
                 tier_locks[tier] = bool(locked)
                 status_str = "Locked 🔒" if bool(locked) else "Unlocked 🔓"
-                msg = f"Round ({tier.capitalize()}) has been {status_str}."
+                round_num = 1 if tier == "easy" else (2 if tier == "medium" else 3)
+                msg = f"Round {round_num} ({tier.capitalize()}) has been {status_str}."
             elif isinstance(custom_locks, dict):
                 for k in ["easy", "medium", "hard"]:
                     if k in custom_locks:
