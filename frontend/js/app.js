@@ -179,6 +179,15 @@ const App = {
     }
   },
 
+  onFolderHeaderClick(roundId, roundNum, diff) {
+    const isLocked = Boolean(this.tierLocks[roundId]);
+    if (isLocked) {
+      this.openRoundLockModal('', roundNum, diff);
+    } else {
+      this.toggleFolder(roundId);
+    }
+  },
+
   toggleFolder(tier) {
     this.folderCollapsed[tier] = !this.folderCollapsed[tier];
     const bodyEl = document.getElementById(`folder-body-${tier}`);
@@ -369,7 +378,7 @@ const App = {
 
       return `
         <div class="category-folder-card folder-${round.id} ${isLocked ? 'is-locked' : ''}" id="category-card-${round.id}">
-          <div class="category-folder-header" onclick="${isLocked ? `App.openRoundLockModal('', ${round.num}, '${round.diff}')` : `App.toggleFolder('${round.id}')`}">
+          <div class="category-folder-header" onclick="App.onFolderHeaderClick('${round.id}', ${round.num}, '${round.diff}')">
             <div class="folder-title-group">
               <div class="folder-icon" style="color:${isLocked ? 'var(--accent-red)' : round.color};">
                 ${isLocked ? '🔒' : (solvedCount === totalCount && totalCount > 0 ? '🏆' : '📁')}
@@ -408,7 +417,7 @@ const App = {
 
             <div class="folder-actions">
               ${isLocked 
-                ? `<button class="btn btn-secondary" style="font-size:0.8rem; padding:0.35rem 0.75rem; border-color:var(--accent-amber); color:var(--accent-amber);" onclick="event.stopPropagation(); App.openRoundLockModal('', ${round.num}, '${round.diff}')">🔒 Enter Password</button>`
+                ? `<button class="btn btn-secondary" style="font-size:0.82rem; padding:0.4rem 0.85rem; border-color:var(--accent-amber); color:var(--accent-amber); font-weight:700;" onclick="event.stopPropagation(); App.openRoundLockModal('', ${round.num}, '${round.diff}')">🔑 Unlock (Admin Password)</button>`
                 : `<span id="folder-arrow-${round.id}" style="color:var(--text-muted); font-size:0.9rem; font-weight:bold;">${isCollapsed ? '▶' : '▼'}</span>`
               }
             </div>
