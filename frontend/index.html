@@ -727,44 +727,39 @@
 
   <!-- Round Lock Modal for Sequential Rounds -->
   <div id="modal-round-lock" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.85); backdrop-filter:blur(8px); -webkit-backdrop-filter:blur(8px); z-index:2000; align-items:center; justify-content:center;">
-    <div style="background:var(--bg-card); border:1px solid var(--accent-amber); box-shadow:0 0 40px rgba(245,158,11,0.25); border-radius:var(--radius-md); max-width:440px; width:92%; padding:1.75rem; animation:fadeIn 0.2s ease-out;">
-      <div style="display:flex; align-items:center; gap:0.6rem; margin-bottom:0.6rem;">
-        <span style="font-size:1.6rem;">🔒</span>
-        <h3 id="round-lock-modal-title" style="color:#fff; font-size:1.2rem; font-weight:800; margin:0;">🔒 Round Locked</h3>
+    <div style="background:var(--bg-card); border:1px solid var(--accent-amber); box-shadow:0 0 50px rgba(245,158,11,0.3); border-radius:var(--radius-lg); max-width:460px; width:92%; padding:2.25rem; animation:fadeIn 0.2s ease-out; text-align:center;">
+      <div style="width:60px; height:60px; margin:0 auto 1.25rem; background:rgba(245,158,11,0.12); border:1px solid var(--accent-amber); border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:1.8rem; box-shadow:0 0 25px rgba(245,158,11,0.25);">
+        🔐
       </div>
-      <p id="round-lock-modal-desc" style="color:var(--text-secondary); font-size:0.88rem; line-height:1.5; margin-bottom:1.15rem;">
-        This round is currently locked by the event administrator for sequential round competition.
+      <h3 id="round-lock-modal-title" style="color:#fff; font-size:1.35rem; font-weight:800; margin-bottom:0.4rem;">🔒 Round Locked</h3>
+      <p id="round-lock-modal-desc" style="color:var(--text-secondary); font-size:0.88rem; line-height:1.6; margin-bottom:1.5rem; text-align:left;">
+        This round is currently locked by the event administrator. Enter Administrator ID and Password below to unlock this round for all participants:
       </p>
 
-      <div style="background:rgba(245,158,11,0.08); border:1px solid rgba(245,158,11,0.25); border-radius:var(--radius-sm); padding:0.85rem; margin-bottom:1.15rem;">
-        <div style="font-size:0.82rem; font-weight:700; color:var(--accent-amber); margin-bottom:0.25rem;">Administrator Unlock</div>
-        <div style="font-size:0.8rem; color:var(--text-secondary);">Event coordinators and admins can enter credentials below to unlock this round for all participants:</div>
-      </div>
-
-      <form id="form-round-lock" onsubmit="App.submitRoundUnlock(event)">
+      <form id="form-round-lock" onsubmit="App.submitRoundUnlock(event)" style="display:flex; flex-direction:column; gap:1.15rem; text-align:left;">
         <input type="hidden" id="round-lock-tier" value="">
         <input type="hidden" id="round-lock-target-prob" value="">
 
-        <div class="form-group" style="margin-bottom:0.9rem;">
-          <label class="form-label" style="font-size:0.82rem; font-weight:600; color:var(--text-primary);">
+        <div>
+          <label class="form-label" style="display:block; font-size:0.85rem; font-weight:600; color:var(--text-secondary); margin-bottom:0.35rem;">
             Administrator ID
           </label>
-          <input type="text" id="round-lock-id" class="form-control" placeholder="Enter Admin ID (e.g. admincse)" required autocomplete="username" style="width:100%; background:var(--bg-primary); font-size:0.95rem;">
+          <input type="text" id="round-lock-id" class="form-control" placeholder="Enter Admin ID" required autocomplete="username" style="width:100%; background:var(--bg-primary); font-size:0.95rem;">
         </div>
 
-        <div class="form-group" style="margin-bottom:1rem;">
-          <label class="form-label" style="font-size:0.82rem; font-weight:600; color:var(--text-primary); display:flex; justify-content:space-between;">
-            <span>Admin Password</span>
+        <div>
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.35rem;">
+            <label class="form-label" style="font-size:0.85rem; font-weight:600; color:var(--text-secondary); margin:0;">Admin Password</label>
             <span onclick="App.toggleRoundPassVisibility()" style="cursor:pointer; color:var(--accent-cyan); font-size:0.78rem; font-weight:normal;">Show/Hide</span>
-          </label>
+          </div>
           <input type="password" id="round-lock-pass" class="form-control" placeholder="Enter Admin Password" required autocomplete="current-password" style="width:100%; background:var(--bg-primary); font-size:0.95rem;">
         </div>
 
-        <div id="round-lock-error" style="display:none; padding:0.6rem 0.8rem; border-radius:var(--radius-sm); background:rgba(239,68,68,0.15); border:1px solid var(--accent-red); color:var(--accent-red); font-size:0.82rem; margin-bottom:1rem; text-align:center;"></div>
+        <div id="round-lock-error" style="display:none; padding:0.65rem 0.85rem; border-radius:var(--radius-sm); background:rgba(239,68,68,0.15); border:1px solid var(--accent-red); color:var(--accent-red); font-size:0.85rem; text-align:center;"></div>
 
-        <div style="display:flex; justify-content:flex-end; gap:0.75rem; margin-top:1.25rem;">
-          <button type="button" class="btn btn-secondary" onclick="App.closeRoundLockModal()" style="padding:0.45rem 1rem;">Cancel</button>
-          <button type="submit" id="btn-round-lock-submit" class="btn btn-primary" style="padding:0.45rem 1.25rem; font-weight:700; background:linear-gradient(135deg, var(--accent-amber), #d97706); border-color:var(--accent-amber); color:#000;">
+        <div style="display:flex; justify-content:flex-end; gap:0.75rem; margin-top:0.5rem;">
+          <button type="button" class="btn btn-secondary" onclick="App.closeRoundLockModal()" style="padding:0.6rem 1.25rem;">Cancel</button>
+          <button type="submit" id="btn-round-lock-submit" class="btn btn-primary" style="padding:0.6rem 1.5rem; font-weight:700; background:linear-gradient(135deg, var(--accent-amber), #d97706); border-color:var(--accent-amber); color:#000;">
             🔓 Unlock Round
           </button>
         </div>

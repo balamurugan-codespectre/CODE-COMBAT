@@ -253,20 +253,40 @@ const App = {
 
       let bodyContent = '';
       if (isLocked) {
+        const savedAdminId = (typeof Admin !== 'undefined' && Admin.getAdminId && Admin.getAdminId()) || localStorage.getItem('cc_admin_id') || 'admincse';
         bodyContent = `
-          <div class="folder-locked-banner">
-            <div class="folder-locked-info">
-              <div style="font-size:2rem;">🔒</div>
+          <div class="round-auth-panel" onclick="event.stopPropagation();">
+            <div class="round-auth-header">
+              <div class="round-auth-icon">🔐</div>
               <div>
-                <h4 style="color:#fff; margin:0 0 0.25rem 0; font-size:1.05rem;">🔒 Round ${round.num} Locked (${round.diff} Challenges)</h4>
-                <p style="color:var(--text-secondary); margin:0; font-size:0.85rem;">
-                  Round ${round.num} is currently locked by the event administrator. Enter administrator password to unlock this round for all participants.
+                <h4 class="round-auth-title">🔒 Round ${round.num} Locked — Admin Authentication Required</h4>
+                <p class="round-auth-subtitle">
+                  Round ${round.num} (${round.diff} Challenges &bull; ${round.points} pts each) is currently locked by the event administrator. Enter Administrator ID and Password below to unlock Round ${round.num} for all participants:
                 </p>
               </div>
             </div>
-            <button class="btn btn-primary" style="background:linear-gradient(135deg, var(--accent-amber), #d97706); border-color:var(--accent-amber); color:#000; font-weight:700; padding:0.6rem 1.25rem; font-size:0.9rem; white-space:nowrap;" onclick="event.stopPropagation(); App.openRoundLockModal('', ${round.num}, '${round.diff}')">
-              🔒 Unlock Round ${round.num} (Admin Password)
-            </button>
+
+            <form class="round-auth-form" onsubmit="App.submitInlineRoundUnlock(event, '${round.id}', ${round.num})">
+              <div class="form-group">
+                <label class="form-label">Administrator ID</label>
+                <input type="text" id="inline-lock-id-${round.id}" class="form-control" value="${savedAdminId}" placeholder="Enter Admin ID" required autocomplete="username">
+              </div>
+
+              <div class="form-group">
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                  <label class="form-label" style="margin:0;">Admin Password</label>
+                  <span onclick="App.toggleInlinePassVisibility('${round.id}')" style="cursor:pointer; color:var(--accent-cyan); font-size:0.75rem; font-weight:normal;">Show/Hide</span>
+                </div>
+                <input type="password" id="inline-lock-pass-${round.id}" class="form-control" placeholder="Enter Admin Password" required autocomplete="current-password" style="margin-top:0.3rem;">
+              </div>
+
+              <div>
+                <button type="submit" id="btn-inline-unlock-${round.id}" class="btn btn-primary" style="padding:0.55rem 1.35rem; font-weight:700; background:linear-gradient(135deg, var(--accent-amber), #d97706); border-color:var(--accent-amber); color:#000; white-space:nowrap; height:38px;">
+                  🔓 Unlock Round ${round.num}
+                </button>
+              </div>
+            </form>
+            <div id="inline-lock-error-${round.id}" style="display:none; padding:0.5rem 0.75rem; border-radius:var(--radius-sm); background:rgba(239,68,68,0.15); border:1px solid var(--accent-red); color:var(--accent-red); font-size:0.82rem; text-align:center;"></div>
           </div>
         `;
       } else {
@@ -922,6 +942,75 @@ const App = {
       if (submitBtn) {
         submitBtn.disabled = false;
         submitBtn.textContent = `🔓 Unlock Round ${roundNum}`;
+      }
+    }
+  },
+
+  toggleInlinePassVisibility(tier) {
+    const input = document.getElementById(`inline-lock-pass-${tier}`);
+    if (!input) return;
+    input.type = input.type === 'password' ? 'text' : 'password';
+  },
+
+  async submitInlineRoundUnlock(e, tier, roundNum) {
+    if (e) e.preventDefault();
+    const idInput = document.getElementById(`inline-lock-id-${tier}`);
+    const passInput = document.getElementById(`inline-lock-pass-${tier}`);
+    const errorEl = document.getElementById(`inline-lock-error-${tier}`);
+    const btn = document.getElementById(`btn-inline-unlock-${tier}`);
+
+    const adminId = idInput ? idInput.value.trim() : '';
+    const password = passInput ? passInput.value.trim() : '';
+
+    if (!adminId || !password) {
+      if (errorEl) {
+        errorEl.textContent = 'Please enter both Administrator ID and Password.';
+        errorEl.style.display = 'block';
+      }
+      return;
+    }
+
+    if (btn) {
+      btn.disabled = true;
+      btn.textContent = `Unlocking Round ${roundNum}...`;
+    }
+
+    try {
+      const res = await fetch('/api/admin/toggle-tier-lock', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          tier: tier,
+          locked: false,
+          admin_id: adminId,
+          password: password
+        })
+      });
+
+      const data = await res.json();
+      if (data.success) {
+        localStorage.setItem('cc_admin_id', adminId);
+        this.showToast(data.message || `🔓 Round ${roundNum} (${tier.toUpperCase()}) unlocked for all participants!`, 'success');
+        await this.loadProblems();
+      } else {
+        const errMsg = data.error || 'Invalid Admin credentials. Unlock failed.';
+        if (errorEl) {
+          errorEl.textContent = errMsg;
+          errorEl.style.display = 'block';
+        }
+        this.showToast(errMsg, 'error');
+      }
+    } catch (err) {
+      const msg = 'Unlock request failed: ' + err.message;
+      if (errorEl) {
+        errorEl.textContent = msg;
+        errorEl.style.display = 'block';
+      }
+      this.showToast(msg, 'error');
+    } finally {
+      if (btn) {
+        btn.disabled = false;
+        btn.textContent = `🔓 Unlock Round ${roundNum}`;
       }
     }
   },

@@ -1321,6 +1321,82 @@ body {
   background: rgba(0, 242, 254, 0.02);
 }
 
+/* Round Admin Auth Panel (Inline on Locked Rounds) */
+.round-auth-panel {
+  padding: 1.75rem 2rem;
+  background: rgba(15, 23, 42, 0.7);
+  border-top: 1px solid rgba(245, 158, 11, 0.25);
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  animation: fadeIn 0.25s ease-out;
+}
 
+.round-auth-header {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
 
+.round-auth-icon {
+  width: 50px;
+  height: 50px;
+  background: rgba(245, 158, 11, 0.12);
+  border: 1px solid var(--accent-amber);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+  box-shadow: 0 0 20px rgba(245, 158, 11, 0.2);
+  flex-shrink: 0;
+}
 
+.round-auth-title {
+  color: #fff;
+  font-size: 1.15rem;
+  font-weight: 700;
+  margin: 0 0 0.25rem 0;
+}
+
+.round-auth-subtitle {
+  color: var(--text-secondary);
+  font-size: 0.85rem;
+  margin: 0;
+  line-height: 1.5;
+}
+
+.round-auth-form {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)) auto;
+  gap: 0.85rem;
+  align-items: end;
+  background: rgba(0, 0, 0, 0.35);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  padding: 1rem 1.25rem;
+}
+
+@media (max-width: 768px) {
+  .round-auth-form {
+    grid-template-columns: 1fr;
+  }
+}
+
+.round-auth-form .form-group {
+  margin: 0;
+}
+
+.round-auth-form .form-label {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  margin-bottom: 0.3rem;
+  display: block;
+}
+
+.round-auth-form .form-control {
+  background: var(--bg-primary);
+  font-size: 0.9rem;
+  padding: 0.5rem 0.75rem;
+}
