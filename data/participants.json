@@ -1,1 +1,11 @@
-[]
+[
+  {
+    "id": "user_f335fd26",
+    "name": "bala",
+    "college": "cse",
+    "reg_no": "123456",
+    "score": 0,
+    "registered_at": "2026-09-22T19:34:25.036035",
+    "solved_problems": []
+  }
+]

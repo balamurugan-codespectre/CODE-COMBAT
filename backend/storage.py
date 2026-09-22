@@ -472,6 +472,12 @@ class Storage:
             conn = self._get_connection()
             try:
                 with conn:
+                    # Guarantee participant existence to prevent foreign key errors on stale browser sessions
+                    conn.execute("""
+                        INSERT OR IGNORE INTO participants (id, name, college, reg_no, score, registered_at)
+                        VALUES (?, ?, 'N/A', 'N/A', 0, ?);
+                    """, (participant_id, participant_name or "Anonymous", now))
+
                     conn.execute("""
                         INSERT INTO tab_switches (participant_id, participant_name, timestamp)
                         VALUES (?, ?, ?);
