@@ -12,26 +12,26 @@
   "supported_languages": [
     {
       "id": "python",
-      "name": "Python 3 (Normal / Script)",
+      "name": "Python 3 (Standard input / print)",
       "extension": "py"
+    },
+    {
+      "id": "c",
+      "name": "C (Standard main / scanf / printf)",
+      "extension": "c"
+    },
+    {
+      "id": "java",
+      "name": "Java (Standard Scanner / Solution.java)",
+      "extension": "java"
     },
     {
       "id": "python_class",
       "name": "Python 3 (Class / LeetCode)",
       "extension": "py"
-    },
-    {
-      "id": "java",
-      "name": "Java (Solution.java)",
-      "extension": "java"
-    },
-    {
-      "id": "c",
-      "name": "C (solution.c)",
-      "extension": "c"
     }
   ],
-  "active_problem_set": "set2",
+  "active_problem_set": "set1",
   "tier_locks": {
     "easy": false,
     "medium": true,

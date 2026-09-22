@@ -22,5 +22,8 @@
       "input": "0\n",
       "output": ""
     }
-  ]
+  ],
+  "starter_code": {
+    "python": "# Binary Tree Level Order Traversal\n# Input:\n# Line 1: n (number of nodes)\n# Line 2: vals (node values in array representation)\n\nn = int(input())\nvals = list(map(int, input().split())) if n > 0 else []\n\n# Write your code below:\n\n"
+  }
 }

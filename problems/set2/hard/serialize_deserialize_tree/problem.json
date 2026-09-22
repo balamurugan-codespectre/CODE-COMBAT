@@ -22,5 +22,8 @@
       "input": "1",
       "output": "1"
     }
-  ]
+  ],
+  "starter_code": {
+    "python": "# Serialize and Deserialize Binary Tree\n# Input:\n# Line 1: tree_data (space-separated node values with 'null')\n\ntree_data = input().split()\n\n# Write your code below:\n\n"
+  }
 }

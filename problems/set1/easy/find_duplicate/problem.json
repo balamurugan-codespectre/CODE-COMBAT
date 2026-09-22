@@ -26,7 +26,7 @@
     }
   ],
   "starter_code": {
-    "python": "# Find Duplicate in an Array\n# Read input and solve\n\n# Your code here\n",
+    "python": "# Find the Duplicate Number\n# Input:\n# Line 1: n (number of elements)\n# Line 2: nums (n space-separated integers)\n\nn = int(input())\nnums = list(map(int, input().split()))\n\n# Write your code below:\n\n",
     "python_class": "class Solution:\n    def findDuplicate(self, nums: List[int]) -> int:\n        # Write your code here\n        pass\n",
     "java": "import java.util.*;\n\nclass Solution {\n    public int findDuplicate(int[] nums) {\n        // Write your solution here\n        return 0;\n    }\n}",
     "c": "#include <stdio.h>\n\nint main() {\n    // Write your solution here\n    return 0;\n}\n"

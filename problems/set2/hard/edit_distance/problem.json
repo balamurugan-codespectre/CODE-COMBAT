@@ -22,5 +22,8 @@
       "input": "a\nb",
       "output": "1"
     }
-  ]
+  ],
+  "starter_code": {
+    "python": "# Edit Distance\n# Input:\n# Line 1: word1\n# Line 2: word2\n\ntry:\n    word1 = input().strip()\nexcept EOFError:\n    word1 = \"\"\ntry:\n    word2 = input().strip()\nexcept EOFError:\n    word2 = \"\"\n\n# Write your code below:\n\n"
+  }
 }

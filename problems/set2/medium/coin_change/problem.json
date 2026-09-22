@@ -22,5 +22,8 @@
       "input": "1 0\n1",
       "output": "0"
     }
-  ]
+  ],
+  "starter_code": {
+    "python": "# Coin Change\n# Input:\n# Line 1: n amount (number of coin types, target amount)\n# Line 2: coins (coin denominations)\n\nn, amount = map(int, input().split())\ncoins = list(map(int, input().split()))\n\n# Write your code below:\n\n"
+  }
 }

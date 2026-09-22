@@ -22,5 +22,8 @@
       "input": "ab\n.*",
       "output": "true"
     }
-  ]
+  ],
+  "starter_code": {
+    "python": "# Regular Expression Matching\n# Input:\n# Line 1: s (input string)\n# Line 2: p (pattern)\n\ns = input().strip()\np = input().strip()\n\n# Write your code below:\n\n"
+  }
 }

@@ -38,7 +38,7 @@
     }
   ],
   "starter_code": {
-    "python": "import sys\n\ndef solve():\n    data = sys.stdin.read().split()\n    if not data:\n        return\n    n = int(data[0])\n    nums = [int(x) for x in data[1:n+1]]\n    max_so_far = current_max = nums[0]\n    for x in nums[1:]:\n        current_max = max(x, current_max + x)\n        max_so_far = max(max_so_far, current_max)\n    print(max_so_far)\n\nif __name__ == '__main__':\n    solve()\n",
+    "python": "# Maximum Subarray\n# Input:\n# Line 1: n (number of elements)\n# Line 2: nums (n space-separated integers)\n\nn = int(input())\nnums = list(map(int, input().split()))\n\n# Write your code below:\n\n",
     "java": "import java.util.*;\n\npublic class Solution {\n    public static void main(String[] args) {\n        Scanner sc = new Scanner(System.in);\n        if (!sc.hasNextInt()) return;\n        int n = sc.nextInt();\n        long maxSoFar = sc.nextLong();\n        long currMax = maxSoFar;\n        for (int i = 1; i < n; i++) {\n            long x = sc.nextLong();\n            currMax = Math.max(x, currMax + x);\n            maxSoFar = Math.max(maxSoFar, currMax);\n        }\n        System.out.println(maxSoFar);\n    }\n}\n",
     "c": "#include <stdio.h>\n\nint main() {\n    int n;\n    if (scanf(\"%d\", &n) != 1) return 0;\n    long long max_so_far, curr_max;\n    scanf(\"%lld\", &max_so_far);\n    curr_max = max_so_far;\n    for (int i = 1; i < n; i++) {\n        long long x;\n        scanf(\"%lld\", &x);\n        curr_max = (x > curr_max + x) ? x : (curr_max + x);\n        if (curr_max > max_so_far) max_so_far = curr_max;\n    }\n    printf(\"%lld\\n\", max_so_far);\n    return 0;\n}\n"
   },

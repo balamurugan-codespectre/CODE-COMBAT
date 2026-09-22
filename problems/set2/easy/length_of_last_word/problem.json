@@ -22,5 +22,8 @@
       "input": "luffy is still joyboy",
       "output": "6"
     }
-  ]
+  ],
+  "starter_code": {
+    "python": "# Length of Last Word\n# Input:\n# Line 1: s (input string with words)\n\ns = input().strip()\n\n# Write your code below:\n\n"
+  }
 }

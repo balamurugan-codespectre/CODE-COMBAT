@@ -22,5 +22,8 @@
       "input": "0 1\n\n1",
       "output": "1"
     }
-  ]
+  ],
+  "starter_code": {
+    "python": "# Merge Sorted Array\n# Input:\n# Line 1: m n (lengths of nums1 and nums2)\n# Remaining lines: numbers for nums1 and nums2\n\nm, n = map(int, input().split())\nnums = []\nwhile len(nums) < m + n:\n    try:\n        line = input().strip()\n        if line:\n            nums.extend(map(int, line.split()))\n    except EOFError:\n        break\n\n# Write your code below:\n\n"
+  }
 }

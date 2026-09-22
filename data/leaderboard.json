@@ -1,1 +1,17 @@
-[]
+[
+  {
+    "participant_id": "user_91fb4dd0",
+    "name": "bala",
+    "college": "cse",
+    "reg_no": "123456",
+    "score": 0,
+    "registered_at": "2026-09-22T11:05:17.780456",
+    "solved_count": 0,
+    "easy_solved": 0,
+    "medium_solved": 0,
+    "hard_solved": 0,
+    "total_runtime": 0.0,
+    "last_submission_time": "2026-09-22T11:05:17.780456",
+    "rank": 1
+  }
+]

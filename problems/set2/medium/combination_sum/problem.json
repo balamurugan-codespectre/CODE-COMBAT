@@ -22,5 +22,8 @@
       "input": "1 2\n2",
       "output": "2"
     }
-  ]
+  ],
+  "starter_code": {
+    "python": "# Combination Sum\n# Input:\n# Line 1: n target\n# Line 2: candidates (candidate numbers)\n\nn, target = map(int, input().split())\ncandidates = list(map(int, input().split()))\n\n# Write your code below:\n\n"
+  }
 }

@@ -26,7 +26,7 @@
     }
   ],
   "starter_code": {
-    "python": "# Reverse a String\n# Read input and solve\n\n# Your code here\n",
+    "python": "# Reverse a String\n# Input:\n# Line 1: s (string to reverse)\n\ns = input()\n\n# Write your code below:\n\n",
     "python_class": "class Solution:\n    def reverseString(self, s: str) -> str:\n        # Write your code here\n        pass\n",
     "java": "class Solution {\n    public String reverseString(String s) {\n        // Write your solution here\n        return 0;\n    }\n}",
     "c": "#include <stdio.h>\n\nint main() {\n    // Write your solution here\n    return 0;\n}\n"

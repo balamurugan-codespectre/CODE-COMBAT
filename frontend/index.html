@@ -417,10 +417,10 @@
             <div class="panel-header">
               <div class="editor-controls">
                 <select id="ide-lang-select" class="form-control" style="padding:0.3rem 0.6rem; width:auto; font-size:0.85rem;" onchange="App.handleLanguageChange()">
-                  <option value="python">Python 3 (Normal / Script)</option>
+                  <option value="python">Python 3 (Standard input / print)</option>
+                  <option value="c">C (Standard main / scanf / printf)</option>
+                  <option value="java">Java (Standard Scanner / Solution.java)</option>
                   <option value="python_class">Python 3 (Class / LeetCode)</option>
-                  <option value="java">Java (Solution.java)</option>
-                  <option value="c">C (solution.c)</option>
                 </select>
                 <button class="btn btn-secondary" style="padding:0.3rem 0.6rem; font-size:0.8rem;" onclick="App.resetCode()">Reset</button>
                 <button class="btn btn-secondary" id="btn-insert-solution" style="padding:0.3rem 0.65rem; font-size:0.8rem; background:rgba(245,158,11,0.12); border:1px solid rgba(245,158,11,0.35); color:var(--accent-amber); font-weight:600;" onclick="App.openSolutionModal()" title="Insert working solution (Admin password required)">🔒 Insert Solution</button>

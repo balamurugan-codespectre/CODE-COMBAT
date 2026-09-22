@@ -22,5 +22,8 @@
       "input": "7\n9 9 9 9 9 9 9\n4\n9 9 9 9",
       "output": "8 9 9 9 0 0 0 1"
     }
-  ]
+  ],
+  "starter_code": {
+    "python": "# Add Two Numbers\n# Input:\n# Line 1: n1\n# Line 2: l1 (n1 digits)\n# Line 3: n2\n# Line 4: l2 (n2 digits)\n\nn1 = int(input())\nl1 = list(map(int, input().split()))\nn2 = int(input())\nl2 = list(map(int, input().split()))\n\n# Write your code below:\n\n"
+  }
 }

@@ -22,5 +22,8 @@
       "input": "10",
       "output": "false"
     }
-  ]
+  ],
+  "starter_code": {
+    "python": "# Palindrome Number\n# Input:\n# Line 1: x (integer as string)\n\nx = input().strip()\n\n# Write your code below:\n\n"
+  }
 }

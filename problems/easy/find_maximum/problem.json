@@ -38,7 +38,7 @@
     }
   ],
   "starter_code": {
-    "python": "import sys\n\ndef solve():\n    data = sys.stdin.read().split()\n    if not data:\n        return\n    n = int(data[0])\n    nums = [int(x) for x in data[1:n+1]]\n    print(max(nums))\n\nif __name__ == '__main__':\n    solve()\n",
+    "python": "# Find Maximum\n# Input:\n# Line 1: n (number of elements)\n# Line 2: nums (n space-separated integers)\n\nn = int(input())\nnums = list(map(int, input().split()))\n\n# Write your code below:\n\n",
     "java": "import java.util.*;\n\npublic class Solution {\n    public static void main(String[] args) {\n        Scanner sc = new Scanner(System.in);\n        if (!sc.hasNextInt()) return;\n        int n = sc.nextInt();\n        long maxVal = Long.MIN_VALUE;\n        for (int i = 0; i < n; i++) {\n            long val = sc.nextLong();\n            if (val > maxVal) maxVal = val;\n        }\n        System.out.println(maxVal);\n    }\n}\n",
     "c": "#include <stdio.h>\n#include <limits.h>\n\nint main() {\n    int n;\n    if (scanf(\"%d\", &n) != 1) return 0;\n    long long max_val = -9223372036854775807LL;\n    for (int i = 0; i < n; i++) {\n        long long val;\n        scanf(\"%lld\", &val);\n        if (val > max_val) max_val = val;\n    }\n    printf(\"%lld\\n\", max_val);\n    return 0;\n}\n"
   },

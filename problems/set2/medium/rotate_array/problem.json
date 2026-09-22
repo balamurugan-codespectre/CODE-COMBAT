@@ -22,5 +22,8 @@
       "input": "3 0\n1 2 3",
       "output": "1 2 3"
     }
-  ]
+  ],
+  "starter_code": {
+    "python": "# Rotate Array\n# Input:\n# Line 1: n k (size, steps)\n# Line 2: nums (n space-separated integers)\n\nn, k = map(int, input().split())\nnums = list(map(int, input().split()))\n\n# Write your code below:\n\n"
+  }
 }

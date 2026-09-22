@@ -22,5 +22,8 @@
       "input": "1 1\na\n1\na",
       "output": "a"
     }
-  ]
+  ],
+  "starter_code": {
+    "python": "# Word Search II\n# Input:\n# Line 1: m n (board dimensions)\n# Next m lines: n space-separated characters\n# Next line: num_words\n# Next line: words to search\n\nm, n = map(int, input().split())\nboard = []\nfor _ in range(m):\n    board.append(input().split())\nnum_words = int(input())\nwords = input().split()\n\n# Write your code below:\n\n"
+  }
 }

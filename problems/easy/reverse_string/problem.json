@@ -38,7 +38,7 @@
     }
   ],
   "starter_code": {
-    "python": "import sys\n\ndef solve():\n    s = sys.stdin.readline().rstrip('\\r\\n')\n    print(s[::-1])\n\nif __name__ == '__main__':\n    solve()\n",
+    "python": "# Reverse a String\n# Input:\n# Line 1: s (string to reverse)\n\ns = input()\n\n# Write your code below:\n\n",
     "java": "import java.util.*;\nimport java.io.*;\n\npublic class Solution {\n    public static void main(String[] args) throws IOException {\n        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));\n        String s = br.readLine();\n        if (s == null) return;\n        StringBuilder sb = new StringBuilder(s);\n        System.out.println(sb.reverse().toString());\n    }\n}\n",
     "c": "#include <stdio.h>\n#include <string.h>\n\nint main() {\n    char s[100005];\n    if (fgets(s, sizeof(s), stdin) == NULL) return 0;\n    int len = strlen(s);\n    while (len > 0 && (s[len-1] == '\\n' || s[len-1] == '\\r')) {\n        len--;\n    }\n    for (int i = len - 1; i >= 0; i--) {\n        putchar(s[i]);\n    }\n    putchar('\\n');\n    return 0;\n}\n"
   },
