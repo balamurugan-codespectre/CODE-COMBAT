@@ -691,7 +691,7 @@ class ProblemsManager:
             "points": base_points,
             "max_score": max_score,
             "total_hint_penalty": total_penalty,
-            "time_limit": raw.get("time_limit", 2.0),
+            "time_limit": raw.get("time_limit") or 3.5,
             "category": raw.get("category", "General"),
             "description": raw.get("description", ""),
             "input_format": raw.get("input_format", ""),

@@ -46,6 +46,17 @@ def is_port_in_use(port: int, host: str = "127.0.0.1") -> bool:
         return s.connect_ex((host, port)) == 0
 
 
+def get_local_ip() -> str:
+    try:
+        s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        s.connect(("8.8.8.8", 80))
+        ip = s.getsockname()[0]
+        s.close()
+        return ip
+    except Exception:
+        return "127.0.0.1"
+
+
 def main():
     base_dir = os.path.dirname(os.path.abspath(__file__))
     config = load_config(base_dir)
@@ -71,8 +82,20 @@ def main():
     port = config.get("server_port", 8000)
     host = config.get("server_host", "127.0.0.1")
 
+    # Check CLI arguments
+    if "--lan" in sys.argv or "--public" in sys.argv:
+        host = "0.0.0.0"
+    if "--port" in sys.argv:
+        try:
+            p_idx = sys.argv.index("--port") + 1
+            if p_idx < len(sys.argv):
+                port = int(sys.argv[p_idx])
+        except Exception:
+            pass
+
     # If default port is taken, find next available port
-    while is_port_in_use(port, host):
+    check_host = "127.0.0.1" if host == "0.0.0.0" else host
+    while is_port_in_use(port, check_host):
         print(f"[*] Port {port} is occupied, trying port {port + 1}...")
         port += 1
 
@@ -80,7 +103,10 @@ def main():
     httpd = ThreadedHTTPServer(server_address, CodeCombatHandler)
 
     total_problems = len(problems_manager.problems)
-    url = f"http://{host}:{port}"
+    local_ip = get_local_ip()
+    local_url = f"http://127.0.0.1:{port}"
+    lan_url = f"http://{local_ip}:{port}" if host == "0.0.0.0" else local_url
+    url = lan_url if host == "0.0.0.0" else local_url
 
     banner = f"""
 ======================================================================

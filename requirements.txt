@@ -1,0 +1,5 @@
+# CODE COMBAT Pro - Requirements
+# The core web application and offline judging engine uses 100% Python Standard Library (0 external pip dependencies required!).
+
+# Optional: Required ONLY if running native standalone Desktop Window mode (main_desktop.py / Launch_Desktop_App.bat)
+pywebview>=5.0.0
