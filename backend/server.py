@@ -394,9 +394,9 @@ class CodeCombatHandler(BaseHTTPRequestHandler):
 
         # POST /api/register
         if path == "/api/register":
-            name = body.get("name", "").strip()
-            college = body.get("college", "").strip()
-            reg_no = body.get("reg_no", "").strip()
+            name = (body.get("name") or "").strip()
+            college = (body.get("college") or body.get("institution") or "").strip()
+            reg_no = (body.get("reg_no") or body.get("registration_number") or body.get("reg_number") or "").strip()
 
             if not name:
                 self.send_error_json("Participant name is required.", 400)
