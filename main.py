@@ -122,8 +122,8 @@ def main():
  [+] Offline Judge Engine : Ready (Python 3, Java, C)
  [+] Loaded Problems     : {total_problems} challenges (Easy/Medium/Hard)
  [+] Competition Timer   : {config.get('competition_duration_minutes', 90)} minutes
- [+] Storage Database    : Local JSON in 'data/'
- [+] Admin Password      : '{config.get('admin_password', 'admin123')}'
+ [+] Storage Database    : Local SQLite in 'data/code_combat.db'
+ [+] Admin Authentication: Configured & Secured (Hidden)
 ----------------------------------------------------------------------
  >> CODE COMBAT running at: {url}
  >> Press Ctrl+C in this terminal to stop the server.
