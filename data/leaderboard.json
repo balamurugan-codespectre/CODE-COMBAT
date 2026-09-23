@@ -1,17 +1,1 @@
-[
-  {
-    "participant_id": "user_f335fd26",
-    "name": "bala",
-    "college": "cse",
-    "reg_no": "123456",
-    "score": 0,
-    "registered_at": "2026-09-22T19:34:25.036035",
-    "solved_count": 0,
-    "easy_solved": 0,
-    "medium_solved": 0,
-    "hard_solved": 0,
-    "total_runtime": 0.0,
-    "last_submission_time": "2026-09-22T19:34:25.036035",
-    "rank": 1
-  }
-]
+[]

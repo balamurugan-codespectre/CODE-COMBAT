@@ -33,7 +33,7 @@
   ],
   "active_problem_set": "set1",
   "tier_locks": {
-    "easy": true,
+    "easy": false,
     "medium": true,
     "hard": true
   }

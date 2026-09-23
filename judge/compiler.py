@@ -65,33 +65,34 @@ class Compiler:
         ])
 
         for c in [x for x in clang_candidates if x and os.path.exists(x)]:
-            # Build smoke-test command
-            test_cmd = [c]
-            if "clang" in c.lower() and sys.platform.startswith("win") and mingw_root:
-                test_cmd.extend(["--target=x86_64-w64-windows-gnu", f"--sysroot={mingw_root}", "-O2", "-static"])
-            else:
-                test_cmd.extend(["-O2", "-static"])
+            # Try standard flags in priority: -std=c11, -std=gnu11, -std=c99, -std=gnu99
+            for std_flag in ["-std=c11", "-std=gnu11", "-std=c99", "-std=gnu99"]:
+                test_cmd = [c]
+                if "clang" in c.lower() and sys.platform.startswith("win") and mingw_root:
+                    test_cmd.extend(["--target=x86_64-w64-windows-gnu", f"--sysroot={mingw_root}", std_flag, "-O2", "-static"])
+                else:
+                    test_cmd.extend([std_flag, "-O2", "-static"])
 
-            # Smoke test
-            td = tempfile.mkdtemp(prefix="smoke_c_")
-            try:
-                src = os.path.join(td, "test.c")
-                exe = os.path.join(td, "test.exe") if sys.platform.startswith("win") else os.path.join(td, "test")
-                with open(src, "w", encoding="utf-8") as f:
-                    f.write("#include <stdio.h>\nint main(){return 0;}\n")
+                # Smoke test with C99 for-loop to ensure C99/C11 features work
+                td = tempfile.mkdtemp(prefix="smoke_c_")
+                try:
+                    src = os.path.join(td, "test.c")
+                    exe = os.path.join(td, "test.exe") if sys.platform.startswith("win") else os.path.join(td, "test")
+                    with open(src, "w", encoding="utf-8") as f:
+                        f.write("#include <stdio.h>\nint main(){ for(int i=0; i<1; i++); return 0; }\n")
 
-                full_cmd = test_cmd + [src, "-o", exe]
-                res = subprocess.run(full_cmd, cwd=td, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, timeout=4.0)
-                if res.returncode == 0 and os.path.exists(exe):
-                    return {
-                        "executable": c,
-                        "extra_flags": test_cmd[1:],
-                        "display_name": os.path.basename(c)
-                    }
-            except Exception:
-                pass
-            finally:
-                shutil.rmtree(td, ignore_errors=True)
+                    full_cmd = test_cmd + [src, "-o", exe]
+                    res = subprocess.run(full_cmd, cwd=td, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, timeout=4.0)
+                    if res.returncode == 0 and os.path.exists(exe):
+                        return {
+                            "executable": c,
+                            "extra_flags": test_cmd[1:],
+                            "display_name": os.path.basename(c)
+                        }
+                except Exception:
+                    pass
+                finally:
+                    shutil.rmtree(td, ignore_errors=True)
 
         return None
 
