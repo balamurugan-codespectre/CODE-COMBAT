@@ -385,6 +385,34 @@ class CodeCombatHandler(BaseHTTPRequestHandler):
             self.send_header("Content-Length", str(len(csv_content)))
             self.end_headers()
             self.wfile.write(csv_content)
+        # GET /api/admin/export/pdf or /api/admin/solutions-pdf or /api/solutions.pdf
+        if path in ["/api/admin/export/pdf", "/api/admin/solutions-pdf", "/api/solutions.pdf", "/api/solutions-pdf"]:
+            base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+            pdf_path = os.path.join(base_dir, "CODE_COMBAT_MASTER_SOLUTIONS.pdf")
+            if not os.path.exists(pdf_path):
+                # Fallback to HTML if PDF not ready
+                html_path = os.path.join(base_dir, "CODE_COMBAT_MASTER_SOLUTIONS.html")
+                if os.path.exists(html_path):
+                    with open(html_path, "rb") as f:
+                        html_bytes = f.read()
+                    self.send_response(200)
+                    self.send_header("Content-Type", "text/html; charset=utf-8")
+                    self.send_header("Content-Disposition", "inline; filename=CODE_COMBAT_MASTER_SOLUTIONS.html")
+                    self.send_header("Content-Length", str(len(html_bytes)))
+                    self.end_headers()
+                    self.wfile.write(html_bytes)
+                    return
+                self.send_error_json("Solutions PDF is currently being generated. Please retry in a moment.", 404)
+                return
+
+            with open(pdf_path, "rb") as f:
+                pdf_bytes = f.read()
+            self.send_response(200)
+            self.send_header("Content-Type", "application/pdf")
+            self.send_header("Content-Disposition", "attachment; filename=CODE_COMBAT_MASTER_SOLUTIONS.pdf")
+            self.send_header("Content-Length", str(len(pdf_bytes)))
+            self.end_headers()
+            self.wfile.write(pdf_bytes)
             return
 
         self.send_error_json("API route not found", 404)
